@@ -1,0 +1,48 @@
+﻿@model Assistant_TEP.Models.User
+
+@{
+    ViewData["Title"] = "Добавлення користувача";
+}
+
+<h4>Добавлення користувача</h4>
+
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Create">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FullName" class="control-label">Прізвище, Ім'я, По батькові</label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Login" class="control-label">Логін</label>
+                <input asp-for="Login" class="form-control" />
+                <span asp-validation-for="Login" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label">Пароль</label>
+                <input asp-for="Password" class="form-control" />
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="CokId" class="control-label">Код Цоку</label>
+                <select asp-for="CokId" class ="form-control" asp-items="ViewBag.CokId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="IsAdmin" class="control-label">Права адміна(1-так, 0-ні)</label>
+                <input asp-for="IsAdmin" class="form-control" />
+                <span asp-validation-for="IsAdmin" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Добавити" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">Повернутися до списку користувачів</a>
+</div>
+

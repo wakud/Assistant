@@ -1,0 +1,71 @@
+﻿@model Assistant_TEP.Models.Report
+
+@{
+    ViewData["Title"] = "Детально про звіт";
+}
+
+<h1>Детально</h1>
+
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Змінити</a> |
+    <a asp-action="Index">До списку звітів</a>
+</div>
+<div>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">Назва звіту</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">Опис звіту</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">Файл-скріпта</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.FileScript)
+        </dd>
+        <dt class="col-sm-2">Тип БД</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.DbType.Type)
+        </dd>
+        <dt class="col-sm-2">Період звітності</dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.ReportType.Name)
+        </dd>
+    </dl>
+</div>
+<div>
+        <H4>Список параметрів для звіту</H4>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Назва</th>
+                    <th>Опис</th>
+                    <th>Тип параметру</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (ReportParam item in Model.ReportParams)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ParamType.Name)
+                        </td>
+                        <td>
+                            <a asp-controller="ReportParams" asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                            <a asp-controller="ReportParams" asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                        </td>
+                    </tr>
+                }
+                    <a asp-controller="ReportParams" asp-action="Create" asp-route-id="@Model.Id">Добавити параметри</a>
+            </tbody>
+        </table>
+  </div>      

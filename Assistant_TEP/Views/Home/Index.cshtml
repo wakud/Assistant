@@ -1,0 +1,42 @@
+﻿@model IEnumerable<Assistant_TEP.Models.Report>
+
+
+@{
+    ViewData["Title"] = "Місячні Звіти";
+}
+
+    <div class="row">
+        <div class="col-md-5">
+            <h2>Побутові абоненти</h2>
+            @foreach (var item in Model)
+            {
+                @if (item.DbType.Type == "Utility")
+                {
+                    @if (item.ReportType.Name == "Місячні")
+                    {
+                    <ul>
+                        <li><a asp-action="GetReport" asp-controller="Reports" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a></li>
+                    </ul>
+
+                    }
+                }
+            }
+        </div>
+        
+        <div class="col-md-5">
+            <h2>Юридичні абоненти</h2>
+            @foreach (var item in Model)
+            {
+                @if (item.DbType.Type == "Juridical")
+                {
+                    @if (item.ReportType.Name == "Місячні")
+                    {
+                        <ul>
+                            <li><a asp-action="GetReport" asp-controller="Reports" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a></li>
+                        </ul>
+
+                    }
+                }
+            }
+        </div>
+    </div>

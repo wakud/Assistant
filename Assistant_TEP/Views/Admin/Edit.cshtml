@@ -1,0 +1,58 @@
+﻿@model Assistant_TEP.ViewModels.ReportWithFile
+
+@{
+    ViewData["Title"] = "Змінити";
+}
+
+<h4>Змінити дані звіту</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" enctype="multipart/form-data">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">Назва звіту</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label">Опис звіту</label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="FileScript" class="control-label">Файл скрипту</label>
+                <input asp-for="FileScript" class="form-control" />
+                <span asp-validation-for="FileScript" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DbTypeId" class="control-label">Тип бази</label>
+                <select asp-for="DbTypeId" class="form-control" asp-items="ViewBag.DbTypeId"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="TypeReportId" class="control-label">Період звітності</label>
+                <select asp-for="TypeReportId" class="form-control" asp-items="ViewBag.TypeReportId"></select>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Зберегти" class="btn btn-primary" />
+            </div>
+        </form>
+        @if (ViewBag.error != null)
+        {
+            @if (ViewBag.error == "BadFile")
+            {
+                <script>
+                    setTimeout(() => alert("Не вибрано файл скрипта!"), 500);
+                </script>
+            }
+        }
+    </div>
+</div>
+
+<div>
+    <a asp-controller="ReportParams" asp-action="Create" asp-route-id="@Model.Id">/ Добавити параметри у звіт/</a>
+    <a asp-controller="ReportParams" asp-action="Index">До списку параметрів звіту</a>
+    <a asp-action="Index"> До списку звітів /</a>
+</div>
+

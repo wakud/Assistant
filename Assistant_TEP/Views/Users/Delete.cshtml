@@ -1,0 +1,15 @@
+﻿@model Assistant_TEP.Models.User
+
+@{
+    ViewData["Title"] = "Видалення";
+}
+
+    <h3>Видалити користувача @Html.DisplayFor(model => model.FullName) ?</h3>
+<div>
+    <hr />
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="Видалити" class="btn btn-danger" /> |
+        <a asp-action="Index">Повернутися до списку користувачів</a>
+    </form>
+</div>

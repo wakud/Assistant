@@ -1,0 +1,32 @@
+﻿@model Assistant_TEP.ViewModels.GetReportViewModel
+
+@{
+    ViewData["Title"] = "Report";
+}
+
+    <h2>Звіт "@Model.rep.Name"</h2>
+    <h4>@Model.rep.Description</h4>
+<div>
+    <form asp-controller="Reports" asp-action="ExecuteReport" asp-route-id="@Model.rep.Id">
+        @if (Model.user.IsAdmin == "1")
+        {
+            <div class="form-group">
+                <label id="organization" class="control-label">Район</label>
+                <select name="organization" id="organization" class="form-control" asp-items="ViewBag.Organizations"></select>
+            </div>
+        }
+        else
+        {
+            <p>По @Model.user.Cok.Name</p>
+            <p>@Html.DisplayFor(model => Model.rep.Description)</p>
+        }
+        @foreach (Assistant_TEP.Models.ReportParam Param in Model.rep.ReportParams)
+        {
+            <div class="form-group">
+                <label class="control-label" for="@Param.Id">@Param.Description</label>
+                <input class="form-control" name="@Param.Name" id="@Param.Id" type="@Param.ParamType.TypeHtml" />
+            </div>
+        }
+        <input type="submit" value="Виконати на екран" class="btn btn-dark" />
+    </form>
+</div>

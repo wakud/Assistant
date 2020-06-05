@@ -1,0 +1,45 @@
+﻿@model IEnumerable<Assistant_TEP.Models.User>
+
+@{
+    ViewData["Title"] = "Користувачі";
+}
+
+<h1>Список користувачів</h1>
+
+<p>
+    <a asp-action="Create">Добавити нового</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Прізвище, Ім'я, По батькові</th>
+            <th>Логін</th>
+            <th>ЦОК</th>
+            <th>Права адміна</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Login)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cok.Code)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsAdmin)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Детально</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

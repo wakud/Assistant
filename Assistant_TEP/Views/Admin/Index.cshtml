@@ -1,0 +1,49 @@
+﻿@model IEnumerable<Assistant_TEP.Models.Report>
+
+@{
+    ViewData["Title"] = "Адміністрування";
+}
+
+<h1>Адміністрування програми</h1>
+
+<p>
+    <a asp-action="Create">/ Добавити звіт /</a>
+    <a asp-controller="Users" asp-action="Index">/ Користувачі /</a>
+    <a asp-controller="Organizations" asp-action="Index">/ Список ЦОКів /</a>
+    <a asp-controller="Home" asp-action="Index">/ На головну /</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Назва звіту</th>
+            <th>Опис звіту</th>
+            <th>Файл скріпта</th>
+            <th>База</th>
+
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Description)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FileScript)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DbType.Type)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                <a asp-action="Details" asp-route-id="@item.Id">Детально</a> |
+                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

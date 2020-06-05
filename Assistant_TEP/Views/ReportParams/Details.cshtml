@@ -1,0 +1,40 @@
+﻿@model Assistant_TEP.Models.ReportParam
+
+@{
+    ViewData["Title"] = "Детально";
+}
+
+<div>
+    <h4>Детально про параметер @Html.DisplayFor(model => model.Name)</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            Назва параметру
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class = "col-sm-2">
+            Опис параметру
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class = "col-sm-2">
+            Звіт
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Report.Id)
+        </dd>
+        <dt class = "col-sm-2">
+            Тип параметру
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.ParamType.Id)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Id">Змінити</a> |
+    <a asp-action="Index">До списку параметрів</a>
+</div>

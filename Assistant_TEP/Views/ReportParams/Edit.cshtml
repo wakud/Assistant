@@ -1,0 +1,44 @@
+﻿@model Assistant_TEP.Models.ReportParam
+
+@{
+    ViewData["Title"] = "Змінити";
+}
+
+    <h4>Змінити параметер @Html.DisplayFor(model => model.Name)</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="Id" />
+            <div class="form-group">
+                <label asp-for="Name" class="control-label">Назва параметру в SQL-скрипті</label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Description" class="control-label">Опис параметру</label>
+                <input asp-for="Description" class="form-control" />
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ReportId" class="control-label">Звіт</label>
+                <select asp-for="ReportId" class="form-control" asp-items="ViewBag.ReportId"></select>
+                <span asp-validation-for="ReportId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="ParamTypeId" class="control-label">Тип параметру</label>
+                <select asp-for="ParamTypeId" class="form-control" asp-items="ViewBag.ParamTypeId"></select>
+                <span asp-validation-for="ParamTypeId" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Зберегти" class="btn btn-primary" />
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <a asp-action="Index">До списку параметрів</a>
+</div>
+
