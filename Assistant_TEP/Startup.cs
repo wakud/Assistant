@@ -57,11 +57,11 @@ namespace Assistant_TEP
                 // то выводим информацию об ошибке, при наличии ошибки
                 app.UseDeveloperExceptionPage();
             }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
-                app.UseHsts();
-            }
+            //else
+            //{
+            //    app.UseExceptionHandler("/Home/Error");
+            //    app.UseHsts();
+            //}
 
             app.UseStaticFiles();       //чтобы приложение могло бы отдавать статические файлы клиенту
             app.UseRouting();           // добавляем возможности маршрутизации

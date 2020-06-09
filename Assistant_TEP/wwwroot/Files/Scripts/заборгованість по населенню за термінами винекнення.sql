@@ -34,6 +34,6 @@ SELECT [מס.נאץ]
 		,[במנד]
 		,[ל³סÿצü] - 1 AS [ל³סÿצü]
 FROM ##qwerty
-WHERE במנד>=1000.00 
-		OR (במנד>=0.01 AND ל³סÿצü BETWEEN 3 AND 30)
+WHERE במנד>=1000.00
+		OR (במנד>=100.00 AND ל³סÿצü BETWEEN 3 AND 30)
 ORDER BY [מס.נאץ], Àהנוסא
