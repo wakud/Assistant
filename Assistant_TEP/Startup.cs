@@ -1,4 +1,5 @@
-﻿using Assistant_TEP.Models;
+﻿using Assistant_TEP.Controllers;
+using Assistant_TEP.Models;
 using Assistant_TEP.MyClasses;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
@@ -25,6 +26,8 @@ namespace Assistant_TEP
             //отримуємо рядок підключення до БД
             string connection = Configuration.GetConnectionString("TEPConnection");
             BillingUtils.Configuration = Configuration;
+            ObminController.Configuration = Configuration;
+
             // створюємо БД
             services.AddDbContext<MainContext>(options => options.UseSqlServer(connection));
 

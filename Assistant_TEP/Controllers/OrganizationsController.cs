@@ -53,7 +53,7 @@ namespace Assistant_TEP.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name,Code,Nach,Address,Buh,Tel")] Organization organization)
+        public async Task<IActionResult> Create([Bind("Id,Name,Code,Nach,Address,Buh,Tel,RegionId")] Organization organization)
         {
             if (ModelState.IsValid)
             {
@@ -85,7 +85,7 @@ namespace Assistant_TEP.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Code,Nach,Address,Buh,Tel")] Organization organization)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Code,Nach,Address,Buh,Tel,RegionId")] Organization organization)
         {
             if (id != organization.Id)
             {

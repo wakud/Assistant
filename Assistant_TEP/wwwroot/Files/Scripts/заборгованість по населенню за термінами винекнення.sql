@@ -3,37 +3,38 @@
 		(від 1000 грн та/або до 1000грн з терміном винекнення 3 місяці і більше)
 		станом на __________________
 */
-
 DROP TABLE IF EXISTS ##qwerty
 
-SELECT	acc.AccountNumber AS [ос.рах]
-		, pers.FullName AS [ПІП]
-		, ad.FullAddress AS [Адреса]
-		, SUM(CASE WHEN br.CalculatePeriod BETWEEN @per_start AND @per_end THEN br.RestSumm ELSE 0 END) AS [борг]
+DECLARE @ExBill INT 
+SET @ExBill =       --Термін погашення боргу по рахунках
+	(SELECT TOP 1 cast([Value] as int)  FROM [Services].[Setting] WHERE [Guid] = '826C4666-F79C-4558-A0BB-2D5A428FCE1B')  
+SELECT	a.AccountNumber AS [ос.рах]
+		, pp.FullName AS [ПІП]		
+		, addr.FullAddress AS [Адреса]
+		, SUM(o.RestSumm) AS [борг]
 		, MAX(DATEDIFF(MONTH, 
 						CAST(
-							CAST(br.CalculatePeriod AS CHAR(6)) + '01' AS DATE
+							o.Date AS DATE
 						),
 						CAST(@stanom_na AS DATE) 
-					) )AS [місяць]
+					) ) AS [місяць]
 INTO ##qwerty
-FROM FinanceCommon.BillRegular br
-LEFT JOIN AccountingCommon.Account acc ON acc.AccountId = br.AccountId
-JOIN AccountingCommon.PhysicalPerson as pers ON pers.PhysicalPersonId = acc.PhysicalPersonId
-JOIN AccountingCommon.Address as ad ON ad.AddressId = acc.AddressId 
-WHERE	br.IsDeleted = 0 
-		AND br.CalculatePeriod BETWEEN @per_start AND @per_end
-		AND br.RestSumm > 0.00
-GROUP BY acc.AccountNumber
-		, pers.FullName
-		, ad.FullAddress
+FROM AccountingCommon.Account a
+JOIN AccountingCommon.PhysicalPerson pp ON a.PhysicalPersonId = pp.PhysicalPersonId
+JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
+JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm, o.PeriodFrom, o.Date
+	FROM FinanceMain.Operation o
+	WHERE PeriodTo=207906
+	AND IsIncome=0
+	AND DocumentTypeId IN (15)
+	AND o.RestSumm>0
+	AND o.Date<=DATEADD(dd,-@ExBill,GETDATE())
+	GROUP BY o.AccountId, o.PeriodFrom, o.Date
+	) o ON a.AccountId = o.AccountId
+GROUP BY a.AccountNumber,pp.FullName,addr.FullAddress
+ORDER by a.AccountNumber, addr.FullAddress
 
-SELECT [ос.рах]
-		,[ПІП]
-		,[Адреса]
-		,[борг]
-		,[місяць] - 1 AS [місяць]
-FROM ##qwerty
-WHERE борг>=1000.00
+SELECT * FROM ##qwerty
+WHERE борг>=1000.00 
 		OR (борг>=100.00 AND місяць BETWEEN 3 AND 30)
-ORDER BY [ос.рах], Адреса
+ORDER BY [ос.рах]

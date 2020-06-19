@@ -56,10 +56,27 @@ namespace Assistant_TEP.MyClasses
                 command.CommandTimeout = 600;
                 SqlDataReader reader = command.ExecuteReader();
                 results.Load(reader);
-                reader.Close();
                 return results;
             }
         }
+        
+        public static DataTable GetResults(string scriptPath, string cok)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string script = "USE " + cok + "_Utility" + "\n";
+            script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connectionString = Configuration.GetConnectionString("RESConnection");
 
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(script, conn);
+                conn.Open();
+                command.CommandTimeout = 600;
+                SqlDataReader reader = command.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+                return dt;
+            }
+        }
     }
 }

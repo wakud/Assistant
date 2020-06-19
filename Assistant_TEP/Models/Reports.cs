@@ -63,6 +63,7 @@ namespace Assistant_TEP.Models
         public int Id { get; set; }
         public string Name { get; set; }                            //назва параметру в скрипті
         public string Description { get; set; }                     //назва параметру для користувача
+        //public string ParamSource { get; set; }
         //посилання на репорт
         public int ReportId { get; set; }
         public Report Report { get; set; }

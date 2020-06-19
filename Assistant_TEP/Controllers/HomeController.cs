@@ -47,7 +47,6 @@ namespace Assistant_TEP.Controllers
         public IActionResult Other()
         {
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
-            //return View();
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

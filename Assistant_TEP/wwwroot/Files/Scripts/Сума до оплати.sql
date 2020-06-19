@@ -1,6 +1,8 @@
-SELECT 	a.AccountNumber AS [особовий рахунок]
-		,pp.FullName AS [ПІП абонента]
+SELECT	z.ZipCode AS [Індекс]
+		, c.Name AS [Нас.пункт]
 		, addr.FullAddress AS [Адреса абонента]
+ 		, a.AccountNumber AS [особовий рахунок]
+		, pp.FullName AS [ПІП абонента]
 		--,addr.CityId
 		,o.RestSumm AS [сума до оплати]
 		--,o.RestSummRound AS [сума до оплати заокруглена]
@@ -15,6 +17,8 @@ JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm,CEILING(SUM(o.RestSumm)) as Re
 	HAVING SUM(o.RestSumm)>=@sum_pay) o ON a.AccountId = o.AccountId
 JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = a.PhysicalPersonId
 JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
+LEFT JOIN [TR_Organization].[AddressDictionary].[Zip] AS z ON z.ZipId = addr.ZipId
+LEFT JOIN [TR_Organization].[AddressDictionary].[City] AS c ON c.CityId = addr.CityId
 JOIN AccountingCommon.UsageObject uo ON uo.AccountId = a.AccountId
 LEFT JOIN (SELECT o.AccountId,r.PayDate,r.TotalSumm,
 ROW_NUMBER() OVER (PARTITION BY o.AccountId ORDER BY r.PayDate DESC) id
@@ -24,4 +28,5 @@ ROW_NUMBER() OVER (PARTITION BY o.AccountId ORDER BY r.PayDate DESC) id
 	AND r.PaymentFormId IN (1,2)
 	AND o.PeriodTo=207906) op ON op.AccountId = a.AccountId
 	AND op.id = 1
-ORDER BY addr.FullAddress, a.AccountNumber
+WHERE z.ZipCode = @zip_code
+ORDER BY c.Name

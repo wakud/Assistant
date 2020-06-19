@@ -27,7 +27,9 @@ namespace Assistant_TEP.Controllers
     public class ReportsController : Controller
     {
         public static string UserName { get; }
+        public static string cokCode;
         public static Dictionary<string, DataTable> zvit = new Dictionary<string, DataTable>();
+        public static Dictionary<string, string> parameters = new Dictionary<string, string>();
         private readonly MainContext db;
         private readonly IWebHostEnvironment appEnv;
 
@@ -54,7 +56,6 @@ namespace Assistant_TEP.Controllers
         public ActionResult ExecuteReport(int id, IFormCollection form)
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
-            string cokCode;
             if(user.IsAdmin == "1")
             {
                 cokCode = form["organization"];
@@ -63,11 +64,18 @@ namespace Assistant_TEP.Controllers
             {
                 cokCode = user.Cok.Code;
             }
-            Report rep = db.Reports.Include(r => r.ReportParams).Include(r => r.DbType).FirstOrDefault(r => r.Id == id);
-            Dictionary<string, string> parameters = new Dictionary<string, string>();
+            Report rep = db.Reports.Include(r => r.ReportParams).ThenInclude(r => r.ParamType).Include(r => r.DbType).FirstOrDefault(r => r.Id == id);
+            
             foreach (ReportParam param in rep.ReportParams)
             {
-                parameters[param.Name] = form[param.Name];
+                if (param.ParamType.TypeC == "period")
+                {
+                    parameters[param.Name] = ParamSerializer.serializePeriod(form[param.Name]);
+                }
+                else
+                {
+                    parameters[param.Name] = form[param.Name];
+                }
             }
             DataTable dt = BillingUtils.GetReportResults(appEnv.WebRootPath + "\\Files\\Scripts\\", rep, parameters, cokCode);
             ResultModelView res = new ResultModelView
@@ -97,7 +105,7 @@ namespace Assistant_TEP.Controllers
                 // Назва звіту
                 ws.Cell(1, 2).Value = rep.Name;
                 ws.Cell(1, 2).Style.Font.Bold = true;
-                ws.Cell(2, 2).Value = "по " + user.Cok.Name + " за " + Dtm + " " + Dtr + " р.";
+                ws.Cell(2, 2).Value = "по " + cokCode + " за " + Dtm + " " + Dtr + " р.";
                 ws.Cell(2, 2).Style.Font.Bold = true;
 
                 int currentRow = 3;

@@ -14,7 +14,7 @@ namespace Assistant_TEP.Controllers
 {
     public class AccountController : Controller
     {
-        private MainContext db;
+        private readonly MainContext db;
         public AccountController(MainContext context)
         {
             db = context;
@@ -60,7 +60,6 @@ namespace Assistant_TEP.Controllers
             // создаем объект ClaimsIdentity
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
             // установка аутентификационных куки
-            Console.WriteLine(id.ToString());
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
 

@@ -22,31 +22,37 @@
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Index") 
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Index")
                     {
                         @:active
                     }" asp-controller="Home" asp-action="Index">Місячні звіти</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "About") 
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "About")
                     {
                         @:active
                     }" asp-controller="Home" asp-action="About">Квартальні звіти</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact") 
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
                     {
                         @:active
                     }" asp-controller="Home" asp-action="Contact">Річні звіти</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other") 
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other")
                     {
                         @:active
                     }" asp-controller="Home" asp-action="Other">Інші звіти</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "") 
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Privacy")
+                    {
+                        @:active
+                    }" asp-controller="Home" asp-action="Privacy">Обмін інформацією</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")
                     {
                         @:active
                     }" asp-controller="Admin" asp-action="Index">Адміністрування</a>

@@ -13,6 +13,8 @@ namespace Assistant_TEP.Models
         [StringLength(50)]
         public string Name { get; set; }
 
+        public int RegionId { get; set; }
+
         [StringLength(4)]
         public string Code { get; set; }
 

@@ -19,7 +19,7 @@
                 Код цоку
             </th>
             <th>
-                ПІП начальника 
+                ПІП начальника
             </th>
             <th>
                 Адреса ЦОКу
@@ -29,6 +29,9 @@
             </th>
             <th>
                 телефон
+            </th>
+            <th>
+                ID регіону
             </th>
             <th></th>
         </tr>
@@ -53,6 +56,9 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Tel)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.RegionId)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
