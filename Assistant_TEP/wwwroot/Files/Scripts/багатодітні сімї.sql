@@ -22,5 +22,5 @@ FROM AccountingCommon.Account as acc --'ОС рах'
 	JOIN AccountingDictionary.BenefitsCategory bc ON tm.BenefitsCategoryId =bc.BenefitsCategoryId --'вид пільги', 'Знижка'
 	JOIN AccountingCommon.BenefitsCertificate bcc ON bcc.BenefitsCertificateId =tm.BenefitsCertificateId --'№ посвідчення'
     JOIN AccountingCommon.PhysicalPerson ppp ON bcc.PhysicalPersonId =ppp.PhysicalPersonId --'ПІБ пільговика', 'ідентифік_код'
-	WHERE bc.MinistryCode = 35 AND bcc.DateTo <= @stanom_na
+	WHERE bc.MinistryCode = 35 AND bcc.DateTo <= @stanom_na AND acc.DateTo=convert(DATETIME,'06/06/2079',103)
 	ORDER BY 1,5

@@ -28,5 +28,5 @@ ROW_NUMBER() OVER (PARTITION BY o.AccountId ORDER BY r.PayDate DESC) id
 	AND r.PaymentFormId IN (1,2)
 	AND o.PeriodTo=207906) op ON op.AccountId = a.AccountId
 	AND op.id = 1
-WHERE z.ZipCode = @zip_code
+--WHERE z.ZipCode = @zip_code
 ORDER BY c.Name, addr.FullAddress

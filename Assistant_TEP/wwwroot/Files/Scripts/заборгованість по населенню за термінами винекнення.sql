@@ -3,7 +3,7 @@
 		(в≥д 1000 грн та/або до 1000грн з терм≥ном винекненн€ 3 м≥с€ц≥ ≥ б≥льше)
 		станом на __________________
 */
-DROP TABLE IF EXISTS ##qwerty
+DROP TABLE IF EXISTS ##qwerty$cok$
 
 DECLARE @ExBill INT 
 SET @ExBill =       --“ерм≥н погашенн€ боргу по рахунках
@@ -18,7 +18,8 @@ SELECT	a.AccountNumber AS [ос.рах]
 						),
 						CAST(@stanom_na AS DATE) 
 					) ) AS [м≥с€ць]
-INTO ##qwerty
+		, CONVERT(varchar(10),dcoff.DateOff,103) as [ƒата в≥дкл]
+INTO ##qwerty$cok$
 FROM AccountingCommon.Account a
 JOIN AccountingCommon.PhysicalPerson pp ON a.PhysicalPersonId = pp.PhysicalPersonId
 JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
@@ -31,10 +32,19 @@ JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm, o.PeriodFrom, o.Date
 	AND o.Date<=DATEADD(dd,-@ExBill,GETDATE())
 	GROUP BY o.AccountId, o.PeriodFrom, o.Date
 	) o ON a.AccountId = o.AccountId
-GROUP BY a.AccountNumber,pp.FullName,addr.FullAddress
+LEFT JOIN (
+		SELECT a.AccountId,d.DateFrom  DateOff,DisconnectionStatus,
+		ROW_NUMBER() OVER (PARTITION BY a.AccountId ORDER BY d.DateFrom DESC) AS RowNumber
+		FROM AccountingCommon.Disconnection d
+		JOIN AccountingCommon.Point p ON d.PointId = p.PointId
+		AND p.DateTo=convert(DATETIME,'06/06/2079',103)
+		JOIN AccountingCommon.UsageObject uo ON uo.UsageObjectId = p.UsageObjectId
+		JOIN AccountingCommon.Account a ON uo.AccountId = a.AccountId
+		) dcoff ON dcoff.AccountId = a.AccountId AND dcoff.RowNumber = 1 AND dcoff.DisconnectionStatus=1
+GROUP BY a.AccountNumber,pp.FullName,addr.FullAddress, CONVERT(varchar(10),dcoff.DateOff,103)
 ORDER by a.AccountNumber, addr.FullAddress
 
-SELECT * FROM ##qwerty
+SELECT * FROM ##qwerty$cok$
 WHERE борг>=1000.00 
 		OR (борг>=100.00 AND м≥с€ць BETWEEN 3 AND 30)
 ORDER BY [ос.рах]

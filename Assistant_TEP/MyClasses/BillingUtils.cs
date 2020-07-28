@@ -39,25 +39,41 @@ namespace Assistant_TEP.MyClasses
 
         public static DataTable GetReportResults(string scriptsPath, Report report, Dictionary<string, string> parameters, string cok)
         {
-            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            var path = scriptsPath + report.FileScript;
-            string script = "USE " + cok + "_" + report.DbType.Type + "\n";
-            script += File.ReadAllText(path, Encoding.GetEncoding(1251));
-            string connectionString = Configuration.GetConnectionString("RESConnection");
-            DataTable results = new DataTable();
-            using(SqlConnection conn = new SqlConnection(connectionString))
+            int currentTry = 0;
+            int maxTries = 5;
+            while(currentTry < maxTries)
             {
-                SqlCommand command = new SqlCommand(script, conn);
-                conn.Open();
-                foreach(var key in parameters.Keys)
+                try
                 {
-                    command.Parameters.AddWithValue(key, parameters[key]);
+                    Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                    var path = scriptsPath + report.FileScript;
+                    string script = "USE " + cok + "_" + report.DbType.Type + "\n";
+                    script += File.ReadAllText(path, Encoding.GetEncoding(1251));
+                    script = script.Replace("$cok$", cok);
+                    //Console.WriteLine(script.Replace("$cok$", cok));
+                    string connectionString = Configuration.GetConnectionString("RESConnection");
+                    DataTable results = new DataTable();
+                    using(SqlConnection conn = new SqlConnection(connectionString))
+                    {
+                        SqlCommand command = new SqlCommand(script, conn);
+                        conn.Open();
+                        foreach(var key in parameters.Keys)
+                        {
+                            command.Parameters.AddWithValue(key, parameters[key]);
+                        }
+                        command.CommandTimeout = 600;
+                        SqlDataReader reader = command.ExecuteReader();
+                        results.Load(reader);
+                        return results;
+                    }
                 }
-                command.CommandTimeout = 600;
-                SqlDataReader reader = command.ExecuteReader();
-                results.Load(reader);
-                return results;
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    currentTry++;
+                }
             }
+            throw new Exception("Помилка при доступі до бази, спробуйте пізніше");
         }
         
         public static DataTable GetResults(string scriptPath, string cok)
@@ -65,6 +81,7 @@ namespace Assistant_TEP.MyClasses
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string script = "USE " + cok + "_Utility" + "\n";
             script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            script = script.Replace("$cok$", cok);
             string connectionString = Configuration.GetConnectionString("RESConnection");
 
             using (SqlConnection conn = new SqlConnection(connectionString))

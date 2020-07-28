@@ -30,7 +30,7 @@
         {
             @if (item.DbType.Type == "Juridical")
             {
-                @if (item.ReportType.Name == "Місячні")
+                @if (item.ReportType.Name == "Інші")
                 {
                     <ul>
                         <li><a asp-action="GetReport" asp-controller="Reports" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a></li>

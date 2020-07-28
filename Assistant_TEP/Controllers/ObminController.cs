@@ -207,7 +207,7 @@ namespace Assistant_TEP.Controllers
                         row.ENT_COD = readerDbf.GetValue("ENT_COD").ToString().Trim();
                         row.DATA_S = DateTime.Parse(readerDbf.GetValue("DATA_S").ToString().Trim());
                         row.RES2 = int.Parse(readerDbf.GetValue("RES2").ToString().Trim());
-                        row.ADR_NAM = readerDbf.GetValue("ADR_NAM").ToString().Trim();
+                        row.ADR_NAM = readerDbf.GetValue("ADR_NAM")?.ToString().Trim();
                         row.VUL_COD = int.Parse(readerDbf.GetValue("VUL_COD").ToString().Trim());
                         row.VUL_CAT = readerDbf.GetValue("VUL_CAT").ToString().Trim();
                         row.VUL_NAM = readerDbf.GetValue("VUL_NAM").ToString().Trim();

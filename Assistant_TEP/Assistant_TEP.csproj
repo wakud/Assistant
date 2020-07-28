@@ -6,6 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="wwwroot\Files\Scripts\Д-т періоди боржники більше Х.sql" />
+    <Content Remove="wwwroot\Files\Scripts\Здійснення дзвінків.sql" />
+    <Content Remove="wwwroot\Files\Scripts\Здійснення дзвінків_АСИСТЕНТ.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="bootstrap" Version="4.5.0" />
     <PackageReference Include="ClosedXML" Version="0.95.3" />
     <PackageReference Include="DbfDataReader" Version="0.5.4" />
@@ -27,7 +33,6 @@
 
   <ItemGroup>
     <Folder Include="wwwroot\Files\Obmin\" />
-    <Folder Include="wwwroot\Files\Scripts\" />
   </ItemGroup>
 
 </Project>

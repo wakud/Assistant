@@ -6,13 +6,42 @@ SELECT	a.AccountNumber AS [ос.рахунок]
         ,dp.[Name] AS [Де відключений]
         ,d.[DisconnectionStatus] AS [Статус відкл.]
         ,CONVERT (VARCHAR, d.[DateFrom], 104) AS [Дата відкл.]
-        ,d.[Note] AS [Нотатки],
-ISNULL((SELECT SUM(Usage)
-     FROM Measuring.UsageCache
-     WHERE PointId = p.PointId
-     AND DateFrom>=d.DateFrom
-     ),0) AS [Квт]
-	 ,ss.DebetEnd AS [Сума боргу]
+        --,d.[Note] AS [Нотатки]
+        ,ISNULL((SELECT SUM(Usage)
+                FROM Measuring.UsageCache
+                WHERE PointId = p.PointId AND DateFrom>=d.DateFrom
+                ),0) AS [Кіловати]
+        ,CAST((CASE WHEN d.DateFrom>= '2019-01-01' THEN 
+				(SELECT DebetEnd FROM FinanceCommon.SupplierSaldo 
+					WHERE Period = 
+					(CAST(
+						CAST(YEAR(d.DateFrom) AS CHAR(4)) + 
+						(CASE 
+							WHEN MONTH(d.DateFrom) > 9 
+							THEN CAST(MONTH(d.DateFrom) AS CHAR(2)) 
+							ELSE '0' + CAST(MONTH(d.DateFrom) AS CHAR(2))
+						END)
+					AS CHAR(6)))
+					AND AccountId = a.AccountId
+				)
+			WHEN d.DateFrom BETWEEN '2010-11-01' AND '2018-12-01' 
+				THEN (
+					SELECT DebetEnd FROM FinanceCommon.Saldo 
+						WHERE Period = 
+						(CAST(
+							CAST(YEAR(d.DateFrom) AS CHAR(4)) + 
+							(CASE 
+								WHEN MONTH(d.DateFrom) > 9 
+								THEN CAST(MONTH(d.DateFrom) AS CHAR(2)) 
+								ELSE '0' + CAST(MONTH(d.DateFrom) AS CHAR(2))
+							END)
+						AS CHAR(6)))
+						AND AccountId = a.AccountId
+					)
+			ELSE NULL
+			END
+		) AS CHAR(100)) AS [Борг відкл.]
+	    ,ss.DebetEnd AS [Сума боргу]
 FROM AccountingCommon.Account a
 JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = a.PhysicalPersonId
 JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
@@ -32,5 +61,5 @@ LEFT JOIN [AccountingDictionary].[DisconnectionPlace] dp ON
 dp.DisconnectionPlaceId = d.DisconnectionPlaceId
 WHERE a.DateTo = '2079-06-06' -- тільки незакриті ОР
 ) x
-WHERE [Квт] > 0 AND [Сума боргу] >= @borg
+WHERE [x].[Кіловати] > 0 AND [Сума боргу] >= @borg
 ORDER BY [Дата відкл.]

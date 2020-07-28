@@ -49,8 +49,6 @@ namespace Assistant_TEP.Controllers
         }
 
         // POST: Organizations/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Name,Code,Nach,Address,Buh,Tel,RegionId")] Organization organization)
@@ -81,8 +79,6 @@ namespace Assistant_TEP.Controllers
         }
 
         // POST: Organizations/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to, for 
-        // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Code,Nach,Address,Buh,Tel,RegionId")] Organization organization)
