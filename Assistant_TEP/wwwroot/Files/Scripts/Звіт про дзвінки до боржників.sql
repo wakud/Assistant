@@ -2,9 +2,9 @@
 DECLARE @date_from DATE; SET @date_from = '2019-01-01 00:00:00'
 DECLARE @d DATETIME; SET @d=convert(char(8),getdate(),112)
 DECLARE @date_to DATE; SET @date_to = dateadd(day,1-day(@d),@d)		--дата по
---DECLARE @SummBorh INT; SET @SummBorh = 100
 
-declare @borh TABLE (
+
+declare @borh$cok$ TABLE (
 		AccountId INT,
 		AccountNumber VARCHAR(10),
 		pip VARCHAR(300),
@@ -20,7 +20,7 @@ declare @borh TABLE (
 		)
 
 --Вибираємо коли абонента відключили
-INSERT INTO @borh (AccountId, AccountNumber, pip, sumaZvit, kvtZvit, monthBorgu, mobileNumber)
+INSERT INTO @borh$cok$ (AccountId, AccountNumber, pip, sumaZvit, kvtZvit, monthBorgu, mobileNumber)
 SELECT 	acc.AccountId
 		,acc.AccountNumber AS [ос. рах]
 		,pp.FullName AS [ПІП споживача]
@@ -43,7 +43,7 @@ GROUP BY acc.AccountId
 		,pp.FullName
 		,pp.MobilePhoneNumber
 
-UPDATE @borh		-- витягуємо останню оплату
+UPDATE @borh$cok$		-- витягуємо останню оплату
 SET PayDate = s.PayDate
 	,PaySum = s.PaySum
 FROM ( SELECT r.AccountId
@@ -56,9 +56,9 @@ FROM ( SELECT r.AccountId
 		GROUP BY r.AccountId, rc.TotalSumm
 		HAVING DATEDIFF(mm,MAX(r.PayDate),GETDATE())>=0 AND MAX(rc.PayDate) = MAX(r.PayDate)
 	 ) AS s
-WHERE s.AccountId = [@borh].AccountId
+WHERE s.AccountId = [@borh$cok$].AccountId
 
-UPDATE @borh		--витягуємо не підтверджені покази і суму
+UPDATE @borh$cok$		--витягуємо не підтверджені покази і суму
 SET kvtAnul = s.kvtAnul, sumaAnul = s.sumaAnul
 FROM (
 		SELECT  br.accountid,
@@ -73,7 +73,7 @@ FROM (
 				AND DocumentTypeId=15
 		GROUP BY br.accountid
 		) AS s
-WHERE s.AccountId = [@borh].AccountId
+WHERE s.AccountId = [@borh$cok$].AccountId
 
 SELECT b.AccountNumber AS [Ос. рах.]
 		,b.pip AS [ПІП]
@@ -86,6 +86,7 @@ SELECT b.AccountNumber AS [Ос. рах.]
 		,b.sumaAnul AS [сума непідтверджених]
 		,b.PayDate AS [дата оплати]
 		,b.PaySum AS [сума оплати]
-FROM @borh b
-WHERE b.sumaZvit >= @SummBorh
-
+FROM @borh$cok$ b
+WHERE 
+	(@SummBorh = '' OR b.sumaZvit >= @SummBorh) AND
+	 (@misBorg = '' OR b.monthBorgu >= @misBorg)

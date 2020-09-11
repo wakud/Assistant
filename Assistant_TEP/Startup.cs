@@ -54,16 +54,16 @@ namespace Assistant_TEP
         // Цей метод викликається під час виконання. Використовуйте цей метод для налаштування протоколу HTTP-запиту.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            // если приложение в процессе разработки
-            if (env.IsDevelopment())
-            {
-                // то выводим информацию об ошибке, при наличии ошибки
                 app.UseDeveloperExceptionPage();
-            }
+            // если приложение в процессе разработки
+            //if (env.IsDevelopment())
+            //{
+            //    // то выводим информацию об ошибке, при наличии ошибки
+            //}
             //else
             //{
-            //    app.UseExceptionHandler("/Home/Error");
-            //    app.UseHsts();
+                //app.UseExceptionHandler("/Home/Error");
+                //app.UseHsts();
             //}
 
             app.UseStaticFiles();       //чтобы приложение могло бы отдавать статические файлы клиенту

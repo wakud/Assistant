@@ -21,6 +21,8 @@ using Microsoft.EntityFrameworkCore.Update;
 using System.Configuration;
 using Microsoft.Data.SqlClient;
 using SQLitePCL;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Newtonsoft.Json;
 
 namespace Assistant_TEP.Controllers
 {
@@ -49,7 +51,49 @@ namespace Assistant_TEP.Controllers
                 rep = rep,
                 user = user
             };
-            ViewData["Organizations"] = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(organizations, "Code", "Name");
+            ViewData["Organizations"] = new SelectList(organizations, "Code", "Name");
+            string cokCode;
+            if(user.CokId != null)
+            {
+                cokCode = user.Cok.Code;
+            } 
+            else
+            {
+                cokCode = (string)ViewData["Organizations"];
+            }
+            List<Utils.ParamSelectData> selectParamsList = new List<Utils.ParamSelectData>();
+            foreach (ReportParam rp in rep.ReportParams)
+            {
+                if (rp.ParamType.TypeC == "select")
+                {
+                    if (rp.ParamSource.StartsWith("@sql:"))
+                    {
+                        string script = rp.ParamSource.Substring(5);
+                        DataTable selects = BillingUtils.ExecuteRawSql(script, cokCode);
+                        List<Utils.SelectParamReport> selectsList = new List<Utils.SelectParamReport>();
+                        foreach (DataRow row in selects.Rows)
+                        {
+                            selectsList.Add(new Utils.SelectParamReport()
+                            {
+                                Id = row[0].ToString(),
+                                Name = row[1].ToString()
+                            });
+                        }
+                        SelectList htmlSelect = new SelectList(selectsList, "Id", "Name");
+                        Utils.ParamSelectData selectData = new Utils.ParamSelectData { NameParam = rp.Name, selects = htmlSelect };
+                        selectParamsList.Add(selectData);
+                    }
+                    else if(rp.ParamSource.StartsWith("@json:"))
+                    {
+                        string strList = rp.ParamSource.Substring(6);
+                        List<Utils.SelectParamReport> selectList = JsonConvert.DeserializeObject<List<Utils.SelectParamReport>>(strList);
+                        SelectList htmlSelect = new SelectList(selectList, "Id", "Name");
+                        Utils.ParamSelectData selectData = new Utils.ParamSelectData { NameParam = rp.Name, selects = htmlSelect };
+                        selectParamsList.Add(selectData);
+                    }
+                }
+            }
+            ViewData["SingleSelectParams"] = selectParamsList;
             return View(ViewModel);
         }
 

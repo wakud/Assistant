@@ -58,7 +58,7 @@ namespace Assistant_TEP.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(int Id, [Bind("Name,Description,ReportId,ParamTypeId")] ReportParam reportParam)
+        public async Task<IActionResult> Create(int Id, [Bind("Name,Description, ParamSource, ReportId,ParamTypeId")] ReportParam reportParam)
         {
             if (ModelState.IsValid)
             {
@@ -94,7 +94,7 @@ namespace Assistant_TEP.Controllers
         // more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,ReportId,ParamTypeId")] ReportParam reportParam)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Description,ParamSource,ReportId,ParamTypeId")] ReportParam reportParam)
         {
             if (id != reportParam.Id)
             {

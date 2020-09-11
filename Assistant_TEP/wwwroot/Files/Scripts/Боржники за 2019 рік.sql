@@ -1,8 +1,8 @@
 /*Інформація щодо заборгованості за спожиту електроенергію населенням,
 	яка виникла у 2019 році і є неоплаченою на звітну дату */
 
-DECLARE @date_from DATE; SET @date_from = '2019-01-01 00:00:00'
-DECLARE @date_to DATE; SET @date_to = '2019-12-01 00:00:00'
+DECLARE @date_from$cok$ DATE; SET @date_from$cok$ = '2019-01-01 00:00:00'
+DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = '2019-12-01 00:00:00'
 
 SELECT 	acc.AccountNumber AS [ос. рах]
 		,pp.FullName AS [ПІП споживача]
@@ -29,7 +29,7 @@ LEFT JOIN (
 			AND dcoff.RowNumber = 1 
 			AND dcoff.DisconnectionStatus=1
 WHERE br.IsDeleted = 0
-		AND br.ConsumptionFrom BETWEEN @date_from AND @date_to
+		AND br.ConsumptionFrom BETWEEN @date_from$cok$ AND @date_to$cok$
 		AND br.RestSumm > 0
 GROUP BY br.AccountId
 		,acc.AccountNumber

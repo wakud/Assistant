@@ -2,16 +2,16 @@
 	у яких більше ніж пів року не знімали показник електролічильника
 	та по яких рахунки сформовано по середньому споживанню е/е (від 100грн)
 	*/
-DECLARE @SummBorh INT; SET @SummBorh=100	--сума боргу від 100
-DECLARE @CntMonth INT; SET @CntMonth = 6 --Кількість місяців необходу
-DECLARE @ExBill INT 
-SET @ExBill =       --Термін погашення боргу по рахунках
+DECLARE @SummBorh$cok$ INT; SET @SummBorh$cok$=100	--сума боргу від 100
+DECLARE @CntMonth$cok$ INT; SET @CntMonth$cok$ = 6 --Кількість місяців необходу
+DECLARE @ExBill$cok$ INT 
+SET @ExBill$cok$ =       --Термін погашення боргу по рахунках
             	(SELECT TOP 1 cast([Value] as int)  FROM [Services].[Setting] WHERE [Guid] = '826C4666-F79C-4558-A0BB-2D5A428FCE1B') 
-DECLARE @d DATETIME; SET @d=convert(char(8),getdate(),112)
-DECLARE @date_from DATE; SET @date_from = '2019-01-01 00:00:00'		--дата з
-DECLARE @date_to DATE; SET @date_to = dateadd(day,1-day(@d),@d)		--дата по
+DECLARE @d$cok$ DATETIME; SET @d$cok$=convert(char(8),getdate(),112)
+DECLARE @date_from$cok$ DATE; SET @date_from$cok$ = '2019-01-01 00:00:00'		--дата з
+DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = dateadd(day,1-day(@d$cok$),@d$cok$)		--дата по
 
-declare @neo TABLE (
+declare @neo$cok$ TABLE (
 		AccountId INT,
 		AccountNumber VARCHAR(10),
 		pip VARCHAR(300),
@@ -30,7 +30,7 @@ declare @neo TABLE (
 		)
 
 --Вибираємо коли знімалися показники контролерами
-INSERT INTO @neo (AccountId, AccountNumber,pip, resultdate/*, pokaz*/)
+INSERT INTO @neo$cok$ (AccountId, AccountNumber,pip, resultdate/*, pokaz*/)
 SELECT acc.AccountId
 		,acc.AccountNumber
 		,pp.FullName
@@ -51,9 +51,9 @@ GROUP BY acc.AccountId
 		, acc.AccountNumber
 		, pp.FullName
 		--,gi.CachedIndexes
-HAVING DATEDIFF(mm,MAX(gi.Date),GETDATE())>=@CntMonth
+HAVING DATEDIFF(mm,MAX(gi.Date),GETDATE())>=@CntMonth$cok$
 
-UPDATE @neo		-- витягуємо останню оплату
+UPDATE @neo$cok$		-- витягуємо останню оплату
 SET PayDate = s.PayDate
 	,PaySum = s.PaySum
 FROM ( SELECT r.AccountId
@@ -66,9 +66,9 @@ FROM ( SELECT r.AccountId
 		GROUP BY r.AccountId, rc.TotalSumm
 		HAVING DATEDIFF(mm,MAX(r.PayDate),GETDATE())>=0 AND MAX(rc.PayDate) = MAX(r.PayDate)
 	 ) AS s
-WHERE s.AccountId = [@neo].AccountId
+WHERE s.AccountId = [@neo$cok$].AccountId
 
-UPDATE @neo
+UPDATE @neo$cok$
 SET kvtZvit = s.Quantity
 	,sumaZvit = s.RestSumm
 	,monthBorgu = s.місяць
@@ -79,7 +79,7 @@ FROM (		--витягуємо борг на звіт дату
 						, MAX(DATEDIFF(MONTH, 
 							SUBSTRING(CONVERT(CHAR(10),o.PeriodFrom), 1, 4)+ '-' + 
 							SUBSTRING(CONVERT(CHAR(10),o.PeriodFrom), 5, 2)+ '-01'
-								, @date_to
+								, @date_to$cok$
 						) ) AS [місяць]
 				FROM FinanceMain.Operation o
 				LEFT OUTER JOIN (
@@ -91,39 +91,36 @@ FROM (		--витягуємо борг на звіт дату
 				WHERE o.PeriodTo = '207906'
 						AND o.DocumentTypeId = 15
 						AND o.RestSumm > 0
-						AND o.Date<=DATEADD(dd,-@ExBill,GETDATE())
+						AND o.Date<=DATEADD(dd,-@ExBill$cok$,GETDATE())
 				GROUP BY o.AccountId
 				) AS s
-WHERE s.AccountId = [@neo].AccountId
+WHERE s.AccountId = [@neo$cok$].AccountId
 
-UPDATE @neo
+UPDATE @neo$cok$
 SET kvtZn = s.Quantity, sumaZn = s.RestSumm
 FROM (		--витягуємо борг на дату зняття показів
 		SELECT o.AccountId
-				,SUM(o.RestSumm) RestSumm
-				,SUM(ro.Quantity) Quantity
+				,SUM(r.TotalSumm) - SUM(r.UsedSumm) - SUM(r.DiscountSumm) AS RestSumm
+				,SUM(r.Quantity) Quantity
 		FROM FinanceMain.Operation o
-		LEFT OUTER JOIN (
-							SELECT r.OperationId,
-									SUM(r.Quantity) AS Quantity
-							FROM FinanceMain.OperationRow r 
-							GROUP BY r.OperationId
-						)ro ON ro.OperationId = o.OperationId
-		LEFT JOIN @neo n ON n.AccountId = o.AccountId
-				WHERE o.PeriodTo = '207906'
-						AND o.DocumentTypeId = 15
-						AND o.RestSumm > 0
-						AND o.Date BETWEEN @date_from AND n.resultdate
-				GROUP BY o.AccountId
+		JOIN FinanceMain.OperationRow r ON r.OperationId = o.OperationId
+		LEFT JOIN @neo$cok$ n ON n.AccountId = o.AccountId
+		WHERE o.PeriodTo = '207906'
+				AND o.DocumentTypeId = 15
+				AND o.RestSumm > 0
+				AND r.ConsumptionFrom >= @date_from$cok$
+				--AND r.ConsumptionFrom <= n.resultdate		--то як каже Кондратьєва 
+				AND r.ConsumptionTo <= n.resultdate		-- то як каже Кордас
+		GROUP BY o.AccountId
 	 ) AS s
-WHERE s.AccountId = [@neo].AccountId
+WHERE s.AccountId = [@neo$cok$].AccountId
 
 
-UPDATE @neo		--Шукаємо різницю боргу
+UPDATE @neo$cok$		--Шукаємо різницю боргу
 SET kvtRizn = ISNULL(kvtZvit-kvtZn, kvtZvit)
 	,sumaRizn = ISNULL(sumaZvit - sumaZn, sumaZvit)
 
-UPDATE @neo		--шукаємо в кого було нарахування по середньому
+UPDATE @neo$cok$		--шукаємо в кого було нарахування по середньому
 	SET CalcMethod = s.CalcMethod
     FROM (SELECT o.AccountId
 				,COUNT(o.CalcMethod) AS CalcMethod
@@ -133,7 +130,7 @@ UPDATE @neo		--шукаємо в кого було нарахування по середньому
 					AND o.CalcMethod = 3
 			GROUP BY o.AccountId
 		 ) AS s
-	WHERE s.AccountId = [@neo].AccountId
+	WHERE s.AccountId = [@neo$cok$].AccountId
 
 SELECT AccountNumber AS [ос.рах]
 		,pip AS [ПІП]
@@ -148,5 +145,5 @@ SELECT AccountNumber AS [ос.рах]
 		,PayDate AS [остання дата оплати]
 		,PaySum AS [сума оплати]
 		,CalcMethod AS [к-ть нарах. по сер.]
-FROM @neo
-WHERE sumaZvit > @SummBorh AND CalcMethod > 0
+FROM @neo$cok$
+WHERE sumaRizn > @SummBorh$cok$ AND CalcMethod > 0

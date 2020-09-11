@@ -2,15 +2,15 @@
 	€к≥ в≥дключен≥ та по €ких сформовано рахунки по розрахунковому показнику (в≥д 100грн)
 	*/
 
-DECLARE @ExBill INT 
-SET @ExBill =       --“ерм≥н погашенн€ боргу по рахунках
+DECLARE @ExBill$cok$ INT 
+SET @ExBill$cok$ =       --“ерм≥н погашенн€ боргу по рахунках
             	(SELECT TOP 1 cast([Value] as int)  FROM [Services].[Setting] WHERE [Guid] = '826C4666-F79C-4558-A0BB-2D5A428FCE1B')
 				
-DECLARE @SummBorh INT; SET @SummBorh=100	--сума боргу в≥д 100
-DECLARE @date_from DATE; SET @date_from = '2019-01-01 00:00:00'		--дата з
-DECLARE @date_to DATE; SET @date_to = dateadd(day,1-day(GETDATE()),GETDATE())		--дата по
+DECLARE @SummBorh$cok$ INT; SET @SummBorh$cok$=100	--сума боргу в≥д 100
+DECLARE @date_from$cok$ DATE; SET @date_from$cok$ = '2019-01-01 00:00:00'		--дата з
+DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = dateadd(day,1-day(GETDATE()),GETDATE())		--дата по
 
-declare @vykl_roz TABLE (
+declare @vykl_roz$cok$ TABLE (
 		AccountId INT,
 		AccountNumber VARCHAR(10),
 		pip VARCHAR(300),
@@ -27,7 +27,7 @@ declare @vykl_roz TABLE (
 		)
 
 --¬ибираЇмо коли абонента в≥дключили
-INSERT INTO @vykl_roz (AccountId, AccountNumber,pip, dateVykl)
+INSERT INTO @vykl_roz$cok$ (AccountId, AccountNumber,pip, dateVykl)
 SELECT	
 		a.AccountId
 		,a.AccountNumber
@@ -48,7 +48,7 @@ SELECT
 			AS dtemp ON dtemp.[DisconnectionId] = d.[DisconnectionId] AND dtemp.RowNumber = 1
 	WHERE a.DateTo = '2079-06-06' -- т≥льки незакрит≥ ќ–
 
-UPDATE @vykl_roz		--заповнюЇмо останню оплату
+UPDATE @vykl_roz$cok$		--заповнюЇмо останню оплату
 SET PayDate = s.PayDate
 	,PaySum = s.PaySum
 FROM ( SELECT r.AccountId
@@ -61,9 +61,9 @@ FROM ( SELECT r.AccountId
 		GROUP BY r.AccountId, rc.TotalSumm
 		HAVING DATEDIFF(mm,MAX(r.PayDate),GETDATE())>=0 AND MAX(rc.PayDate) = MAX(r.PayDate)
 	  ) AS s
-WHERE s.AccountId = [@vykl_roz].AccountId
+WHERE s.AccountId = [@vykl_roz$cok$].AccountId
 
-UPDATE @vykl_roz
+UPDATE @vykl_roz$cok$
 SET kvtZvit = s.Quantity
 	,sumaZvit = s.RestSumm
 	,monthBorgu = s.м≥с€ць
@@ -74,7 +74,7 @@ FROM (		--вит€гуЇмо борг на зв≥т дату
 						, MAX(DATEDIFF(MONTH, 
 							SUBSTRING(CONVERT(CHAR(10),o.PeriodFrom), 1, 4)+ '-' + 
 							SUBSTRING(CONVERT(CHAR(10),o.PeriodFrom), 5, 2)+ '-01'
-								, @date_to
+								, @date_to$cok$
 						) ) AS [м≥с€ць]
 				FROM FinanceMain.Operation o
 				LEFT OUTER JOIN (
@@ -86,35 +86,31 @@ FROM (		--вит€гуЇмо борг на зв≥т дату
 				WHERE o.PeriodTo = '207906'
 						AND o.DocumentTypeId = 15
 						AND o.RestSumm > 0
-						AND o.Date<=DATEADD(dd,-@ExBill,GETDATE())
+						AND o.Date<=DATEADD(dd,-@ExBill$cok$,GETDATE())
 				GROUP BY o.AccountId
 				) AS s
-WHERE s.AccountId = [@vykl_roz].AccountId
+WHERE s.AccountId = [@vykl_roz$cok$].AccountId
 
-UPDATE @vykl_roz		--вит€гуЇмо борг на дату в≥дключенн€
+UPDATE @vykl_roz$cok$		--вит€гуЇмо борг на дату в≥дключенн€
 SET kvtVykl = s.Quantity, sumaVykl = s.RestSumm
 FROM (		
 		SELECT o.AccountId
-				,SUM(o.RestSumm) RestSumm
-				,SUM(ro.Quantity) Quantity
+				,SUM(r.TotalSumm) - SUM(r.UsedSumm) AS RestSumm
+				,SUM(r.Quantity) Quantity
 		FROM FinanceMain.Operation o
-		LEFT OUTER JOIN (
-							SELECT r.OperationId,
-									SUM(r.Quantity) AS Quantity
-							FROM FinanceMain.OperationRow r 
-							GROUP BY r.OperationId
-						)ro ON ro.OperationId = o.OperationId
-		LEFT JOIN @vykl_roz n ON n.AccountId = o.AccountId
-				WHERE o.PeriodTo = '207906'
-						AND o.DocumentTypeId = 15
-						AND o.RestSumm > 0
-						AND o.Date BETWEEN @date_from AND n.dateVykl
-				GROUP BY o.AccountId
+		JOIN FinanceMain.OperationRow r ON r.OperationId = o.OperationId
+		LEFT JOIN @vykl_roz$cok$ n ON n.AccountId = o.AccountId
+		WHERE o.PeriodTo = '207906'
+				AND o.DocumentTypeId = 15
+				AND o.RestSumm > 0
+				AND r.ConsumptionFrom >= @date_from$cok$ 
+				AND r.ConsumptionTo <= n.dateVykl
+		GROUP BY o.AccountId
 	 ) AS s
-WHERE s.AccountId = [@vykl_roz].AccountId
+WHERE s.AccountId = [@vykl_roz$cok$].AccountId
 
 
-UPDATE @vykl_roz		--ЎукаЇмо р≥зницю боргу
+UPDATE @vykl_roz$cok$		--ЎукаЇмо р≥зницю боргу
 SET kvtRizn = ISNULL(kvtZvit-kvtVykl, kvtZvit)
 	,sumaRizn = ISNULL(sumaZvit - sumaVykl, sumaZvit)
 
@@ -130,16 +126,16 @@ SELECT n.AccountNumber AS [ос.рах]
 		,n.sumaRizn AS [борг р≥зниц€]
 		,n.PayDate AS [останн€ дата оплати]
 		,n.PaySum AS [сума оплати]
-FROM @vykl_roz n
+FROM @vykl_roz$cok$ n
 JOIN AccountingCommon.UsageObject uo ON n.AccountId = uo.AccountId
 JOIN AccountingCommon.Point p ON p.UsageObjectId = uo.UsageObjectId
 JOIN AccountingCommon.UsageCalculationMethod cm ON cm.PointId = p.PointId
 JOIN AccountingMeasuring.GroupIndex gi ON gi.UsageCalculationMethodId = cm.UsageCalculationMethodId
 JOIN Organization.Staff s ON s.StaffId = gi.StaffId
-WHERE sumaZvit >= @SummBorh 
-	AND gi.GroupIndexSourceId = 18			-- то дл€ розрахункового
+WHERE n.sumaRizn >= @SummBorh$cok$ 
+	--AND gi.GroupIndexSourceId = 18			-- то дл€ розрахункового
 	AND gi.IsForCalculate = 1
-	AND gi.Date BETWEEN n.dateVykl AND @date_to
+	AND gi.Date BETWEEN n.dateVykl AND @date_to$cok$
 GROUP BY n.AccountId
 		,n.AccountNumber
 		,n.pip

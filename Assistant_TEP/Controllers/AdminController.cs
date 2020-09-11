@@ -68,7 +68,7 @@ namespace Assistant_TEP.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Policy = "OnlyForAdministrator")]
-        public async Task<IActionResult> Create(int Id, [Bind("Name,Description,DbTypeId,TypeReportId")] Report report, ReportWithFile formReport)
+        public async Task<IActionResult> Create(int Id, [Bind("Name,Description, DbTypeId,TypeReportId")] Report report, ReportWithFile formReport)
         {
             if (formReport.FileScript != null)
             {

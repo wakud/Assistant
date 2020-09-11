@@ -20,13 +20,29 @@
             <p>По @Model.user.Cok.Name</p>
             <p>@Html.DisplayFor(model => Model.rep.Description)</p>
         }
-        @foreach (Assistant_TEP.Models.ReportParam Param in Model.rep.ReportParams)
+        @foreach (Assistant_TEP.MyClasses.Utils.ParamSelectData paramSelect in ViewData["SingleSelectParams"] as List<Assistant_TEP.MyClasses.Utils.ParamSelectData>)
         {
             <div class="form-group">
-                <label class="control-label" for="@Param.Id">@Param.Description</label>
-                <input class="form-control" name="@Param.Name" id="@Param.Id" type="@Param.ParamType.TypeHtml" />
+                <label for="select_@paramSelect.NameParam">Оберіть @paramSelect.NameParam</label>
+                <select 
+                        name="@paramSelect.NameParam" 
+                        id="select_@paramSelect.NameParam" 
+                        class="form-control" 
+                        asp-items="paramSelect.selects"
+                >
+                </select>
             </div>
         }
-        <input type="submit" value="Виконати на екран" class="btn btn-dark" />
+        @foreach (Assistant_TEP.Models.ReportParam Param in Model.rep.ReportParams)
+        {
+            @if(Param.ParamType.TypeHtml != "select" && Param.ParamType.TypeHtml != "select.multi")
+            {
+                <div class="form-group">
+                    <label class="control-label" for="@Param.Id">@Param.Description</label>
+                    <input class="form-control" name="@Param.Name" id="@Param.Id" type="@Param.ParamType.TypeHtml" />
+                </div>
+            }
+        }
+        <input onclick="loadPage()" type="submit" value="Виконати на екран" class="btn btn-dark" />
     </form>
 </div>

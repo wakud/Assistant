@@ -22,6 +22,11 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="ParamSource" class="control-label">Джерело параметру</label>
+                <input asp-for="ParamSource" class="form-control" />
+                <span asp-validation-for="ParamSource" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="ReportId" class="control-label">Звіт</label>
                 <select asp-for="ReportId" class="form-control" asp-items="ViewBag.ReportId"></select>
                 <span asp-validation-for="ReportId" class="text-danger"></span>

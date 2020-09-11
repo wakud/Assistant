@@ -1,6 +1,6 @@
 IF EXISTS (SELECT * FROM tempdb.sys.objects WHERE object_id = OBJECT_ID(N'tempdb..#x') AND type in (N'U'))
 
-DROP TABLE IF EXISTS #x$cok$
+DROP TABLE IF EXISTS #x1$cok$
 
 SELECT  br.accountid
 		, a.AccountNumber AS [Особовий рахунок]
@@ -9,20 +9,17 @@ SELECT  br.accountid
 		, (SELECT SUM( br1.ConsumptionQuantity)
            FROM FinanceCommon.BillRegular br1
            WHERE isdeleted=1
-                 AND br1.CalcMethod=1
                  AND br1.CalculatePeriod>=@period
                  AND br1.AccountId=br.AccountId) kvt_minus
       , (SELECT SUM( br1.totalsumm)
          FROM FinanceCommon.BillRegular br1
          WHERE isdeleted=1
-		       AND br1.CalcMethod=1
                AND br1.CalculatePeriod>=@period
                AND br1.AccountId=br.AccountId) sum_minus
-INTO #x$cok$
+INTO #x1$cok$
 FROM FinanceCommon.BillRegular br
 LEFT JOIN AccountingCommon.Account a ON a.AccountId = br.AccountId
 WHERE br.isdeleted=0
-      AND br.CalcMethod=1
       AND br.CalculatePeriod=@period+1
 GROUP BY br.accountid, a.AccountNumber
 
@@ -33,7 +30,7 @@ SELECT [Особовий рахунок]
 		,sum_plus AS [фактична сума]
 		,kvt_plus-kvt_minus AS [різниця кВт]
 		,sum_plus-sum_minus AS [різниця грн.]
-FROM #x$cok$ 
+FROM #x1$cok$ 
 WHERE kvt_plus<kvt_minus
 ORDER BY [Особовий рахунок]
 

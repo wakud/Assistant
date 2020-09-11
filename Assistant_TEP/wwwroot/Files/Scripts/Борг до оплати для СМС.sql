@@ -1,6 +1,6 @@
-DECLARE @CntMonth INT; SET @CntMonth=0				-- від кількості місяців
-DECLARE @ExBill INT 
-SET @ExBill =       --Термін погашення боргу по рахунках
+DECLARE @CntMonth$cok$ INT; SET @CntMonth$cok$=0				-- від кількості місяців
+DECLARE @ExBill$cok$ INT 
+SET @ExBill$cok$ =       --Термін погашення боргу по рахунках
 	(SELECT TOP 1 cast([Value] as int)  FROM [Services].[Setting] WHERE [Guid] = '826C4666-F79C-4558-A0BB-2D5A428FCE1B')  
 
 
@@ -17,7 +17,7 @@ JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm
 	AND IsIncome=0
 	AND DocumentTypeId IN (15)
 	AND o.RestSumm>0
-	AND o.Date<=DATEADD(dd,-@ExBill,GETDATE())
+	AND o.Date<=DATEADD(dd,-@ExBill$cok$,GETDATE())
 	GROUP BY o.AccountId
 	HAVING SUM(o.RestSumm)>=@sum_pay) o ON a.AccountId = o.AccountId
 JOIN (SELECT r.AccountId,MAX(r.PayDate) AS PayDate
@@ -25,7 +25,7 @@ JOIN (SELECT r.AccountId,MAX(r.PayDate) AS PayDate
 	WHERE r.IsDeleted=0
 	AND r.BillDocumentTypeId IN (15,8,16,14)
 	GROUP BY r.AccountId
-	HAVING DATEDIFF(mm,MAX(r.PayDate),GETDATE())>=@CntMonth) pay ON pay.AccountId = a.AccountId
+	HAVING DATEDIFF(mm,MAX(r.PayDate),GETDATE())>=@CntMonth$cok$) pay ON pay.AccountId = a.AccountId
 WHERE (		pp.MobilePhoneNumber IS NOT NULL
 			AND LEN(pp.MobilePhoneNumber) = 10
 			AND pp.MobilePhoneNumber <> ' '

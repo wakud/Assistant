@@ -37,10 +37,20 @@ namespace Assistant_TEP.MyClasses
             return html;
         }
 
+        public static void Log(string logMessage, TextWriter w)
+        {
+            w.Write("\r\nLog Entry : ");
+            w.WriteLine($"{DateTime.Now.ToLongTimeString()} {DateTime.Now.ToLongDateString()}");
+            w.WriteLine("  :");
+            w.WriteLine($"  :{logMessage}");
+            w.WriteLine("-------------------------------");
+        }
+
         public static DataTable GetReportResults(string scriptsPath, Report report, Dictionary<string, string> parameters, string cok)
         {
             int currentTry = 0;
             int maxTries = 5;
+            string exceptionDesc = "";
             while(currentTry < maxTries)
             {
                 try
@@ -69,11 +79,19 @@ namespace Assistant_TEP.MyClasses
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    //string logPath = scriptsPath + "..\\Logs\\logs.txt";
+                    //if (!File.Exists(logPath))
+                    //{
+                    //    using (FileStream c = File.Create(logPath))
+                    //        Console.WriteLine("Created");
+                    //}
+                    //using (StreamWriter w = File.AppendText(logPath))
+                    //    Log(e.ToString(), w);
+                    exceptionDesc = e.Message.ToString();
                     currentTry++;
                 }
             }
-            throw new Exception("Помилка при доступі до бази, спробуйте пізніше");
+            throw new Exception("Помилка при доступі до бази, спробуйте пізніше" + exceptionDesc);
         }
         
         public static DataTable GetResults(string scriptPath, string cok)
@@ -95,5 +113,26 @@ namespace Assistant_TEP.MyClasses
                 return dt;
             }
         }
+        
+        public static DataTable ExecuteRawSql(string BaseScript, string cok)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string script = "USE " + cok + "_Utility" + "\n";
+            script += BaseScript;
+            Console.WriteLine(script);
+            string connectionString = Configuration.GetConnectionString("RESConnection");
+
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                SqlCommand command = new SqlCommand(script, conn);
+                conn.Open();
+                command.CommandTimeout = 600;
+                SqlDataReader reader = command.ExecuteReader();
+                DataTable dt = new DataTable();
+                dt.Load(reader);
+                return dt;
+            }
+        }
+
     }
 }
