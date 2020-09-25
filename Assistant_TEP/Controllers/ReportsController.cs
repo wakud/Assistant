@@ -2,27 +2,18 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
 using Assistant_TEP.Models;
 using Assistant_TEP.MyClasses;
 using Assistant_TEP.ViewModels;
 using ClosedXML.Excel;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.DotNet.PlatformAbstractions;
 using Microsoft.EntityFrameworkCore;
-using static Assistant_TEP.Models.Report;
-using Calabonga.Xml.Exports;
 using System.IO;
-using Microsoft.EntityFrameworkCore.Update;
-using System.Configuration;
-using Microsoft.Data.SqlClient;
-using SQLitePCL;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
+using SharpDocx;
 
 namespace Assistant_TEP.Controllers
 {
@@ -146,11 +137,27 @@ namespace Assistant_TEP.Controllers
                 string Dtr = DateTime.Today.ToString("yyyy");
                 var ws = wb.Worksheets.Add("Звіт").SetTabColor(XLColor.Amber);
                 
-                // Назва звіту
-                ws.Cell(1, 2).Value = rep.Name;
-                ws.Cell(1, 2).Style.Font.Bold = true;
-                ws.Cell(2, 2).Value = "по " + cokCode + " за " + Dtm + " " + Dtr + " р.";
-                ws.Cell(2, 2).Style.Font.Bold = true;
+                if (rep.Name == "Видача довідки про оплату")
+                {
+                    string filePath = "\\Files\\Shablons\\";
+                    string generatedPath = "dovidka.docx";
+                    string fileName = "shablon.docx";
+                    string fullPath = appEnv.WebRootPath + filePath + fileName;
+                    string fullGenerated = appEnv.WebRootPath + filePath + generatedPath;
+                    DateTime now = DateTime.Now;
+
+                    // Назва звіту
+                    ws.Cell(1, 2).Value = "Довідка про оплату за електроенергію";
+                    ws.Cell(1, 2).Style.Font.Bold = true;
+                }
+                else
+                {
+                    // Назва звіту
+                    ws.Cell(1, 2).Value = rep.Name;
+                    ws.Cell(1, 2).Style.Font.Bold = true;
+                    ws.Cell(2, 2).Value = "по " + cokCode + " за " + Dtm + " " + Dtr + " р.";
+                    ws.Cell(2, 2).Style.Font.Bold = true;
+                }
 
                 int currentRow = 3;
                 int currentCell = 1;

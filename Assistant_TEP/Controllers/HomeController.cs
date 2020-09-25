@@ -27,14 +27,14 @@ namespace Assistant_TEP.Controllers
 
         public IActionResult About()
         {
-            ViewData["Message"] = "Your application description page.";
+            //ViewData["Message"] = "Your application description page.";
 
             return View();
         }
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page.";
+            //ViewData["Message"] = "Your contact page.";
 
             return View();
         }
@@ -42,6 +42,11 @@ namespace Assistant_TEP.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public IActionResult Dovidka()
+        {
+            return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
         }
 
         public IActionResult Other()

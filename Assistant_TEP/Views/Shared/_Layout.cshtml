@@ -45,6 +45,12 @@
                     }" asp-controller="Home" asp-action="Privacy">Обмін інформацією</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Dovidka")
+                    {
+                        @:active
+                    }" asp-controller="Home" asp-action="Dovidka">Видача довідок</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")
                     {
                         @:active
