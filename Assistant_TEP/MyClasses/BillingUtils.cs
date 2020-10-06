@@ -57,25 +57,32 @@ namespace Assistant_TEP.MyClasses
                 {
                     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                     var path = scriptsPath + report.FileScript;
-                    string script = "USE " + cok + "_" + report.DbType.Type + "\n";
-                    script += File.ReadAllText(path, Encoding.GetEncoding(1251));
+                    string connString = "RESConnection" + cok + "_" + report.DbType.Type;
+                    string script = File.ReadAllText(path, Encoding.GetEncoding(1251));
                     script = script.Replace("$cok$", cok);
-                    //Console.WriteLine(script.Replace("$cok$", cok));
-                    string connectionString = Configuration.GetConnectionString("RESConnection");
+                    //Console.WriteLine(connString);
+                    string connectionString = Configuration.GetConnectionString(connString);
                     DataTable results = new DataTable();
                     using(SqlConnection conn = new SqlConnection(connectionString))
                     {
-                        SqlCommand command = new SqlCommand(script, conn);
                         conn.Open();
-                        foreach(var key in parameters.Keys)
+                        using (SqlCommand command = new SqlCommand(script, conn))
                         {
-                            command.Parameters.AddWithValue(key, parameters[key]);
+                            foreach(var key in parameters.Keys)
+                            {
+                                command.Parameters.AddWithValue(key, parameters[key]);
+                            }
+                            command.CommandTimeout = 600;
+                            using (SqlDataReader reader = command.ExecuteReader())
+                            {
+                                if(reader != null)
+                                {
+                                    results.Load(reader);
+                                }
+                            }
                         }
-                        command.CommandTimeout = 600;
-                        SqlDataReader reader = command.ExecuteReader();
-                        results.Load(reader);
-                        return results;
                     }
+                    return results;
                 }
                 catch (Exception e)
                 {
@@ -97,42 +104,54 @@ namespace Assistant_TEP.MyClasses
         public static DataTable GetResults(string scriptPath, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string script = "USE " + cok + "_Utility" + "\n";
-            script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connString = "RESConnection" + cok + "_Utility";
+            string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             script = script.Replace("$cok$", cok);
-            string connectionString = Configuration.GetConnectionString("RESConnection");
-
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(script, conn);
                 conn.Open();
-                command.CommandTimeout = 600;
-                SqlDataReader reader = command.ExecuteReader();
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-                return dt;
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if(reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
             }
+            return dt;
         }
         
         public static DataTable ExecuteRawSql(string BaseScript, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string script = "USE " + cok + "_Utility" + "\n";
-            script += BaseScript;
+            string connString = "RESConnection" + cok + "_Utility";
+            string script = BaseScript;
             Console.WriteLine(script);
-            string connectionString = Configuration.GetConnectionString("RESConnection");
+            string connectionString = Configuration.GetConnectionString(connString);
 
+            DataTable dt = new DataTable();
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
-                SqlCommand command = new SqlCommand(script, conn);
                 conn.Open();
-                command.CommandTimeout = 600;
-                SqlDataReader reader = command.ExecuteReader();
-                DataTable dt = new DataTable();
-                dt.Load(reader);
-                return dt;
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if(reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
             }
+            return dt;
         }
-
     }
 }

@@ -54,7 +54,7 @@ namespace Assistant_TEP.Controllers
         // POST: Users/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Login,Password,CokId,IsAdmin")] User user)
+        public async Task<IActionResult> Create([Bind("Id,FullName,Login,Password,CokId,IsAdmin, AnyCok")] User user)
         {
             if (ModelState.IsValid)
             {
@@ -86,7 +86,7 @@ namespace Assistant_TEP.Controllers
         // POST: Users/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Login,Password,CokId,IsAdmin")] User user)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Login,Password,CokId,IsAdmin, AnyCok")] User user)
         {
             if (id != user.Id)
             {

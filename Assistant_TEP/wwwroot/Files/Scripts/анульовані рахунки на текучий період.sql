@@ -1,4 +1,4 @@
-DECLARE @period INT; SET @period = (SELECT value FROM Services.Setting s WHERE settingid=1)
+DECLARE @period$cok$ INT; SET @period$cok$ = (SELECT value FROM Services.Setting s WHERE settingid=1)
 DECLARE @anul$cok$ TABLE(
 					AccountId INT,
 					AccountNumber VARCHAR(10),
@@ -74,7 +74,7 @@ SELECT AccountNumber AS [ос.рах]
 		,SUM(kvtRizn) AS [р≥зниц€ к¬т]
 		,SUM(sumaRizn) AS [р≥зниц€ грн.]
 FROM @anul$cok$
-WHERE per_plus = @period
+WHERE per_plus = @period$cok$
 		AND kvt_plus<kvt_minus
 GROUP BY AccountNumber, pip
 ORDER BY AccountNumber

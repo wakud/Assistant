@@ -8,7 +8,7 @@
     <h4>@Model.rep.Description</h4>
 <div>
     <form asp-controller="Reports" asp-action="ExecuteReport" asp-route-id="@Model.rep.Id">
-        @if (Model.user.IsAdmin == "1")
+        @if (Model.user.AnyCok || Model.user.IsAdmin == "1")
         {
             <div class="form-group">
                 <label id="organization" class="control-label">Район</label>

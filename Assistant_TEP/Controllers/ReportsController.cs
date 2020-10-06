@@ -91,7 +91,7 @@ namespace Assistant_TEP.Controllers
         public ActionResult ExecuteReport(int id, IFormCollection form)
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
-            if(user.IsAdmin == "1")
+            if(user.AnyCok || user.IsAdmin == "1")
             {
                 cokCode = form["organization"];
             }
@@ -136,7 +136,8 @@ namespace Assistant_TEP.Controllers
                 string Dtm = DateTime.Today.ToString("MMMM");
                 string Dtr = DateTime.Today.ToString("yyyy");
                 var ws = wb.Worksheets.Add("Звіт").SetTabColor(XLColor.Amber);
-                
+                    
+
                 if (rep.Name == "Видача довідки про оплату")
                 {
                     string filePath = "\\Files\\Shablons\\";
@@ -145,10 +146,49 @@ namespace Assistant_TEP.Controllers
                     string fullPath = appEnv.WebRootPath + filePath + fileName;
                     string fullGenerated = appEnv.WebRootPath + filePath + generatedPath;
                     DateTime now = DateTime.Now;
+                    Dovidka dovidka;
+                    List<Oplata> oplatas = new List<Oplata>();
+                    foreach(DataRow opl in dt.Rows)
+                    {
+                        oplatas.Add(new Oplata { DateOplaty = ((DateTime)opl[4]).ToString("D"), Suma = opl[3].ToString() });
+                    }
+                    if (dt.Rows.Count == 0)
+                    {
+                        dovidka = new Dovidka
+                        {
+                            Cok = user.Cok.Name,
+                            Vykonavets = user.FullName,
+                            Nach = user.Cok.Nach,
+                            FullName = "",
+                            FullAddress = "",
+                            Oplats = oplatas
+                        };
+                    }
+                    else
+                    {
+                        dovidka = new Dovidka
+                        {
+                            Cok = user.Cok.Name,
+                            Vykonavets = user.FullName,
+                            Nach = user.Cok.Nach,
+                            AccountNumber = dt.Rows[0][0].ToString(),
+                            FullName = dt.Rows[0][1].ToString(),
+                            FullAddress = dt.Rows[0][2].ToString(),
+                            DateFrom = DateTime.Parse(dt.Rows[0][5].ToString()),
+                            DateTo = DateTime.Parse(dt.Rows[0][6].ToString()),
+                            Oplats = oplatas
+                        };
+                    }
+                    
+                    var document = DocumentFactory.Create(fullPath, dovidka);
+                    document.Generate(fullGenerated);
 
-                    // Назва звіту
-                    ws.Cell(1, 2).Value = "Довідка про оплату за електроенергію";
-                    ws.Cell(1, 2).Style.Font.Bold = true;
+                    string NewFileName = "dovidka_" + DateTime.Now.ToString() + ".docx";
+                    return File(
+                        System.IO.File.ReadAllBytes(fullGenerated),
+                        System.Net.Mime.MediaTypeNames.Application.Octet,
+                        NewFileName
+                    );
                 }
                 else
                 {

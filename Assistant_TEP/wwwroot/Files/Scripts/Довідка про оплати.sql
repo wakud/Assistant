@@ -1,11 +1,11 @@
 
-SELECT a.AccountNumber
-		, pp.FullName
-		, adr.FullAddress
-		,r.TotalSumm AS PaySum
-		,(r.PayDate) AS PayDate
-		, @date_from
-		, @date_to
+SELECT a.AccountNumber AS [Ос. рахунок]
+		, pp.FullName AS [ПІП]
+		, adr.FullAddress AS [Адреса абонента]
+		, r.TotalSumm AS [сума проплати]
+		, r.PayDate AS [Дата проплати]
+		, @date_from AS [Дата з]
+		, @date_to AS [Дата по]
 FROM FinanceCommon.Receipt r
 JOIN AccountingCommon.Account a ON a.AccountId = r.AccountId
 JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = a.PhysicalPersonId

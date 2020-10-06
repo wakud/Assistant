@@ -27,5 +27,8 @@ namespace Assistant_TEP.Models
 
         [Required]
         public string IsAdmin { get; set; }
+
+        [Required]
+        public bool AnyCok { get; set; }
     }
 }
