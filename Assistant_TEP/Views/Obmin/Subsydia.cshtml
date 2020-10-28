@@ -1,0 +1,20 @@
+﻿@{
+    ViewData["Title"] = "Надання інформації";
+}
+
+<h3>Надання інформації по абонентам ТЕП, для спрощення надання субсидій населенню.</h3>
+
+@using (Html.BeginForm("Subsydia", "Obmin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    <input id="Submit1" type="submit" value="Сформувати файл" />
+    @if (ViewBag.error != null)
+    {
+        @if (ViewBag.error == "BadFile")
+        {
+            <script>
+                    setTimeout(() => alert("Не тієї структури файл!"), 500);
+            </script>
+        }
+    }
+    <label></label>
+}

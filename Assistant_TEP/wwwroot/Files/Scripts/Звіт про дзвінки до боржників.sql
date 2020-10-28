@@ -90,3 +90,5 @@ FROM @borh$cok$ b
 WHERE 
 	(@SummBorh = '' OR b.sumaZvit >= @SummBorh) AND
 	 (@misBorg = '' OR b.monthBorgu >= @misBorg)
+
+ORDER BY [ќс. рах.]

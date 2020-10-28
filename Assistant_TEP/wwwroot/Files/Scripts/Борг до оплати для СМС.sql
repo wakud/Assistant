@@ -17,7 +17,7 @@ JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm
 	AND IsIncome=0
 	AND DocumentTypeId IN (15)
 	AND o.RestSumm>0
-	AND o.Date<=DATEADD(dd,-@ExBill$cok$,GETDATE())
+	--AND o.Date<=DATEADD(dd,-@ExBill$cok$,GETDATE())
 	GROUP BY o.AccountId
 	HAVING SUM(o.RestSumm)>=@sum_pay) o ON a.AccountId = o.AccountId
 JOIN (SELECT r.AccountId,MAX(r.PayDate) AS PayDate

@@ -38,13 +38,12 @@ SET vid1do3 = s.RestSumm
 FROM (
 		SELECT o.AccountId
 				,SUM(o.RestSumm) RestSumm
-				, o.PeriodFrom
 		FROM FinanceMain.Operation o
 		WHERE o.PeriodFrom BETWEEN @mis3$cok$ AND @mis2$cok$
 				AND o.PeriodTo = 207906
 				AND o.IsIncome = 0
 				AND o.DocumentTypeId IN (15)
-		GROUP BY o.AccountId, o.PeriodFrom
+		GROUP BY o.AccountId
 		) AS s
 WHERE [@debitorka$cok$].AccountId = s.AccountId 
 		AND Period = @mis2$cok$
@@ -55,13 +54,12 @@ SET vid3do6 = s.RestSumm
 FROM (
 		SELECT o.AccountId
 				,SUM(o.RestSumm) RestSumm
-				, o.PeriodFrom
 		FROM FinanceMain.Operation o
 		WHERE o.PeriodFrom BETWEEN @mis6$cok$ AND @mis4$cok$
 				AND o.PeriodTo = 207906
 				AND o.IsIncome = 0
 				AND o.DocumentTypeId IN (15)
-		GROUP BY o.AccountId, o.PeriodFrom
+		GROUP BY o.AccountId
 		) AS s
 WHERE [@debitorka$cok$].AccountId = s.AccountId 
 		AND Period = @mis4$cok$
@@ -72,13 +70,12 @@ SET vid6do12 = s.RestSumm
 FROM (
 		SELECT o.AccountId
 				,SUM(o.RestSumm) RestSumm
-				, o.PeriodFrom
 		FROM FinanceMain.Operation o
 		WHERE o.PeriodFrom BETWEEN @mis12$cok$ AND @mis7$cok$
 				AND o.PeriodTo = 207906
 				AND o.IsIncome = 0
 				AND o.DocumentTypeId IN (15)
-		GROUP BY o.AccountId, o.PeriodFrom
+		GROUP BY o.AccountId
 		) AS s
 WHERE [@debitorka$cok$].AccountId = s.AccountId 
 		AND Period = @mis7$cok$
@@ -89,13 +86,12 @@ SET vid1roku = s.RestSumm
 FROM (
 		SELECT o.AccountId
 				,SUM(o.RestSumm) RestSumm
-				, o.PeriodFrom
 		FROM FinanceMain.Operation o
 		WHERE o.PeriodFrom < @mis12$cok$
 				AND o.PeriodTo = 207906
 				AND o.IsIncome = 0
 				AND o.DocumentTypeId IN (15)
-		GROUP BY o.AccountId, o.PeriodFrom
+		GROUP BY o.AccountId
 		) AS s
 WHERE [@debitorka$cok$].AccountId = s.AccountId 
 		AND Period = @mis12$cok$
