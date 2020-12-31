@@ -51,6 +51,12 @@
                     }" asp-controller="Home" asp-action="Dovidka">Видача довідок</a>
                 </li>
                 <li class="nav-item">
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Forma103")
+                    {
+                        @:active
+                    }" asp-controller="UkrPosta" asp-action="Index">Форма 103</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")
                     {
                         @:active
@@ -81,35 +87,36 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/site.min.js" asp-append-version="true"></script>
-<script>
-    async function loadPage(nextPage) {
-        $("#load").show();
-        $("#main-content-container").hide();
-        $("#load-container").css("display", "flex");
-        $("#load-container").css("flex", "8");
-        $("#load-container").css("height", "75vh");
-        $("#load-container").css("align-items", "center");
-        $("#load-container").css("justify-content", "center");
-        console.log(nextPage);
-        const disableSelf = () => {
-            $("#load").hide();
-            $("#main-content-container").show();
-            $("#load-container").css("display", "block");
-            $("#load-container").css("flex", "none");
-            $("#load-container").css("align-items", "none");
-            $("#load-container").css("justify-content", "none");
-        };
-        if (nextPage) {
-            try {
-                $('body').load(nextPage);
-            } catch (err) {
-                alert(err);
-                disableSelf();
+    <script>
+        async function loadPage(nextPage) {
+            $("#load").show();
+            $("#main-content-container").hide();
+            $("#load-container").css("display", "flex");
+            $("#load-container").css("flex", "8");
+            $("#load-container").css("height", "75vh");
+            $("#load-container").css("align-items", "center");
+            $("#load-container").css("justify-content", "center");
+            console.log(nextPage);
+            const disableSelf = () => {
+                $("#load").hide();
+                $("#main-content-container").show();
+                $("#load-container").css("display", "block");
+                $("#load-container").css("height", "0vh");
+                $("#load-container").css("flex", "none");
+                $("#load-container").css("align-items", "none");
+                $("#load-container").css("justify-content", "none");
+            };
+            if (nextPage) {
+                try {
+                    $('body').load(nextPage);
+                } catch (err) {
+                    alert(err);
+                    disableSelf();
+                }
             }
-        }
-        return disableSelf;
-    };
-</script>
+            return disableSelf;
+        };
+    </script>
     @RenderSection("Scripts", required: false)
 </body>
 </html>

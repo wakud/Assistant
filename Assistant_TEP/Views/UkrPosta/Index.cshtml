@@ -1,0 +1,180 @@
+﻿@model IEnumerable<Assistant_TEP.Models.Abonents>
+
+@{
+    ViewData["Title"] = "UkrPost";
+}
+<wbr />
+<h4>Формування конвертів, супровідної і DBF-файла для "УкрПошти"</h4>
+<wbr />
+
+<form name="myForm">
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <label for="changeOption" class="control-label">Виберіть відмітку: </label>
+                <select onchange="changeOption()" id="typLista" name="typLista">
+                    <option value="17" selected>Без відмітки</option>
+                    <option value="20,40">Рекомендованим без повідомлення</option>
+                    <option value="35">Рекомендованим з повідомленням</option>
+                </select>
+            </div>
+            <div class="col-6">
+                <a asp-action="Converty" name="Convert" class="btn btn-outline-info btn-sm" target="_blank">Конверти</a>
+                <a asp-action="Dbf" name="DBF"  class="btn btn-outline-primary btn-sm" target="_blank">DBF</a>
+                <a asp-action="Supr" name="Supr" class="btn btn-outline-secondary btn-sm suprovidna" target="_blank">Супровідна до Dbf</a>
+                <button id="clearAll" class="btn btn-outline-danger btn-sm">
+                    Очистити
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+<div id="selection"></div>
+<wbr />
+<div class="form-check">
+    <input class="form-check-input" type="radio" name="typePerson" id="CheckPobut" value="pobut" checked>
+    <label class="form-check-label" for="CheckPobut">
+        Побутовий
+    </label>
+</div>
+<div class="form-check">
+    <input class="form-check-input" type="radio" name="typePerson" id="CheckJuridical" value="juridical">
+    <label class="form-check-label" for="CheckJuridical">
+        Юридичний
+    </label>
+</div>
+<wbr />
+
+<form class="form-inline" asp-action="Create">
+    <div class="form-group mr-4">
+        <label for="OsRah" class="control-label">Введіть особовий або № договору</label>
+    </div>
+    <div class="form-group mr-4">
+        <input id="OsRah" name="OsRah" class="form-control" placeholder="Особовий рахунок" />
+    </div>
+    <div class="form-group">
+        <button id="addAbonButton" class="btn btn-outline-dark">Добавити</button>
+    </div>
+
+</form>
+<table id="tablo" class="table" data-toggle="table">
+    <thead>
+        <tr>
+            <th>
+                Ос. рах.
+            </th>
+            <th>
+                ПІП
+            </th>
+            <th>
+                Адреса
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr id="@item.Id" class="abonRow">
+                <td>
+                    @Html.DisplayFor(modelItem => item.OsRah)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FullName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FullAddress)
+                </td>
+                <td>
+                    <button id="{@item.Id}_deleteButton" onclick="deleteAbonent(@item.Id)" class="btn btn-outline-danger btn-sm">
+                        Видалити
+                    </button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+
+        $("document").ready(() => {
+            let route = $(".suprovidna");
+            route.each((idx, el) => el.href += "?price=17");
+
+            async function addAbon(ev) {
+                ev.preventDefault();
+                const price = $("#typLista").val();
+                const isJuridical = $('input[name=typePerson]:checked').val() === "juridical";
+                const osRah = $("#OsRah").val();
+                $("#OsRah").val('');
+                const data = new FormData();
+                data.append('price', price);
+                data.append('isJuridical', isJuridical);
+                data.append('OsRah', osRah);
+                const disableLoad = await loadPage();
+                const resp = await fetch('@Url.Action("Create", "UkrPosta")', {
+                    method: "POST",
+                    body: data
+                });
+                const respJson = await resp.json();
+                console.log(respJson);
+                if (respJson.success === true) {
+                    $("#tablo tr:last").after(
+                        `<tr id="${respJson.id}" class="abonRow">
+                            <td>${respJson.osRah}</td>
+                            <td>${respJson.fullName}</td>
+                            <td>${respJson.fullAddress}</td>
+                            <td>
+                               <button id="${respJson.id}_deleteButton" class="btn btn-outline-danger btn-sm">
+                                    Видалити
+                               </button>
+                            </td>
+                        </tr>`
+                    )
+                    $(`#${respJson.id}_deleteButton`).click(() => deleteAbonent(respJson.id));
+                } else {
+                    alert(respJson.error);
+                }
+                disableLoad();
+            }
+            async function deleteAllAbonent(ev) {
+                ev.preventDefault();
+                const resp = await fetch(`@Url.Action("DeleteAll")`, { method: "POST" });
+                const data = await resp.json();
+                console.log(data);
+                if (data.success) {
+                    $('.abonRow').remove();
+                } else {
+                    alert(data.error)
+                }
+            }
+
+            $("#addAbonButton").click(addAbon);
+            $("#clearAll").click(deleteAllAbonent);
+        });
+
+        async function deleteAbonent(id) {
+            const resp = await fetch(`@Url.Action("Delete")/${id}`, { method: "POST" });
+            const data = await resp.json();
+            if (data.success) {
+                $(`#${id}`).remove();
+            } else {
+                alert(data.error)
+            }
+        }
+
+        function changeOption() {
+            let selection = $("#typLista");
+            let price = selection.val();
+            let route = $(".suprovidna");
+            route.each(
+                (idx, el) => {
+                    el.href = el.href.slice(0, el.href.indexOf("price=")) + `price=${price}`;
+                });
+        }
+
+    </script>
+
+}
+

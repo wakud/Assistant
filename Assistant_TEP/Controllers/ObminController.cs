@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Assistant_TEP.Models;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -12,14 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using DotNetDBF;
 using Microsoft.Extensions.Configuration;
 using System.Data;
-using Microsoft.Data.SqlClient;
-using DocumentFormat.OpenXml.Math;
 using Assistant_TEP.MyClasses;
-using System.Data.OleDb;
-using System.Data.Odbc;
-using Calabonga.Xml.Exports;
-using NDbfReader;
-using DocumentFormat.OpenXml.Vml.Spreadsheet;
 
 namespace Assistant_TEP.Controllers
 {
@@ -256,14 +248,24 @@ namespace Assistant_TEP.Controllers
                 }
             }
 
-            Dictionary<string, decimal> zapyt = new Dictionary<string, decimal>();
+            Dictionary<string, SubsRezults> zapyt = new Dictionary<string, SubsRezults>();
             string FileScript = "obmin_subs.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
-            DataTable dt = BillingUtils.GetResults(path, cokCode);
+            DataTable dt = BillingUtils.GetSubsData(path, cokCode, obminSubs);
 
             foreach (DataRow dtRow in dt.Rows)
             {
-                zapyt.Add(dtRow.Field<string>("AccountNumber"), dtRow.Field<decimal>("RestSumm"));
+                if(!zapyt.ContainsKey(dtRow.Field<string>("AccountNumber")))
+                {
+                    zapyt.Add(dtRow.Field<string>("AccountNumber"), new SubsRezults
+                    {
+                        DEBT = dtRow.Field<decimal>("debt"),
+                        NM_PAY = dtRow.Field<decimal>("nm_pay"),
+                        NORM_F6 = dtRow.Field<int>("norm_f6"),
+                        TARYF_6 = dtRow.Field<decimal>("taryf_6")
+                    });
+
+                }
             }
 
             using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
@@ -328,19 +330,36 @@ namespace Assistant_TEP.Controllers
 
                     foreach (ObminSubs obmins in obminSubs)
                     {
+                        //заповнюємо дані по замовчуванні з дбф-ки
                         decimal borg = obmins.DEBT;
+                        decimal nm_pay = obmins.NM_PAY;
+                        decimal taryf_6 = (decimal)obmins.TARYF_6;
+                        int norm_f6 = (int)obmins.NORM_F6;
+                        string opp = "00000000";
+                        string opl = "00000000";
+                        string odv = "00000000";
+                        string ozn_1 = "0000000000010000";
+
                         if (zapyt.ContainsKey(obmins.OWN_NUM))
                         {
-                            borg = zapyt[obmins.OWN_NUM];
+                            //заповнюємо дані з скрипта
+                            borg = zapyt[obmins.OWN_NUM].DEBT;
+                            nm_pay = zapyt[obmins.OWN_NUM].NM_PAY;
+                            norm_f6 = zapyt[obmins.OWN_NUM].NORM_F6;
+                            taryf_6 = zapyt[obmins.OWN_NUM].TARYF_6;
+                            ozn_1 = "0000000000000000";
+                            opp = "00100000";
+                            opl = "00100000";
+                            odv = "00400000";
                         }
 
                         writer.AddRecord(
                         obmins.APP_NUM, obmins.ZAP_R, obmins.ZAP_N, obmins.OWN_NUM, obmins.SUR_NAM, obmins.F_NAM, obmins.M_NAM, obmins.ENT_COD,
                         obmins.DATA_S, obmins.RES2, obmins.ADR_NAM, obmins.VUL_COD, obmins.VUL_CAT, obmins.VUL_NAM, obmins.BLD_NUM, 
                         obmins.CORP_NUM, obmins.FLAT, obmins.NUMB, obmins.NUM_P, obmins.PLG_COD, obmins.PLG_N, obmins.CM_AREA, obmins.OP_AREA, 
-                        obmins.NM_AREA, borg, obmins.OPP, obmins.OPL, obmins.ODV, obmins.NM_PAY, obmins.TARYF_1, obmins.TARYF_2, obmins.TARYF_3,
-                        obmins.TARYF_4, obmins.TARYF_5, obmins.TARYF_6, obmins.TARYF_7, obmins.TARYF_8, obmins.NORM_F1, obmins.NORM_F2, 
-                        obmins.NORM_F3, obmins.NORM_F4, obmins.NORM_F5, obmins.NORM_F6, obmins.NORM_F7, obmins.NORM_F8, obmins.OZN_1
+                        obmins.NM_AREA, borg, opp, opl, odv, nm_pay, obmins.TARYF_1, obmins.TARYF_2, obmins.TARYF_3,
+                        obmins.TARYF_4, obmins.TARYF_5, taryf_6, obmins.TARYF_7, obmins.TARYF_8, obmins.NORM_F1, obmins.NORM_F2, 
+                        obmins.NORM_F3, obmins.NORM_F4, obmins.NORM_F5, norm_f6, obmins.NORM_F7, obmins.NORM_F8, ozn_1
                         );
                     }
                     writer.Write(fos);
@@ -365,29 +384,43 @@ namespace Assistant_TEP.Controllers
             string FileScript = "Собезу на субсидії.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
             DataTable dt = BillingUtils.GetResults(path, cokCode);
+            
+            //зчитуємо субсидійні номера
+            Dictionary<int, string> Sub_e = new Dictionary<int, string>();
+            string PathRead = appEnv.WebRootPath + "\\files\\Obmin\\SUB_E.DBF";
 
-            //робимо перевірку на код цоку
-            if (user.Cok.Code == null)
+            using (var dbfDataReader = NDbfReader.Table.Open(PathRead))
             {
-                cokCode = "TR40";
+                var reader = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
+                while (reader.Read())
+                {
+                    Sub_e.Add(int.Parse(reader.GetValue("NUMBPERS").ToString().Trim()), 
+                        int.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    //обрізаємо спереді 2099
+                }
             }
+
+                //робимо перевірку на код цоку
+                if (user.Cok.Code == null)
+                {
+                    cokCode = "TR40";
+                }
 
             //вказуємо шлях до файла
             string filePath = "\\files\\Obmin\\";
             string fileName = "TEP";
-            string fullPath = appEnv.WebRootPath + filePath + fileName;
+            string FullPath = appEnv.WebRootPath + filePath + fileName;
 
             //створюємо новий дбф файл згідно заданої нами структури
-            using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 using (var writer = new DBFWriter())
                 {
                     writer.CharEncoding = Encoding.GetEncoding(866);
                     writer.Signature = DBFSignature.DBase3;
-                    
+
                     //структура файлу дбф
                     var Rash = new DBFField("Rash", NativeDbType.Numeric, 10);
-                    var Numb = new DBFField("Numb", NativeDbType.Char, 40);
+                    var Ora = new DBFField("Ora", NativeDbType.Char, 40);
                     var Fio = new DBFField("Fio", NativeDbType.Char, 100);
                     var Name_v = new DBFField("Name_v", NativeDbType.Char, 50);
                     var Bld = new DBFField("Bld", NativeDbType.Char, 9);
@@ -405,15 +438,21 @@ namespace Assistant_TEP.Controllers
                     var Orendar = new DBFField("Orendar", NativeDbType.Char, 40);
                     var Borg = new DBFField("Borg", NativeDbType.Numeric, 20, 5);
 
-                    writer.Fields = new[] { Rash, Numb, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
+                    writer.Fields = new[] { Rash, Ora, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
                                             Pilgovuk, Gar_voda, Gaz_vn, El_opal, Kilk_pilg, T11_cod_na, Orendar, Borg };
 
                     //наповнюємо файл даними
                     foreach (DataRow dr in dt.Rows)
                     {
+                        string pcode;
+                        if (!Sub_e.TryGetValue(dr.Field<int>("Rash"), out pcode))
+                        {
+                            pcode = "0";
+                        }
+
                         writer.AddRecord(
-                            dr.Field<int>("Rash"),
-                            dr.Field<string>("Numb"),
+                            dr.Field<int>(("Rash")),
+                            pcode,
                             dr.Field<string>("Fio"),
                             dr.Field<string>("Name_v"),
                             dr.Field<string>("Bld"),
@@ -439,7 +478,7 @@ namespace Assistant_TEP.Controllers
 
             //видаємо користувачу файл
             string fileNameNew = fileName + "_" + DateTime.Now.ToString() + ".dbf";
-            byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
+            byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
         }
         

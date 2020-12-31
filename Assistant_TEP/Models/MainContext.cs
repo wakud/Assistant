@@ -12,6 +12,7 @@ namespace Assistant_TEP.Models
         public DbSet<TypeReport> TypeReports { get; set; }
         public DbSet<ReportParam> ReportParams { get; set; }
         public DbSet<ReportParamType> ReportParamTypes { get; set; }
+        public DbSet<Abonents> abonents { get; set; }
 
         public MainContext(DbContextOptions<MainContext> options)
             : base(options)

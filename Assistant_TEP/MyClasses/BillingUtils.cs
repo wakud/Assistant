@@ -10,6 +10,7 @@ using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Assistant_TEP.MyClasses
 {
@@ -100,7 +101,46 @@ namespace Assistant_TEP.MyClasses
             }
             throw new Exception("Помилка при доступі до бази, спробуйте пізніше" + exceptionDesc);
         }
-        
+
+        public static DataTable GetSubsData(string scriptPath, string cok, List<ObminSubs> subs)
+        {
+
+            List<string> Inserts = new List<String>();
+            foreach(ObminSubs s in subs)
+            {
+                Inserts.Add(
+                    string.Format(
+                        "INSERT @table VALUES ('{0}', '{1}') ", s.OWN_NUM, s.NUMB
+                    )
+               );
+            }
+            string InsertScript = String.Join("\n", Inserts);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cok + "_Utility";
+            string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            script = script.Replace("$cok$", cok);
+            script = script.Replace("$params$", InsertScript);
+            //Console.WriteLine(script);
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
         public static DataTable GetResults(string scriptPath, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -153,5 +193,48 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
+
+        public static DataTable AddAbon(IWebHostEnvironment env, string OsRah, string cokCode)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string path = env.WebRootPath + "\\Files\\Scripts\\Forma103.sql";
+            string script;
+            script = "USE " + cokCode + "_Utility" + "\n";
+            script += File.ReadAllText(path, Encoding.GetEncoding(1251));
+            _ = new List<string>();
+            script += " WHERE a.AccountNumber = '" + OsRah + "' AND addr.FullAddress IS NOT NULL AND a.DateTo = '2079-06-06'";
+            string connectionString = Configuration.GetConnectionString("RESConnection" + cokCode + "_Utility");
+            DataTable results = new DataTable();
+            using SqlConnection conn = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand(script, conn);
+            conn.Open();
+            command.CommandTimeout = 1200;
+            SqlDataReader reader = command.ExecuteReader();
+            results.Load(reader);
+            reader.Close();
+            return results;
+        }
+
+        public static DataTable AddJuridic(IWebHostEnvironment env, string OsRah, string cokCode)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string path = env.WebRootPath + "\\Files\\Scripts\\Forma103J.sql";
+            string script;
+            script = "USE " + cokCode + "_Juridical" + "\n";
+            script += File.ReadAllText(path, Encoding.GetEncoding(1251));
+            _ = new List<string>();
+            script += " AND c.ContractNumber = '" + OsRah + "'";
+            string connectionString = Configuration.GetConnectionString("RESConnection" + cokCode + "_Juridical");
+            DataTable results = new DataTable();
+            using SqlConnection conn = new SqlConnection(connectionString);
+            SqlCommand command = new SqlCommand(script, conn);
+            conn.Open();
+            command.CommandTimeout = 1200;
+            SqlDataReader reader = command.ExecuteReader();
+            results.Load(reader);
+            reader.Close();
+            return results;
+        }
+
     }
 }

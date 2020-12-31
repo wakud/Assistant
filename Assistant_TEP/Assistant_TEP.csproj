@@ -33,8 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="logs\" />
     <Folder Include="wwwroot\Files\Obmin\" />
     <Folder Include="wwwroot\Files\Shablons\" />
+    <Folder Include="wwwroot\Files\Forma103\" />
   </ItemGroup>
 
 </Project>
