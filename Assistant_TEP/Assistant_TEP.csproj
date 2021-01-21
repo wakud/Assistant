@@ -3,8 +3,6 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>2865edb0-bd30-4180-a506-dd018c62eaae</UserSecretsId>
-	<AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
-	<GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,11 +34,9 @@
 
   <ItemGroup>
     <Folder Include="logs\" />
-    <Folder Include="Views\Import\" />
     <Folder Include="wwwroot\Files\Obmin\" />
     <Folder Include="wwwroot\Files\Shablons\" />
     <Folder Include="wwwroot\Files\Forma103\" />
-    <Folder Include="wwwroot\Files\Import\" />
   </ItemGroup>
 
 </Project>

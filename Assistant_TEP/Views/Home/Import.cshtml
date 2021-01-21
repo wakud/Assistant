@@ -1,0 +1,28 @@
+﻿@{
+    ViewData["Title"] = "Імпорт";
+}
+
+<h3>Конвертація файлу оплат з банку для втягення в програму Assistant_Utility</h3>
+
+<form action='@Url.Action("Privat", "Import")' method="POST" enctype="multipart/form-data">
+    <div class="container">
+        <div class="row">
+            <div class="col-3">Виберіть файл для конвертації</div>
+            <div class="col-5"><input id="file-load" type="file" name="formFile" /></div>
+            <div class="w-100"></div>
+            <br />
+        </div>
+    </div>
+    <br />
+    <input id="Submit" type="submit" value="Завантажити" />
+</form>
+@if (ViewBag.error != null)
+{
+    @if (ViewBag.error == "BadFile")
+    {
+        <script>
+            setTimeout(() => alert("Не тієї структури файл!"), 500);
+        </script>
+    }
+}
+<label></label>

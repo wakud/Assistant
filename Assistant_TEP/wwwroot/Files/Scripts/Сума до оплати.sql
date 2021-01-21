@@ -1,6 +1,7 @@
 DECLARE @tbl$cok$ TABLE(
 				AccountId INT,
 				AccountNumber VARCHAR(10),
+				AccountNumberNew VARCHAR(10),
 				zipcode VARCHAR(5),
 				name_city VARCHAR(100),
 				adresa VARCHAR(100),
@@ -22,12 +23,14 @@ SELECT o.AccountId,
 
 UPDATE @tbl$cok$		-- добавляємо ПІП і ос.рах та адресу
 SET AccountNumber = s.AccountNumber
+	,AccountNumberNew = s.AccountNumberNew
 	,pip = s.FullName
 	,zipcode =s.ZipCode
 	,name_city = s.name
 	,adresa = s.adresa
 FROM (SELECT a.AccountId
 			,a.AccountNumber 
+			,a.AccountNumberNew
 			,pp.FullName
 			,z.ZipCode
 			,ct.ShortName +' '+ c.Name AS name
@@ -71,7 +74,8 @@ WHERE s.AccountId = [@tbl$cok$].AccountId
 SELECT zipcode AS [Індекс]
 		,name_city AS [Нас.пункт]
 		,adresa AS [Адреса абонента]
-		,AccountNumber AS [особовий рахунок]
+		--,AccountNumber AS [особовий рахунок]
+		,AccountNumberNew AS [особовий рахунок]
 		,pip AS [ПІП абонента]
 		,suma_pay AS [сума до оплати]
 		,pokaz AS [Показ]

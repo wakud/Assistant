@@ -5,12 +5,15 @@ SET @ExBill$cok$ =       --Термін погашення боргу по рахунках
 declare @m char(2),@y char(4)
 set @y=convert(char(4),year(getdate()))
 set @m=convert(varchar(2),month(getdate()))
+IF (LEN(@m) =1)
+SET @m = '0' + @m
+
 
 IF Getdate() < convert(datetime,@y + @m + '20')
-	SELECT	pp.MobilePhoneNumber AS [моб.тел]
-			,a.AccountNumber AS [особовий рахунок]
-			,pp.FullName AS [ПІП абонента]
-			,o.RestSumm AS [сума до оплати]
+	SELECT	pp.MobilePhoneNumber AS [Phone number]
+			,a.AccountNumber AS [1]
+			,pp.FullName AS [2]
+			,o.RestSumm AS [3]
 	FROM AccountingCommon.Account a
 	JOIN AccountingCommon.PhysicalPerson pp ON a.PhysicalPersonId = pp.PhysicalPersonId
 	JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
@@ -48,10 +51,10 @@ IF Getdate() < convert(datetime,@y + @m + '20')
 				)	
 		ORDER by addr.FullAddress,a.AccountNumber
 ELSE
-	SELECT	pp.MobilePhoneNumber AS [моб.тел]
-			,a.AccountNumber AS [особовий рахунок]
-			,pp.FullName AS [ПІП абонента]
-			,o.RestSumm AS [сума до оплати]
+	SELECT	pp.MobilePhoneNumber AS [Phone number]
+			,a.AccountNumber AS [1]
+			,pp.FullName AS [2]
+			,o.RestSumm AS [3]
 	FROM AccountingCommon.Account a
 	JOIN AccountingCommon.PhysicalPerson pp ON a.PhysicalPersonId = pp.PhysicalPersonId
 	JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId

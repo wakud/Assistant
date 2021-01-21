@@ -1,7 +1,7 @@
-SELECT 	pp.MobilePhoneNumber AS [моб.тел]
-		,a.AccountNumber AS [особовий рахунок]
-		,pp.FullName AS [ПІП абонента]
-		,o.RestSumm AS [сума до оплати]
+SELECT 	pp.MobilePhoneNumber AS [Phone number]
+		,a.AccountNumber AS [1]
+		,pp.FullName AS [2]
+		,o.RestSumm AS [3]
 FROM AccountingCommon.Account a 
 JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm,CEILING(SUM(o.RestSumm)) as RestSummRound
 	FROM FinanceMain.Operation o

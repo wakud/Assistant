@@ -438,9 +438,11 @@ namespace Assistant_TEP.Controllers
                 OrganizationName = currentUser.Cok.Name,
                 OrgIndex = currentUser.Cok.Address.ToString().Trim().Substring(0, 5),
                 Suma = suma,
+                PDV = Math.Round(suma / 6, 2),
                 SumaStr = MoneyToStr.GrnPhrase(suma),
                 Nach = currentUser.Cok.Nach,
-                Buh = currentUser.Cok.Buh
+                Buh = currentUser.Cok.Buh,
+                Postal = currentUser.Cok.Postal
             };
 
             //видаємо документ юзеру

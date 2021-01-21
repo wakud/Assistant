@@ -8,6 +8,7 @@ using Assistant_TEP.Models;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http;
 
 namespace Assistant_TEP.Controllers
 {
@@ -25,10 +26,8 @@ namespace Assistant_TEP.Controllers
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
         }
 
-        public IActionResult About()
+        public IActionResult Import()
         {
-            //ViewData["Message"] = "Your application description page.";
-
             return View();
         }
 

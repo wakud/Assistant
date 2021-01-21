@@ -236,5 +236,84 @@ namespace Assistant_TEP.MyClasses
             return results;
         }
 
+        public static DataTable Ukrspecinform(string scriptPath, string cok)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cok + "_Utility";
+            string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            //script = script.Replace("$cok$", cok);
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable GetAccNumb(string scriptPath, string cokCode)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cokCode + "_Utility";
+            string script;
+            script = "USE " + cokCode + "_Utility" + "\n";
+            script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable GetPilga2(string scriptPath, string cokCode)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cokCode + "_Utility";
+            string script;
+            script = "USE " + cokCode + "_Utility" + "\n";
+            script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
     }
 }

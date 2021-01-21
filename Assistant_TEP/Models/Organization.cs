@@ -30,6 +30,8 @@ namespace Assistant_TEP.Models
         [StringLength(10)]
         public string Tel { get; set; }
 
+        public string Postal { get; set; }
+
         public List<User> Users { get; set; }
 
         public Organization()

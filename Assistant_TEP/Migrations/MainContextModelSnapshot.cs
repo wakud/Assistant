@@ -62,7 +62,7 @@ namespace Assistant_TEP.Migrations
                     b.Property<string>("OsRah")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PostalCode")
+                    b.Property<int>("PostalCode")
                         .HasColumnType("int");
 
                     b.Property<string>("Rajon")
@@ -139,6 +139,9 @@ namespace Assistant_TEP.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(50)")
                         .HasMaxLength(50);
+
+                    b.Property<string>("Postal")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RegionId")
                         .HasColumnType("int");

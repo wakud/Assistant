@@ -3,7 +3,9 @@
 @{
     ViewData["Title"] = "Видача довідок";
 }
+
 <h2>Побутові абоненти</h2>
+
 @foreach (var item in Model)
 {
     @if (item.DbType.Type == "Utility")

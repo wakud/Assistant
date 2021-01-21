@@ -13,7 +13,9 @@ namespace Assistant_TEP.ViewModels
 
         public string? OrgIndex { get; set; }               //індекс Цоку
 
-        public decimal? Suma { get; set; } 
+        public decimal? Suma { get; set; }
+
+        public decimal? PDV { get; set; }
 
         public string? SumaStr { get; set; }
 
@@ -24,6 +26,8 @@ namespace Assistant_TEP.ViewModels
         public string Buh { get; set; }
 
         public string PostalIndex { get; set; }
+
+        public string Postal { get; set; }
 
         public string? Pusto { get; set; }
     }

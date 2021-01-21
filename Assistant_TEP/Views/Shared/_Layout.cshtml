@@ -24,14 +24,14 @@
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "About")
                     {
                         @:active
-                    }" asp-controller="Home" asp-action="About">Квартальні звіти</a>
+                    }" asp-controller="Home" asp-action="Import">Імпорт</a>
                 </li>
-                <li class="nav-item">
+                @*<li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
                     {
                         @:active
                     }" asp-controller="Home" asp-action="Contact">Річні звіти</a>
-                </li>
+                </li>*@
                 <li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other")
                     {

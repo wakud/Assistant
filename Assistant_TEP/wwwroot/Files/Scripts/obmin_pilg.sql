@@ -1,6 +1,8 @@
 declare @m char(2),@y char(4)
 set @y=convert(char(4),year(getdate()))
 set @m=convert(varchar(2),month(getdate()))
+IF (LEN(@m) =1)
+SET @m = '0' + @m
 
 IF Getdate() < convert(datetime,@y + @m + '20')
 SELECT a.AccountNumber
