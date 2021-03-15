@@ -27,11 +27,11 @@
                     }" asp-controller="Home" asp-action="Import">Імпорт</a>
                 </li>
                 @*<li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
-                    {
-                        @:active
-                    }" asp-controller="Home" asp-action="Contact">Річні звіти</a>
-                </li>*@
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
+                        {
+                            @:active
+                        }" asp-controller="Home" asp-action="Contact">Річні звіти</a>
+                    </li>*@
                 <li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other")
                     {
@@ -70,7 +70,7 @@
     </nav>
 
     <partial name="_CookieConsentPartial" />
-    
+
     <div id="load-container">
         <partial name="~/Views/Shared/_Load.cshtml" />
     </div>
@@ -87,6 +87,12 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script src="~/js/site.min.js" asp-append-version="true"></script>
+    <script src="~/js/jquery.tablesort.js"></script>
+    <script>
+        $(document).ready(() => {
+            $('table').tablesort();
+        });
+    </script>
     <script>
         async function loadPage(nextPage) {
             $("#load").show();

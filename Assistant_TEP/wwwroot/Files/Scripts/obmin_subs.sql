@@ -1,15 +1,25 @@
-DECLARE @table TABLE (AccountNumber BIGINT, RegisteredPerson TINYINT)
+DECLARE @table TABLE (AccountNumberNew BIGINT, RegisteredPerson TINYINT)
 $params$
 
-DECLARE @debt DECIMAL(11,2)
-
-SET @debt = isnull((SELECT SUM(RestSumm) 
-FROM FinanceCommon.BillRegular b 
-JOIN AccountingCommon.Account a ON a.AccountId = b.AccountId
-JOIN @table t ON t.AccountNumber = a.AccountNumber 
-WHERE IsDeleted = 0 
-        AND Date < DATEADD(mm,-3,GETDATE()) --на час карантину зб≥льшено до 3 м≥с€ц≥в
-        AND RestSumm > 340),0)
+DECLARE @debt TABLE (debet DECIMAL(11,2), accId int)
+INSERT @debt
+(
+    debet,
+    accId
+)
+SELECT 
+	debet = ISNULL((
+		SELECT SUM(b.RestSumm)
+		FROM FinanceCommon.BillRegular b 
+		WHERE 1 = 1 
+			AND b.AccountId = a.AccountId
+			AND b.IsDeleted = 0
+			AND b.RestSumm > 340	
+			AND b.Date < DATEADD(mm,-3,GETDATE())
+		), 0),
+	accId = a.AccountId
+From @table t 
+JOIN AccountingCommon.Account a ON t.AccountNumberNew = a.AccountNumberNew
 ;
 WITH Tariff AS (
 SELECT tg.TariffGroupId,t.DateFrom,t.DateTo,t.price,tbl.shortname,tg.Name AS TariffGroupName,
@@ -29,11 +39,11 @@ SELECT tg.TariffGroupId,t.DateFrom,t.DateTo,t.price,tbl.shortname,tg.Name AS Tar
 		AND t.IsHighlander=0
 		AND t.IsHeating=0
 		AND t.TimeZoneId=1
-        AND t.DateFrom='20170301'
+        AND t.DateFrom='20210101'
 )
 ,a AS (
         SELECT a.AccountId,
-                a.AccountNumber,
+                a.AccountNumberNew,
         --opp ознака на€вност≥ послуг
         '00100000' AS opp,
         --opl ознака на€вност≥ л≥чильника
@@ -74,9 +84,10 @@ SELECT tg.TariffGroupId,t.DateFrom,t.DateTo,t.price,tbl.shortname,tg.Name AS Tar
         t.MaxTariffLimit,
         at.QuantityTo,
         at.Discount/100.00 AS DiscountKoeff
-        , @debt AS debt -- 2017051 Ћемешко
+        , d.debet AS debt -- 2017051 Ћемешко
         FROM AccountingCommon.Account a 
-        JOIN @table tbl ON tbl.AccountNumber = a.AccountNumber
+        JOIN @debt d ON d.accId = a.AccountId
+        JOIN @table tbl ON tbl.AccountNumberNew = a.AccountNumberNew
         JOIN SupportDefined.[_AccountCategoryByOpenTM] at ON at.AccountId = a.AccountId
         JOIN AccountingCommon.TarifficationMethod tm ON at.TarifficationMethodId = tm.TarifficationMethodId
         JOIN Tariff t ON t.TariffGroupId = tm.TariffGroupId AND t.id =1

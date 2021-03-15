@@ -47,7 +47,11 @@ namespace Assistant_TEP.MyClasses
             w.WriteLine("-------------------------------");
         }
 
-        public static DataTable GetReportResults(string scriptsPath, Report report, Dictionary<string, string> parameters, string cok)
+        public static DataTable GetReportResults(
+            string scriptsPath, Report report,
+            Dictionary<string, string> parameters, string cok,
+            Dictionary<string, string>? parametersReplacements = null
+        )
         {
             int currentTry = 0;
             int maxTries = 5;
@@ -67,6 +71,13 @@ namespace Assistant_TEP.MyClasses
                     using(SqlConnection conn = new SqlConnection(connectionString))
                     {
                         conn.Open();
+                        if (parametersReplacements != null)
+                        {
+                            foreach(var paramName in parametersReplacements.Keys)
+                            {
+                                script = script.Replace(paramName, parametersReplacements[paramName]);
+                            }
+                        }
                         using (SqlCommand command = new SqlCommand(script, conn))
                         {
                             foreach(var key in parameters.Keys)
@@ -104,7 +115,6 @@ namespace Assistant_TEP.MyClasses
 
         public static DataTable GetSubsData(string scriptPath, string cok, List<ObminSubs> subs)
         {
-
             List<string> Inserts = new List<String>();
             foreach(ObminSubs s in subs)
             {
@@ -289,7 +299,7 @@ namespace Assistant_TEP.MyClasses
             return dt;
         }
 
-        public static DataTable GetPilga2(string scriptPath, string cokCode)
+        public static DataTable GetPilgaCity (string scriptPath, string cokCode)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string connString = "RESConnection" + cokCode + "_Utility";
@@ -301,6 +311,135 @@ namespace Assistant_TEP.MyClasses
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable GetPilga2 (string scriptPath, string cokCode, int period, List<int> vs)
+        {
+            List<string> nsp = new List<string>();
+            foreach (var s in vs)
+            {
+                nsp.Add(string.Format("'{0}'", s.ToString()));
+            }
+            string InsertScript = "WHERE KodNasPunktu IN (" + string.Join(", ", nsp) + ")";
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cokCode + "_Utility";
+            string script;
+            script = "USE " + cokCode + "_Utility" + "\n";
+            script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                script = script.Replace("$params$", InsertScript);
+                //Console.WriteLine(script);
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.Parameters.AddWithValue("period", period);
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable Napovnenia(string scriptPath, string cok, List<Zvirka> subs)
+        {
+            List<string> Inserts = new List<String>();
+            foreach (Zvirka s in subs)
+            {
+                Inserts.Add(
+                    string.Format(
+                        "INSERT @table VALUES ('{0}') ", s.OWN_NUM
+                    )
+               );
+            }
+            string InsertScript = String.Join("\n", Inserts);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cok + "_Utility";
+            string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            script = script.Replace("$cok$", cok);
+            script = script.Replace("$params$", InsertScript);
+            Console.WriteLine(script);
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable GetMoneySubsData(string scriptPath)
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnectionTR27_Utility";
+            string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
+        public static DataTable GetDovidkaSubs(string scriptPath, string cokCode, List<string> OsRahList)
+        {
+            string InsertScript = "AccountNumber IN (" + OsRahList + ")";
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cokCode + "_Utility";
+            string script;
+            script = "USE " + cokCode + "_Utility" + "\n";
+            script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                script = script.Replace("$params$", InsertScript);
+                //Console.WriteLine(script);
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
                     command.CommandTimeout = 600;

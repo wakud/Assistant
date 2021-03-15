@@ -7,9 +7,10 @@
     <li><a asp-action="Pilg" asp-controller="Obmin">Запит про наявність боргу по оплаті за е/е УСЗН ТРДА пільговиків.</a></li>
     <li><a asp-action="Subs" asp-controller="Obmin">Запит про наявність боргу по оплаті за е/е УСЗН ТРДА субсидій.</a></li>
     <li><a asp-action="Pilga2" asp-controller="Obmin">Сформувати DBF-файл "2 - пільга"</a></li>
+    <li><a asp-action="Zapyt" asp-controller="Obmin">Формування файлу для УСЗН з новими особовими</a></li>
 </ul>
 
-<h5>Тільки для УСЗН м. Тернопіль </h5>
+<h5>Тільки для УСЗН м. Тернопіль та Зборова </h5>
 <ul>
     <li><a asp-action="Subsydia" asp-controller="Obmin">Надання інформації по абонентам в УСЗН ТРДА субсидій.</a></li>
 </ul>
@@ -19,12 +20,7 @@
     <li><a asp-action="Ukrspecinform" asp-controller="Obmin">Сформувати файл на "Укрспецінформ"</a></li>
 </ul>
 
-@if (ViewBag.error != null)
-{
-    @if (ViewBag.error == "BadCok")
-    {
-        <script>
-            setTimeout(() => alert("Ви не можете сформувати файл!"), 500);
-        </script>
-    }
-}
+<h5>Формування файлу на "Ощадбанк" </h5>
+<ul>
+    <li><a asp-action="MoneySubs" asp-controller="Obmin">Монетизація субсидій та пільг</a></li>
+</ul>

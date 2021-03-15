@@ -4,13 +4,12 @@ SET ANSI_NULLS ON
 SET QUOTED_IDENTIFIER ON
 --GO
 
-DECLARE @Period INT,
-		@BudgetId  TINYINT
+DECLARE @BudgetId  TINYINT
 		, @withGroup BIT = 1,
 		@xml XML = null
 BEGIN
 SET NOCOUNT ON;
-SET @period = 202012        --потрібно буде тягнути з програми
+--SET @period = 202012        --потрібно буде тягнути з програми
 
 DECLARE @CDPR NUMERIC(12)
 DECLARE @pc VARCHAR(10) --поки що залишаю,
@@ -104,21 +103,24 @@ ELSE
                         JOIN AccountingCommon.Address ADR WITH ( NOLOCK ) ON UO.AddressId=ADR.AddressId
                         JOIN AccountingCommon.Point AS P WITH ( NOLOCK ) ON UO.UsageObjectId = P.UsageObjectId
                         LEFT JOIN AccountingCommon.TarifficationMethod AS tm WITH ( NOLOCK ) ON P.PointId = tm.PointId
-                                                                                                AND BD.ConsumptionFrom BETWEEN TM.DateFrom AND DATEADD(day,
-                                                                                                        -1, TM.DateTo)
+                                  AND BD.ConsumptionFrom BETWEEN TM.DateFrom AND DATEADD(day, -1, TM.DateTo)
                         LEFT JOIN AccountingDictionary.HeatingSeason AS hs ON bd.ConsumptionFrom >= hs.DateFrom
                                                                               AND bd.ConsumptionFrom < hs.DateTo
                         LEFT JOIN AccountingCommon.TarifficationMethodItem AS tmi WITH ( NOLOCK ) ON tm.TarifficationMethodId = tmi.TarifficationMethodId
-                                                                                                     AND pc.BenefitsCategoryId = tmi.BenefitsCategoryId
-                                                                                                     AND tmi.Discount > 0
-                                                                                                     AND tmi.IsForHeatingSeason = CASE
-                                                                                                        WHEN hs.HeatingSeasonId IS NULL
-                                                                                                        THEN 0
-                                                                                                        ELSE 1
-                                                                                                        END
+                                  AND pc.BenefitsCategoryId = tmi.BenefitsCategoryId
+                                  AND tmi.Discount > 0
+                                  AND tmi.IsForHeatingSeason = CASE
+                                                               WHEN hs.HeatingSeasonId IS NULL
+                                                               THEN 0
+                                                               ELSE 1
+                                                               END
                 LEFT JOIN FinanceCommon.BillRegularParams BRP  ( NOLOCK ) ON  BRP.BillId = B.OperationId --140602 O.Chekh
                 LEFT JOIN @TariffNotBlock tnb ON tnb.TarifficationBlockLineId = t.TarifficationBlockLineId
-                WHERE    ( ( b.IsIncome = 0
+                /*join 
+                    [SupportDefined].[ParseIDList](@BenefitsCategoryStr) BudgetList on BudgetList.ID = PC.BenefitsCategoryId 
+                join 
+                    [SupportDefined].[ParseIDList](@CityStr) CityList on CityList.ID = ADR.CityId*/
+               WHERE    ( ( b.IsIncome = 0
                             AND B.DocumentTypeId IN ( 1, 15 )
                           )
                           OR B.DocumentTypeId IN ( 9 )
@@ -128,6 +130,8 @@ ELSE
                               OR B.PeriodTo = @period
                             )
                         AND PC.BudgetId = ISNULL(@BudgetId,PC.BudgetId)
+                        --CASE @pc                                            WHEN 1 THEN 4                                            WHEN 2 THEN 5                                            ELSE PC.BudgetId --131029                                           END
+ --and AccountNumber = 25001271
                GROUP BY A.AccountId,CASE WHEN tnb.TarifficationBlockLineId IS NULL THEN 1 ELSE 0 END,P.PointId, tm.TariffGroupId, BD.TariffPrice * ( 1 + BD.VATRate / 100 ),
                         BD.BenefitsCategoryId, ISNULL(tmi.IsForHeatingSeason, 0),
                         MONTH(CASE WHEN (b.PeriodFrom < @StartSystem OR BRP.PreviousSystem = 1)
@@ -322,6 +326,9 @@ LEFT JOIN FinanceCommon.BillRegularParams BRP  ( NOLOCK ) ON  BRP.BillId = B.Ope
            FROM FinanceMain.OperationRow RR WITH ( NOLOCK ) JOIN FinanceMain.Operation O WITH ( NOLOCK ) ON RR.OperationId = O.OperationId
            JOIN FinanceCommon.BillRegularParams BRP ON O.OperationId = BRP.BillId
            WHERE O.AccountId = A.AccountId AND O.PeriodFrom < @Period AND RR.BenefitsCategoryId = BN.BenefitsCategoryId AND RR.DiscountSumm > 0
+           /*140219 O.Chekh: AND YEAR(CASE WHEN O.PeriodFrom < @StartSystem THEN RR.ConsumptionTo - 1 ELSE RR.ConsumptionTo END) *100 
+           + MONTH(CASE WHEN O.PeriodFrom < @StartSystem THEN RR.ConsumptionTo - 1 ELSE RR.ConsumptionTo END) */
+           --140219 O.Chekh
            AND            CASE WHEN (O.PeriodFrom < @StartSystem OR BRP.PreviousSystem = 1) THEN   YEAR(RR.ConsumptionTo)*100 + MONTH(RR.ConsumptionTo)
         ELSE   YEAR(DATEADD(hh, - 1, RR.ConsumptionTo))*100 + MONTH(DATEADD(hh, - 1, RR.ConsumptionTo))        END
          --140219 O.Chekh
@@ -331,13 +338,19 @@ LEFT JOIN FinanceCommon.BillRegularParams BRP  ( NOLOCK ) ON  BRP.BillId = B.Ope
             ELSE 0
             END AS Flag,
             bn.isBlock
+			, adr.CityId AS KodNasPunktu
 			, adc.Name AS NasPunkt
-			--, ADS.Name
+			, ADS.Name AS VulName
+			, adr.Building AS Bild
+			, adr.BuildingPart AS Korp
+			, Adr.Apartment AS Apartment
+			, PC.Name LGNAME
         into #Benefits
 		FROM AccountingCommon.Account A WITH ( NOLOCK )
 			JOIN AccountingCommon.UsageObject AS UO WITH ( NOLOCK ) ON A.AccountId = UO.AccountId
             JOIN AccountingCommon.Address Adr WITH ( NOLOCK ) ON UO.AddressId = Adr.AddressId
 			LEFT JOIN AddressDictionary.City adc ON adc.CityId = Adr.CityId
+			LEFT JOIN AddressDictionary.Street ADS  (NOLOCK) ON ADR.StreetId = ADS.StreetId
             JOIN Benefits BN WITH ( NOLOCK ) ON BN.AccountId = A.AccountId
             JOIN AccountingDictionary.BenefitsCategory PC WITH ( NOLOCK ) ON BN.BenefitsCategoryId = PC.BenefitsCategoryId
             JOIN @BenefitsCategory bcat ON bcat.BenefitsCategoryId = pc.BenefitsCategoryId
@@ -370,7 +383,8 @@ COMPUTE SUM(summ)
 /*Структура згідно
 http://zakon2.rada.gov.ua/laws/show/z1172-07
  */
-CREATE TABLE #dbf2 (CDPR NUMERIC(12) --Код за ЄДРПОУ організації
+CREATE TABLE #dbf2 (
+CDPR NUMERIC(12)					 --Код за ЄДРПОУ організації
 ,IDCODE CHARACTER (10)				 --131007A.Chekh: --Ідентифікаційний   номер   пільговика
 ,FIO CHARACTER   (50)				 -- П.І.Б.  пільговика - поле FIO
 , PPOS CHARACTER (15)				 -- Серія   та   номер  пільгового  посвідчення  -  поле  PPO
@@ -382,23 +396,30 @@ CREATE TABLE #dbf2 (CDPR NUMERIC(12) --Код за ЄДРПОУ організації
 , DATA2   DATETIME					 --131007A.Chekh:
 , LGKOL   NUMERIC (2)				 --к-ть осіб, що отримують пільгу
 , LGKAT   NUMERIC (3)				 --код категорії пільговика
+, LGNAME CHAR(50)
 , LGPRC   NUMERIC (3)				 --розмір пільги у відсотках
 , SUMM     NUMERIC (8,2)			 --сума нарахованої пільги
 , FACT     NUMERIC (19,6)			 --пільговий обсяг фактичного споживання
  ,TARIF    NUMERIC (14,7)			 --тариф за одиницю послуги з ПДВ  ----!!!!!
 , FLAG     NUMERIC (1)				 --ознака для перерахунків
 ,isBlock NUMERIC(1)					 --заблокована вже пільга
+, KodNasPunktu NUMERIC (10)			 -- код населеного пункту
 , NasPunkt CHAR(50)					 --населений пункт пільговика
+, VulName CHAR(50)					 --назва вулиці
+, Bild CHAR(9)						 --будинок
+, Korp CHAR(10)						 --корпус
+, Apartment CHAR(5)					 --квартира
 )
 IF @withGroup =   1
 BEGIN
 INSERT INTO #dbf2
-        ( CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, DATA1, DATA2, LGKOL, LGKAT, LGPRC, SUMM, FACT, TARIF, FLAG , isBlock, NasPunkt )
-SELECT  CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, MAX(DATA1), MAX(DATA2), MAX(LGKOL), LGKAT, LGPRC, SUM(SUMM), SUM(FACT)
-                  , TARIF, FLAG ,isBlock, NasPunkt
+        ( CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, DATA1, DATA2, LGKOL, LGKAT, LGNAME, LGPRC, SUMM, FACT, TARIF, FLAG , isBlock, 
+			KodNasPunktu, NasPunkt, VulName, Bild, Korp, Apartment )
+SELECT  CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, MAX(DATA1), MAX(DATA2), MAX(LGKOL), LGKAT, LGNAME, LGPRC, SUM(SUMM), SUM(FACT)
+                  , TARIF, FLAG ,isBlock, KodNasPunktu, NasPunkt, VulName, Bild, Korp, Apartment
 FROM #Benefits
 GROUP BY CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, YEAR(DATA1)*100 + MONTH(DATA1), YEAR(DATA2) *100 + MONTH (DATA2)
-		, LGKAT, LGPRC, TARIF, FLAG, isBlock, NasPunkt
+		, LGKAT, LGNAME, LGPRC, TARIF, FLAG, isBlock, KodNasPunktu, NasPunkt, VulName, Bild, Korp, Apartment
 
 --------видалення блочних записів 
 DECLARE @x TABLE 
@@ -415,19 +436,25 @@ data1	DATETIME,
 data2	DATETIME,
 lgkol	INT,
 lgkat	char(3),
+lgname CHAR(50),
 lgprc	INT,
 summ	DECIMAL(10,2),
 fact	DECIMAL(10,2),
 tarif	DECIMAL(14,7),
 flag	INT,
 isblock INT,
+KodNasPunktu INT,
 NasPunkt CHAR(50),
-id INT) 
+ VulName CHAR(50)
+, Bild CHAR(9)
+, Korp CHAR(10)
+, Apartment CHAR(5)
+, id INT) 
 
 INSERT @x 
 SELECT cdpr,idcode,fio,ppos,rs,yearin,monthin,lgcode,
-		data1,data2,lgkol,lgkat,lgprc,
-		summ,fact,tarif,flag,isblock, NasPunkt,
+		data1,data2,lgkol,lgkat, lgname,lgprc,
+		summ,fact,tarif,flag,isblock, KodNasPunktu, NasPunkt, VulName, Bild, Korp, Apartment, 
 		ROW_NUMBER() OVER (PARTITION BY lgcode,idcode,rs,MONTH(data1),YEAR(data1),flag ORDER BY lgcode,isblock,tarif) id
 FROM #dbf2 z
 WHERE EXISTS (
@@ -489,7 +516,8 @@ WHERE EXISTS (SELECT * FROM @x
 )
 
 SELECT * FROM #dbf2
-ORDER BY RS  ASC
+$params$
+ORDER BY LGNAME, RS ASC
 END
 END
 

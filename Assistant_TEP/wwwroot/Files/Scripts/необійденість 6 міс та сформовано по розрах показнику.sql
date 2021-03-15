@@ -3,7 +3,7 @@
 	та по яких рахунки сформовано по розрахунковому споживанню е/е (від 100грн)
 	*/
 
-DECLARE @SummBorh INT; SET @SummBorh=100	--сума боргу від 100
+--DECLARE @SummBorh INT; SET @SummBorh=0	--сума боргу від 100
 DECLARE @CntMonth INT; SET @CntMonth = 6 --Кількість місяців необходу
 DECLARE @ExBill INT 
 SET @ExBill =       --Термін погашення боргу по рахунках
@@ -139,7 +139,7 @@ JOIN AccountingCommon.UsageObject uo ON n.AccountId = uo.AccountId
 JOIN AccountingCommon.Point p ON p.UsageObjectId = uo.UsageObjectId
 JOIN AccountingCommon.UsageCalculationMethod cm ON cm.PointId = p.PointId
 JOIN AccountingMeasuring.GroupIndex gi ON gi.UsageCalculationMethodId = cm.UsageCalculationMethodId
-WHERE n.sumaRizn > @SummBorh
+WHERE n.sumaRizn > 0
 	AND gi.GroupIndexSourceId = 18			-- то для розрахункового
 	AND gi.IsForCalculate = 1
 	AND gi.Date BETWEEN @date_from$cok$ AND @date_to$cok$	

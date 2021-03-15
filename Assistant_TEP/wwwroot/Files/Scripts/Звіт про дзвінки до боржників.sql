@@ -1,7 +1,6 @@
-
-DECLARE @date_from DATE; SET @date_from = '2019-01-01 00:00:00'
-DECLARE @d DATETIME; SET @d=convert(char(8),getdate(),112)
-DECLARE @date_to DATE; SET @date_to = dateadd(day,1-day(@d),@d)		--дата по
+DECLARE @date_from$cok$ DATE; SET @date_from$cok$ = '2019-01-01 00:00:00'
+DECLARE @d$cok$ DATETIME; SET @d$cok$=convert(char(8),getdate(),112)
+DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = dateadd(day,1-day(@d$cok$),@d$cok$)		--дата по
 
 
 declare @borh$cok$ TABLE (
@@ -29,14 +28,14 @@ SELECT 	acc.AccountId
 		,MAX(DATEDIFF(MONTH, 
 							SUBSTRING(CONVERT(CHAR(10),br.CalculatePeriod), 1, 4)+ '-' + 
 							SUBSTRING(CONVERT(CHAR(10),br.CalculatePeriod), 5, 2)+ '-01'
-								, @date_to
+								, @date_to$cok$
 						) ) AS [м≥с€ць]
 		, pp.MobilePhoneNumber
 FROM FinanceCommon.BillRegular br
 LEFT JOIN AccountingCommon.Account acc ON acc.AccountId = br.AccountId
 LEFT JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = acc.PhysicalPersonId
 WHERE br.IsDeleted = 0
-		AND br.ConsumptionFrom BETWEEN @date_from AND @date_to
+		AND br.ConsumptionFrom BETWEEN @date_from$cok$ AND @date_to$cok$
 		AND br.RestSumm > 0
 GROUP BY acc.AccountId
 		,acc.AccountNumber

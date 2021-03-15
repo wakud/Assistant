@@ -17,6 +17,12 @@ namespace Assistant_TEP.MyClasses
             return inputField.Remove(4, 1);
         }
 
+        public static string serializeList(string inputField, string delimiter)
+        {
+            string res = "'" + inputField.Replace(" ", "").Replace(delimiter, "', '") + "'";
+            return res;
+        }
+
         public static int serializeInt(string inputField)
         {
             return Int32.Parse(inputField.ToString().Trim());

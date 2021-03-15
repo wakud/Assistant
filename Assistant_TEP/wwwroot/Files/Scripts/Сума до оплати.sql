@@ -81,5 +81,5 @@ SELECT zipcode AS [Індекс]
 		,pokaz AS [Показ]
 FROM @tbl$cok$
 WHERE (@zip_code = '' OR ZipCode = @zip_code)
-		AND suma_pay >= @sum_pay 
+		AND suma_pay >= @sum_pay AND suma_pay <= @sum1_pay
 ORDER BY zipcode, name_city, adresa

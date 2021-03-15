@@ -1,4 +1,3 @@
-
 SELECT a.AccountNumber AS [Ос. рахунок]
 		, pp.FullName AS [ПІП]
 		, adr.FullAddress AS [Адреса абонента]

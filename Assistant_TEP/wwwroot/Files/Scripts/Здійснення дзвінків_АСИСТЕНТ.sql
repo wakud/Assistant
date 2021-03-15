@@ -1,19 +1,23 @@
+--declare @minBorgForInterval nvarchar = N'1'
+--declare @minIntervalBorg nvarchar = N'1'
+--declare @minBorg nvarchar = N'1000'
+
 DROP TABLE IF EXISTS ##contracts
 DROP TABLE IF EXISTS ##saldovka
 DROP TABLE IF EXISTS ##lastPayment
 DROP TABLE IF EXISTS ##results
 DROP TABLE IF EXISTS ##periods
 
-DECLARE @CurPer int
-exec @CurPer = sfGetCurrentPeriod
-DECLARE @PaymentKind int  = 15
-DECLARE @ZeroSaldo int = 1
-DECLARE @StartPeriod int = 201901
-DECLARE @CurrentPeriodFill int = @StartPeriod
-DECLARE @EndPeriod int = @CurPer
+DECLARE @CurPerDzv int
+exec @CurPerDzv = sfGetCurrentPeriod
+DECLARE @PaymentKindDzv int  = 15
+DECLARE @ZeroSaldoDzv int = 1
+DECLARE @StartPeriodDzv int = 201901
+DECLARE @CurrentPeriodFillDzv int = @StartPeriodDzv
+DECLARE @EndPeriodDzv int = @CurPerDzv
 
---IF @minBorgForInterval <= 0.00
---	SET @minBorgForInterval = 0.01
+IF CAST(@minBorgForInterval as numeric) <= 0.00
+	SET @minBorgForInterval = 0.01
 
 create table ##saldovka(
 	CurrentPeriod int NULL,
@@ -65,9 +69,9 @@ INSERT INTO ##saldovka(
 		CreditCM,
 		CreditCMVAT
 	)
-	EXEC cpFinancialSaldoRollFilialByContract @CurPer, @PaymentKind, @ZeroSaldo
+	EXEC cpFinancialSaldoRollFilialByContract @CurPerDzv, @PaymentKindDzv, @ZeroSaldoDzv
 	UPDATE ##saldovka
-		SET CurrentPeriod = @CurPer
+		SET CurrentPeriod = @CurPerDzv
 	where CurrentPeriod is null
 
 SELECT 
@@ -93,7 +97,7 @@ outer apply (
 	JOIN OperationType ot on ot.OperationTypeId = o.OperationTypeId
 	where 
 		o.PaymentKindId = 15 and o.ContractId = c.ContractId and
-		ot.IsPayment = 1  and ot.IsIncome = 1 and o.CurrentPeriod < @CurPer
+		ot.IsPayment = 1  and ot.IsIncome = 1 and o.CurrentPeriod < @CurPerDzv
 	ORDER BY o.OperationDate DESC
 ) opl
 	
@@ -107,8 +111,8 @@ select
 		where 
 		o.Rest >= @minBorgForInterval and 
 		o.ContractId = c.ContractId and 
-		o.CurrentPeriod > @StartPeriod and 
-		o.PaymentKindId = @PaymentKind
+		o.CurrentPeriod > @StartPeriodDzv and 
+		o.PaymentKindId = @PaymentKindDzv
 	)'Тривалість виникнення боргу',
 	(
 		CASE
@@ -123,7 +127,7 @@ select
 	lp.summ 'Сума останньої оплати'
 INTO ##results
 from ##contracts c
-JOIN ##saldovka s on s.ContractId = c.ContractId and s.CurrentPeriod = @CurPer
+JOIN ##saldovka s on s.ContractId = c.ContractId and s.CurrentPeriod = @CurPerDzv
 JOIN ##lastPayment lp on lp.ContractId = c.ContractId
 JOIN Contract ctd on ctd.ContractId = c.ContractId
 outer apply (
@@ -137,7 +141,7 @@ outer apply (
 		o.PaymentKindId = 15 and
 		r.IsAdmitted = 1 and
 		o.ContractId = c.ContractId	and
-		r.CurrentPeriod < @CurPer
+		r.CurrentPeriod < @CurPerDzv
 ) kwtBorg
 outer apply (
 	SELECT MIN(CurrentPeriod) CurrentPeriod
@@ -149,7 +153,17 @@ outer apply (
 ) minMonth
 where s.DebetPM >= @minBorg
 
-select * 
-from ##results
+select 
+	r.[Номер договору],
+	r.[Назва споживача],
+	r.[Тривалість виникнення боргу],
+	r.[Заборгованість кВт],
+	r.[Заборгованість грн.],
+	'' [Додзвонились(так/ні)],
+	'' [Направили інформаційні листи(так/ні)],
+	r.[Дата останньої оплати],
+	r.[Сума останньої оплати],
+	'' [Примітка]
+from ##results r
 where [Тривалість виникнення боргу] >= @minIntervalBorg
 ORDER BY ISNULL(TRY_CAST([Номер договору] as int), 0)

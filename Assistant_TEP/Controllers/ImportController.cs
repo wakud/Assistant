@@ -175,70 +175,78 @@ namespace Assistant_TEP.Controllers
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
+            //Укрпошта
             else if (formFile.FileName.ToLower().StartsWith("stand"))
             {
                 List<UkrPostal> postal = new List<UkrPostal>();
                 //Зчитуємо з .dbf і закидаємо в ліст
+                Dictionary<string, NDbfReader.IColumn> ColumnInstances = new Dictionary<string, NDbfReader.IColumn>();
+
                 using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
                 {
                     var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(1251));
+                    
+                    //Переводимо назви стовпчиків у верхній регістр
+                    foreach(NDbfReader.IColumn c in readerDbf.Table.Columns.ToList()){
+                        ColumnInstances[c.Name.ToUpper()] = c;
+                    }
                     while (readerDbf.Read())
                     {
                         try
                         {
                             var row = new UkrPostal();
-                            row.PAY_DATE = DateTime.Parse(readerDbf.GetValue("pay_date").ToString().Trim());
-                            row.KOD_OPZ = readerDbf.GetValue("kod_opz").ToString().Trim();
-                            row.REESTR_NUM = readerDbf.GetValue("reestr_num").ToString().Trim();
-                            object? pip = readerDbf.GetValue("fio");
+                            row.PAY_DATE = DateTime.Parse(readerDbf.GetValue(ColumnInstances["PAY_DATE"]).ToString().Trim());
+                            row.KOD_OPZ = readerDbf.GetValue(ColumnInstances["KOD_OPZ"]).ToString().Trim();
+                            row.REESTR_NUM = readerDbf.GetValue(ColumnInstances["REESTR_NUM"]).ToString().Trim();
+                            object? pip = readerDbf.GetValue(ColumnInstances["FIO"]);
                             if (pip == null)
                             {
                                 row.FIO = "";
                             }
                             else
                             {
-                                row.FIO = readerDbf.GetValue("fio").ToString().Trim();
+                                row.FIO = readerDbf.GetValue(ColumnInstances["FIO"]).ToString().Trim();
                             }
-                            object? adresa = readerDbf.GetValue("adress");
+                            object? adresa = readerDbf.GetValue(ColumnInstances["ADRESS"]);
                             if (adresa == null)
                             {
                                 row.ADRESS = "";
                             }
                             else
                             {
-                                row.ADRESS = readerDbf.GetValue("adress").ToString().Trim();
+                                row.ADRESS = readerDbf.GetValue(ColumnInstances["ADRESS"]).ToString().Trim();
                             }
-                            object? tel = readerDbf.GetValue("telefon");
-                            if(tel == null)
+                            object? tel = readerDbf.GetValue(ColumnInstances["TELEFON"]);
+                            if (tel == null)
                             {
                                 row.TELEFON = "0";
                             }
                             else
                             {
-                                row.TELEFON = readerDbf.GetValue("telefon").ToString().Trim();
+                                row.TELEFON = readerDbf.GetValue(ColumnInstances["TELEFON"]).ToString().Trim();
                             }
-                            row.SENDER_ACC = long.Parse(readerDbf.GetValue("sender_acc").ToString().Trim());
-                            row.PAY_SUM = decimal.Parse(readerDbf.GetValue("pay_sum").ToString().Trim());
-                            row.SEND_SUM = decimal.Parse(readerDbf.GetValue("send_sum").ToString().Trim());
-                            object? pre = readerDbf.GetValue("prev");
+                            row.SENDER_ACC = long.Parse(readerDbf.GetValue(ColumnInstances["SENDER_ACC"]).ToString().Trim());
+                            row.PAY_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["PAY_SUM"]).ToString().Trim());
+                            row.SEND_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["SEND_SUM"]).ToString().Trim());
+                            object? pre = readerDbf.GetValue(ColumnInstances["PREV"]);
                             if (pre == null)
                             {
                                 row.PREV = "";
                             }
                             else
                             {
-                                row.PREV = readerDbf.GetValue("prev").ToString().Trim();
+                                row.PREV = readerDbf.GetValue(ColumnInstances["PREV"]).ToString().Trim();
                             }
-                            object? cur = readerDbf.GetValue("curr");
+                            object? cur = readerDbf.GetValue(ColumnInstances["CURR"]);
                             if (cur == null)
                             {
                                 row.CURR = "";
                             }
                             else
                             {
-                                row.CURR = readerDbf.GetValue("curr").ToString().Trim();
+                                row.CURR = readerDbf.GetValue(ColumnInstances["CURR"]).ToString().Trim();
                             }
-                            row.REESTR_SUM = decimal.Parse(readerDbf.GetValue("reestr_sum").ToString().Trim());
+                        row.REESTR_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["REESTR_SUM"]).ToString().Trim());
                             postal.Add(row);
                         }
                         catch (Exception ex)
@@ -263,9 +271,9 @@ namespace Assistant_TEP.Controllers
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(dtRow["AccountNumberNew"]);
-                        Console.WriteLine(dtRow["AccountNumber"]);
-                        Console.WriteLine(e.ToString());
+                        //Console.WriteLine(dtRow["AccountNumberNew"]);
+                        //Console.WriteLine(dtRow["AccountNumber"]);
+                        //Console.WriteLine(e.ToString());
                     }
                 }
 

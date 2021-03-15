@@ -1,4 +1,6 @@
-﻿@{
+﻿@model Assistant_TEP.ViewModels._2Pilga
+
+@{
     ViewData["Title"] = "Pilga2";
 }
 
@@ -6,3 +8,228 @@
     Форма для розрахунку видатків на відшкодування витрат, пов'язаних з наданням пільг "2-пільга"
 </h3>
 
+<div class="card-deck">
+    @if(Model.Period  != null)
+    {
+        <div class="card p-0 text-center">
+            <h5 class="card-title">Виберіть період:</h5>
+            <input id="period-select" class="form-control" type="month" value="@Model.Period" name="period" />
+        </div>
+        <div class="card text-center">
+            <h5 class="card-title">Вивести на екран</h5>
+            <button id="submitScreen" class="btn btn-success" value="На екран">На екран</button>
+        </div>
+        <div class="card text-center">
+            <h5 class="card-title">Сформувати ДБФ-файл</h5>
+            <button id="submitDbf" class="btn btn-success" value="У dbf">У дбф</button>
+        </div>
+        <div class="card text-center">
+            <h5 class="card-title">Сформувати роздруковку</h5>
+            <button id="submitExcel" class="btn btn-success" value="У excel">У ексель</button>
+        </div>
+    }
+    else
+    {
+        <div class="card col-3 p-0 text-center">
+            <h5 class="card-title">Виберіть період:</h5>
+            <input id="period-select" class="form-control" type="month" value="@Model.Period" name="period" />
+        </div>
+    }
+</div>
+
+
+@*<div class="container">*@
+<div class="card">
+    @if(Model.Period  != null)
+    {
+        <div class="card-body">
+            <h5 class="card-title">Оберіть населений пункт</h5>
+            <select id="nasPunktSelections" class="form-select" style="margin-bottom: 1rem">
+                @foreach(var NasKod in Model.nasPunkts.Keys){
+                    <option value='@NasKod'>@Model.nasPunkts[NasKod]</option>
+                }
+            </select>
+            <button id="addNasPunktButton">Додати</button>
+        </div>
+        <div id="nps" style="margin: 1rem">
+            <h6>Обрані населені пункти:</h6>
+        </div>
+        @*</div>*@
+    }
+    @section Scripts {
+        @if(Model.Period != null)
+        {
+            <script>
+                $(document).ready(function () {
+                    var nasPunktsArray = [];
+                    function addNasPunkt(ev) {
+                        ev.preventDefault();
+                        $.each($("#nasPunktSelections option:selected"), function () {
+                            const dataId = $(this).val();
+                            const dataText = $(this).text();
+                            const badge = document.createElement("span");
+                            badge.classList.add("badge");
+                            badge.classList.add("bg-success");
+                            badge.innerText = dataText;
+                            $("#nps").append(badge);
+                            $(badge).attr("data-id", dataId);
+                            $(badge).css({
+                                'cursor': 'pointer',
+                                '-moz-user-select': '-moz-none',
+                                '-moz-user-select': 'none',
+                                '-o-user-select': 'none',
+                                '-khtml-user-select': 'none',
+                                '-webkit-user-select': 'none',
+                                '-ms-user-select': 'none',
+                                'user-select': 'none',
+                                'margin': '0.25rem'
+                            });
+                            $(badge).hover(
+                                function () {
+                                    $(this).removeClass("bg-success");
+                                    $(this).addClass("bg-warning");
+                                },
+                                function () {
+                                    $(this).removeClass("bg-warning");
+                                    $(this).addClass("bg-success");
+                                }
+                            );
+                            $(badge).click(function () {
+                                const opt = new Option(dataText, dataId);
+                                $(opt).html(dataText);
+                                $("#nasPunktSelections").append(opt);
+                                $(this).remove();
+                                nasPunktsArray = nasPunktsArray.filter((val, idx) => val.toString() != dataId.toString());
+                            })
+                            $(this).remove();
+                            nasPunktsArray.push(dataId);
+                        });
+                    }
+                    async function sendData(ev, exportType) {
+                        if (nasPunktsArray.length === 0) {
+                            alert("Виберіть населений пункт!");
+                            return;
+                        }
+                        ev.preventDefault();
+                        const data = {
+                            ids: nasPunktsArray,
+                            exportType,
+                            period: $("#period-select").val()
+                        };
+                        const disableLoad = await loadPage();
+                        $.ajax({
+                            type: 'POST',
+                            url: '@Url.Action("Pilga2")',
+                            data: data,
+                            xhrFields: exportType !== "screen" ? {
+                                responseType: 'blob' // to avoid binary data being mangled on charset conversion
+                            } : undefined,
+
+                            datatype: "json",
+                            traditional: true,
+                            success: async function (data, status, xhr) {
+                                disableLoad();
+                                //alert("Звіт сформовано");
+                                if (exportType === "screen") {
+                                    for (let p of data) {
+                                        $("#ResultsTableBody").append(      //виводимо значення
+                                            `<tr>
+                                                <td>${p.rs}</td>
+                                                <td>${p.idcode}</td>
+                                                <td>${p.fio}</td>
+                                                <td>${p.ppos}</td>
+                                                <td>${p.yearin}</td>
+                                                <td>${p.monthin}</td>
+                                                <td>${p.lgcode}</td>
+                                                <td>${p.lgkol}</td>
+                                                <td>${p.lgprc}</td>
+                                                <td>${p.summ}</td>
+                                                <td>${p.fact}</td>
+                                                <td>${p.tarif}</td>
+                                                <td>${p.nasPunkt}</td>
+                                            </tr>`
+                                        );
+                                    }
+                                    $("#screenResults").show();
+                                }
+                                else
+                                {
+                                    let blob = data;
+                                    let disposition = xhr.getResponseHeader('Content-Disposition');
+                                    if (disposition && disposition.indexOf('attachment') !== -1) {
+                                        let filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                                        let matches = filenameRegex.exec(disposition);
+                                        if (matches != null && matches[1]) filename = matches[1].replace(/['"]/g, '');
+                                    }
+
+                                    if (typeof window.navigator.msSaveBlob !== 'undefined') {
+                                        // IE workaround for "HTML7007: One or more blob URLs were revoked by closing the blob for which they were created. These URLs will no longer resolve as the data backing the URL has been freed."
+                                        window.navigator.msSaveBlob(blob, filename);
+                                    } else {
+                                        let URL = window.URL || window.webkitURL;
+                                        let downloadUrl = URL.createObjectURL(blob);
+
+                                        if (filename) {
+                                            // use HTML5 a[download] attribute to specify filename
+                                            let a = document.createElement("a");
+                                            // safari doesn't support this yet
+                                            if (typeof a.download === 'undefined') {
+                                                window.location.href = downloadUrl;
+                                            } else {
+                                                a.href = downloadUrl;
+                                                a.download = filename;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                            }
+                                        } else {
+                                            window.location.href = downloadUrl;
+                                        }
+
+                                        setTimeout(function () { URL.revokeObjectURL(downloadUrl); }, 100); // cleanup
+                                    }
+                                }
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert("Помилка" + errorThrown);
+                                disableLoad();
+                            }
+                        });
+                    }
+                    $("#addNasPunktButton").click(addNasPunkt);
+                    $("#submitDbf").click((ev) => sendData(ev, "dbf"));
+                    $("#submitExcel").click((ev) => sendData(ev, "excel"));
+                    $("#submitScreen").click((ev) => sendData(ev, "screen"));
+                });
+            </script>
+        }
+        <script>
+            $("#period-select").change(function () {
+                const selectedPeriod = $(this).val();
+                loadPage('@Url.Action("Pilga2")' + '/?period=' + selectedPeriod.toString());
+            })
+            $('#screenResults').hide();
+        </script>
+    }
+</div>
+<div id="screenResults" class="m-1">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Особовий</th>
+                <th>Ідент. код</th>
+                <th>ПІП</th>
+                <th>№ посвідчення</th>
+                <th>Рік пільги</th>
+                <th>Місяць пільги</th>
+                <th>Код пільги</th>
+                <th>К-ть</th>
+                <th>Пільга у %</th>
+                <th>Сума пільги</th>
+                <th>Споживання</th>
+                <th>Тариф</th>
+                <th>Нас. пункт</th>
+            </tr>
+        </thead>
+        <tbody id="ResultsTableBody"></tbody>
+    </table>
+</div>

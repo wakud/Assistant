@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using Assistant_TEP.Models;
+using Assistant_TEP.ViewModels;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +14,7 @@ using DotNetDBF;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using Assistant_TEP.MyClasses;
+using ClosedXML.Excel;
 
 namespace Assistant_TEP.Controllers
 {
@@ -21,11 +24,19 @@ namespace Assistant_TEP.Controllers
         private readonly MainContext db;
         private readonly IWebHostEnvironment appEnv;
         public static IConfiguration Configuration;
+        private readonly XLWorkbook wb;
 
         public ObminController(MainContext context, IWebHostEnvironment appEnviroment)
         {
             db = context;
             appEnv = appEnviroment;
+            wb = new XLWorkbook();
+        }
+
+        //****Запит про наявність боргу по пільговикам****
+        public ActionResult Pilg()
+        {
+            return View();
         }
 
         [HttpPost]
@@ -36,7 +47,7 @@ namespace Assistant_TEP.Controllers
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
-            
+
             //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
@@ -50,7 +61,7 @@ namespace Assistant_TEP.Controllers
                 formFile.CopyTo(fileStream);
 
             List<ObminPerson> obmins = new List<ObminPerson>();
-            
+
             //Зчитуємо з .dbf і закидаємо в ліст
             using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
             {
@@ -90,13 +101,13 @@ namespace Assistant_TEP.Controllers
                         return View();
                     }
                 }
-            }   
+            }
 
             Dictionary<string, decimal> vybir = new Dictionary<string, decimal>();
             string FileScript = "obmin_pilg.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
             DataTable dt = BillingUtils.GetResults(path, cokCode);
-            
+
             foreach (DataRow dtRow in dt.Rows)
             {
                 vybir.Add(dtRow.Field<string>("AccountNumber"), dtRow.Field<decimal>("RestSumm"));
@@ -134,7 +145,7 @@ namespace Assistant_TEP.Controllers
                     writer.Fields = new[] { field1, field2, field3, field4, field5, field6, field7, field8, field9, field10,
                                     field11, field12, field13, field14, field15, field16, field17, field18, field19, field20, field21 };
 
-                    foreach (ObminPerson obmin in obmins) 
+                    foreach (ObminPerson obmin in obmins)
                     {
                         decimal borg = obmin.SUM_BORG;
                         if (vybir.ContainsKey(obmin.RAH))
@@ -156,8 +167,9 @@ namespace Assistant_TEP.Controllers
             string newName = nameParts[0] + "." + nameParts[1].Replace("M", "N");
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, newName);
         }
-
-        public ActionResult Pilg()
+        //----------------------------------------------------
+        //****Запит про наявність боргу по субсидіям****
+        public ActionResult Subs(int id)
         {
             return View();
         }
@@ -178,7 +190,7 @@ namespace Assistant_TEP.Controllers
             //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
-            
+
             //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
@@ -256,17 +268,18 @@ namespace Assistant_TEP.Controllers
 
             foreach (DataRow dtRow in dt.Rows)
             {
-                if(!zapyt.ContainsKey(dtRow.Field<string>("AccountNumber")))
+                if (!zapyt.ContainsKey(dtRow.Field<long>("AccountNumberNew").ToString().Trim()))
                 {
-                    zapyt.Add(dtRow.Field<string>("AccountNumber"), new SubsRezults
+                    zapyt.Add(dtRow.Field<long>("AccountNumberNew").ToString().Trim(), new SubsRezults
                     {
                         DEBT = dtRow.Field<decimal>("debt"),
                         NM_PAY = dtRow.Field<decimal>("nm_pay"),
                         NORM_F6 = dtRow.Field<int>("norm_f6"),
                         TARYF_6 = dtRow.Field<decimal>("taryf_6")
                     });
-
                 }
+                //Console.WriteLine(dtRow.Field<decimal>("debt"));
+                //Console.WriteLine(dtRow.Field<long>("AccountNumberNew").ToString().Trim());
             }
 
             using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
@@ -356,10 +369,10 @@ namespace Assistant_TEP.Controllers
 
                         writer.AddRecord(
                         obmins.APP_NUM, obmins.ZAP_R, obmins.ZAP_N, obmins.OWN_NUM, obmins.SUR_NAM, obmins.F_NAM, obmins.M_NAM, obmins.ENT_COD,
-                        obmins.DATA_S, obmins.RES2, obmins.ADR_NAM, obmins.VUL_COD, obmins.VUL_CAT, obmins.VUL_NAM, obmins.BLD_NUM, 
-                        obmins.CORP_NUM, obmins.FLAT, obmins.NUMB, obmins.NUM_P, obmins.PLG_COD, obmins.PLG_N, obmins.CM_AREA, obmins.OP_AREA, 
+                        obmins.DATA_S, obmins.RES2, obmins.ADR_NAM, obmins.VUL_COD, obmins.VUL_CAT, obmins.VUL_NAM, obmins.BLD_NUM,
+                        obmins.CORP_NUM, obmins.FLAT, obmins.NUMB, obmins.NUM_P, obmins.PLG_COD, obmins.PLG_N, obmins.CM_AREA, obmins.OP_AREA,
                         obmins.NM_AREA, borg, opp, opl, odv, nm_pay, obmins.TARYF_1, obmins.TARYF_2, obmins.TARYF_3,
-                        obmins.TARYF_4, obmins.TARYF_5, taryf_6, obmins.TARYF_7, obmins.TARYF_8, obmins.NORM_F1, obmins.NORM_F2, 
+                        obmins.TARYF_4, obmins.TARYF_5, taryf_6, obmins.TARYF_7, obmins.TARYF_8, obmins.NORM_F1, obmins.NORM_F2,
                         obmins.NORM_F3, obmins.NORM_F4, obmins.NORM_F5, norm_f6, obmins.NORM_F7, obmins.NORM_F8, ozn_1
                         );
                     }
@@ -369,7 +382,673 @@ namespace Assistant_TEP.Controllers
             byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
         }
+        //----------------------------------------------------
+        //****Формування звіту "Пільга -2"****
+        public ActionResult Pilga2(string period)
+        {
+            _2Pilga viewModel = new _2Pilga();
+            if (period == null)
+            {
+                return View(viewModel);
+            }
 
+            viewModel.Period = period;
+
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cokCode = user.Cok.Code;
+
+            //робимо перевірку на код цоку
+            if (cokCode == null || user.AnyCok == true)
+            {
+                ViewBag.error = "BadCok";
+                return View("/Views/Home/Privacy.cshtml");
+            }
+
+            //запускаємо скрипт і отримуємо результат 
+            string FileScript = "Pilga_Naseleni.sql";
+            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+            DataTable dt = BillingUtils.GetPilgaCity(path, cokCode);
+
+            //вказуємо шлях до DBF файла
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
+            string fileName = cokCode + "ilg.dbf";
+            string FullPath = appEnv.WebRootPath + filePath + fileName;
+
+            //видаляємо директорію
+            if (Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.Delete(appEnv.WebRootPath + filePath, true);
+
+            //створюємо директорію
+            if (!Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.CreateDirectory(appEnv.WebRootPath + filePath);
+
+            foreach (DataRow dr in dt.Rows)
+            {
+                int curNas;
+                if (!dr.IsNull("KodNasPunktu") && !dr.IsNull("NasPunkt") && int.TryParse(dr["KodNasPunktu"].ToString(), out curNas))
+                {
+                    viewModel.nasPunkts[curNas] = dr["NasPunkt"].ToString();
+                }
+            }
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        public ActionResult Pilga2(int[] ids, string exportType, string period)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cokCode = user.Cok.Code;
+            Console.WriteLine(period);
+            List<int> listNumber = new List<int>();     //записуємо отримані коди вибраних населених пунктів
+
+            foreach (int i in ids)
+            {
+                listNumber.Add(i);
+            }
+
+            //запускаємо скрипт і отримуємо результат 
+            string FileScript = "Pilga2.sql";
+            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+            DataTable dt = BillingUtils.GetPilga2(path, cokCode, int.Parse(period.Replace("-", "")), listNumber);
+
+            //Створюємо список з категоріями пільг
+            List<Pilga2> pilga2s = new List<Pilga2>();
+
+            //виводимо на екран
+            if (exportType == "screen")
+            {
+                foreach (DataRow dr in dt.Rows)
+                {
+                    Pilga2 pilga = new Pilga2();
+                    pilga.CDPR = long.Parse(dr["CDPR"].ToString());
+                    pilga.IDCODE = dr["IDCODE"].ToString();
+                    pilga.FIO = dr["FIO"].ToString();
+                    pilga.PPOS = dr["PPOS"].ToString();
+                    pilga.RS = dr["RS"].ToString();
+                    pilga.YEARIN = int.Parse(dr["YEARIN"].ToString());
+                    pilga.MONTHIN = int.Parse(dr["MONTHIN"].ToString());
+                    pilga.LGCODE = int.Parse(dr["LGCODE"].ToString());
+                    pilga.DATA1 = DateTime.Parse(dr["DATA1"].ToString());
+                    pilga.DATA2 = DateTime.Parse(dr["DATA2"].ToString());
+                    pilga.LGKOL = int.Parse(dr["LGKOL"].ToString());
+                    pilga.LGKAT = int.Parse(dr["LGKAT"].ToString());
+                    pilga.LGPRC = int.Parse(dr["LGPRC"].ToString());
+                    pilga.SUMM = decimal.Parse(dr["SUMM"].ToString());
+                    pilga.FACT = decimal.Parse(dr["FACT"].ToString());
+                    pilga.TARIF = decimal.Parse(dr["TARIF"].ToString());
+                    pilga.FLAG = int.Parse(dr["FLAG"].ToString());
+                    pilga.isBlock = int.Parse(dr["isBlock"].ToString());
+                    pilga.idNasPunkt = int.Parse(dr["KodNasPunktu"].ToString());
+                    pilga.NasPunkt = dr["NasPunkt"].ToString();
+                    pilga2s.Add(pilga);
+                }
+
+                return Json(pilga2s);
+            }
+
+            //виводимо у дбф
+            if (exportType == "dbf")
+            {
+                string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
+                string FileName = "ilg_" + user.Id.ToString() + "__";
+                string fullPath = appEnv.WebRootPath + filePath + FileName;
+
+                //якщо є файл то видаляємо його
+                if (System.IO.File.Exists(fullPath))
+                {
+                    System.IO.File.Delete(fullPath);
+                }
+
+                //створюємо новий дбф файл згідно заданої нами структури
+                using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    using DBFWriter writer = new DBFWriter
+                    {
+                        CharEncoding = Encoding.GetEncoding(866),
+                        Signature = DBFSignature.DBase3
+                    };
+
+                    //структура файлу дбф
+                    var CDPR = new DBFField("CDPR", NativeDbType.Numeric, 12);
+                    var IDCODE = new DBFField("IDCODE", NativeDbType.Char, 10);
+                    var FIO = new DBFField("FIO", NativeDbType.Char, 50);
+                    var PPOS = new DBFField("PPOS", NativeDbType.Char, 15);
+                    var RS = new DBFField("RS", NativeDbType.Char, 25);
+                    var YEARIN = new DBFField("YEARIN", NativeDbType.Numeric, 4);
+                    var MONTHIN = new DBFField("MONTHIN", NativeDbType.Numeric, 2);
+                    var LGCODE = new DBFField("LGCODE", NativeDbType.Numeric, 4);
+                    var DATA1 = new DBFField("DATA1", NativeDbType.Date);
+                    var DATA2 = new DBFField("DATA2", NativeDbType.Date);
+                    var LGKOL = new DBFField("LGKOL", NativeDbType.Numeric, 2);
+                    var LGKAT = new DBFField("LGKAT", NativeDbType.Numeric, 3);
+                    var LGPRC = new DBFField("LGPRC", NativeDbType.Numeric, 3);
+                    var SUMM = new DBFField("SUMM", NativeDbType.Numeric, 10, 2);
+                    var FACT = new DBFField("FACT", NativeDbType.Numeric, 20, 6);
+                    var TARIF = new DBFField("TARIF", NativeDbType.Numeric, 16, 7);
+                    var FLAG = new DBFField("FLAG", NativeDbType.Numeric, 1);
+
+                    writer.Fields = new[] { CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, DATA1, DATA2, LGKOL,
+                                            LGKAT, LGPRC, SUMM, FACT, TARIF, FLAG
+                                          };
+
+                    //зберігаємо вибрані дані з скрипта в файл
+                    foreach (DataRow dr in dt.Rows)
+                    {
+                        writer.AddRecord( int.Parse(dr["CDPR"].ToString()), dr["IDCODE"], dr["FIO"], dr["PPOS"], dr["RS"],
+                            int.Parse(dr["YEARIN"].ToString()), int.Parse(dr["MONTHIN"].ToString()), int.Parse(dr["LGCODE"].ToString()),
+                            dr["DATA1"], dr["DATA2"], int.Parse(dr["LGKOL"].ToString()), int.Parse(dr["LGKAT"].ToString()),
+                            int.Parse(dr["LGPRC"].ToString()), dr["SUMM"], dr["FACT"], dr["TARIF"], int.Parse(dr["FLAG"].ToString())
+                        );
+                    }
+
+                    //записуємо у файл
+                    writer.Write(fos);
+                }
+
+                //видаємо користувачу файл
+                string fileNameNew = FileName + DateTime.Now.ToString() + ".dbf";
+                byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
+                return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
+            }
+
+            //виводимо на друк
+            if (exportType == "excel")
+            {
+                //запускаємо скрипт і отримуємо результат 
+                string FileScript1 = "Pilga2Excel.sql";
+                string path1 = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript1;
+                DataTable dt1 = BillingUtils.GetPilga2(path1, cokCode, int.Parse(period.Replace("-", "")), listNumber);
+
+                foreach (DataRow dr in dt1.Rows)
+                {
+                    Pilga2 pilga = new Pilga2();
+                    //pilga.CDPR = long.Parse(dr["CDPR"].ToString());
+                    pilga.IDCODE = dr["IDCODE"].ToString();
+                    pilga.FIO = dr["FIO"].ToString();
+                    //pilga.PPOS = dr["PPOS"].ToString();
+                    pilga.RS = dr["RS"].ToString();
+                    pilga.YEARIN = int.Parse(dr["YEARIN"].ToString());
+                    pilga.MONTHIN = int.Parse(dr["MONTHIN"].ToString());
+                    //pilga.LGCODE = int.Parse(dr["LGCODE"].ToString());
+                    pilga.DATA1 = DateTime.Parse(dr["DATA1"].ToString());
+                    pilga.DATA2 = DateTime.Parse(dr["DATA2"].ToString());
+                    pilga.LGKOL = int.Parse(dr["LGKOL"].ToString());
+                    pilga.LGKAT = int.Parse(dr["LGKAT"].ToString());
+                    pilga.LGNAME = dr["LGNAME"].ToString();
+                    pilga.LGPRC = int.Parse(dr["LGPRC"].ToString());
+                    //pilga.SUMM = decimal.Parse(dr["SUMM"].ToString());
+                    //pilga.FACT = decimal.Parse(dr["FACT"].ToString());
+                    //pilga.TARIF = decimal.Parse(dr["TARIF"].ToString());
+                    //pilga.FLAG = int.Parse(dr["FLAG"].ToString());
+                    //pilga.isBlock = int.Parse(dr["isBlock"].ToString());
+                    //pilga.idNasPunkt = int.Parse(dr["KodNasPunktu"].ToString());
+                    pilga.NasPunkt = dr["NasPunkt"].ToString();
+                    pilga.VulName = dr["VulName"].ToString();
+                    pilga.Bild = dr["Bild"].ToString();
+                    pilga.Korp = dr["Korp"].ToString();
+                    pilga.Apartment = dr["Apartment"].ToString();
+                    pilga.woz = decimal.Parse(dr["woz"].ToString());
+                    pilga.z1 = decimal.Parse(dr["z1"].ToString());
+                    pilga.z2 = decimal.Parse(dr["z2"].ToString());
+                    pilga.z3 = decimal.Parse(dr["z3"].ToString());
+                    pilga.z4 = decimal.Parse(dr["z4"].ToString());
+                    pilga.wozKwt = decimal.Parse(dr["wozKwt"].ToString());
+                    pilga.z1Kwt = decimal.Parse(dr["z1Kwt"].ToString());
+                    pilga.z2Kwt = decimal.Parse(dr["z2Kwt"].ToString());
+                    pilga.z3Kwt = decimal.Parse(dr["z3Kwt"].ToString());
+                    pilga.z4Kwt = decimal.Parse(dr["z4Kwt"].ToString());
+                    pilga2s.Add(pilga);
+                }
+                Dictionary<string, List<Pilga2>> categories = new Dictionary<string, List<Pilga2>>();
+                Dictionary<string, CategoryTotals> categoryTotals = new Dictionary<string, CategoryTotals>();
+                foreach(Pilga2 p2 in pilga2s)
+                {
+                    if (!categories.ContainsKey(p2.LGNAME))
+                    {
+                        categories[p2.LGNAME] = new List<Pilga2>();
+                    }
+                    if (!categoryTotals.ContainsKey(p2.LGNAME))
+                    {
+                        categoryTotals[p2.LGNAME] = new CategoryTotals();
+                    }
+                    categories[p2.LGNAME].Add(p2);
+                    categoryTotals[p2.LGNAME].Count += 1;
+                    categoryTotals[p2.LGNAME].Code = p2.LGKAT.ToString();
+                    
+                    categoryTotals[p2.LGNAME].WoZoneCount += p2.woz;
+                    categoryTotals[p2.LGNAME].FirstZoneCount += p2.z1;
+                    categoryTotals[p2.LGNAME].SecondZoneCount += p2.z2;
+                    categoryTotals[p2.LGNAME].ThirdZoneCount += p2.z3;
+                    categoryTotals[p2.LGNAME].Lights += p2.z4;
+                    categoryTotals[p2.LGNAME].TotalCharged += p2.woz + p2.z1 + p2.z2 + p2.z3 + p2.z4;
+                }
+
+                Excel excel = new Excel(categories, categoryTotals);
+                excel.CreateZvit(user, period);
+                byte[] content = excel.CreateFile();
+
+                return File(
+                                content, 
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                "pilga2.xlsx"
+                            );
+            }
+
+            return Redirect("Pilga2");
+        }
+        //----------------------------------------------------
+        //Формування файлу для УСЗН з новими особовими
+        public ActionResult Zapyt(int id)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Zapyt(IFormFile formFile)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cokCode = user.Cok.Code;
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
+            string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
+
+            //видаляємо директорію
+            if (Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.Delete(appEnv.WebRootPath + filePath, true);
+
+            //створюємо директорію
+            if (!Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.CreateDirectory(appEnv.WebRootPath + filePath);
+
+            //зберігаємо файл
+            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                formFile.CopyTo(fileStream);
+
+            List<Zvirka> zv = new List<Zvirka>();
+
+            //Зчитуємо з .dbf і закидаємо в ліст
+            using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
+            {
+                var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
+                while (readerDbf.Read())
+                {
+                    try
+                    {
+                        var row = new Zvirka();
+                        List<NDbfReader.IColumn> columns = readerDbf.Table.Columns.ToList();
+                        row.SUR_NAM = readerDbf.GetValue(columns[0])?.ToString().Trim();
+                        row.F_NAM = readerDbf.GetValue(columns[1])?.ToString().Trim();
+                        row.M_NAM = readerDbf.GetValue(columns[2])?.ToString().Trim();
+                        row.INDX = readerDbf.GetValue(columns[3])?.ToString().Trim();
+                        row.N_NAME = readerDbf.GetValue(columns[4])?.ToString().Trim();
+                        row.N_CODE = readerDbf.GetValue(columns[5])?.ToString().Trim();
+                        row.VUL_CAT = readerDbf.GetValue(columns[6])?.ToString().Trim();
+                        row.VUL_NAME = readerDbf.GetValue(columns[7])?.ToString().Trim();
+                        row.VUL_CODE = readerDbf.GetValue(columns[8])?.ToString().Trim();
+                        row.BLD_NUM = readerDbf.GetValue(columns[9])?.ToString().Trim();
+                        row.CORP_NUM = readerDbf.GetValue(columns[10])?.ToString().Trim();
+                        row.FLAT = readerDbf.GetValue(columns[11])?.ToString().Trim();
+                        row.OWN_NUM = readerDbf.GetValue(columns[12])?.ToString().Trim();
+                        row.APP_NUM = readerDbf.GetValue(columns[13])?.ToString().Trim();
+                        if (readerDbf.GetValue(columns[14]) != null)
+                        {
+                            row.DAT_BEG = DateTime.Parse(readerDbf.GetValue(columns[14])?.ToString().Trim());
+                        }
+                        if (readerDbf.GetValue(columns[14]) != null) 
+                        { 
+                            row.DAT_END = DateTime.Parse(readerDbf.GetValue(columns[15])?.ToString().Trim());
+                        }
+                        row.CM_AREA = decimal.Parse(readerDbf.GetValue(columns[16])?.ToString().Trim());
+                        row.NM_AREA = decimal.Parse(readerDbf.GetValue(columns[17])?.ToString().Trim());
+                        row.BLC_AREA = decimal.Parse(readerDbf.GetValue(columns[18])?.ToString().Trim());
+                        row.FROG = decimal.Parse(readerDbf.GetValue(columns[19])?.ToString().Trim());
+                        row.DEBT = decimal.Parse(readerDbf.GetValue(columns[20])?.ToString().Trim());
+                        row.NUMB = int.Parse(readerDbf.GetValue(columns[21])?.ToString().Trim());
+                        row.P1 = decimal.Parse(readerDbf.GetValue(columns[22])?.ToString().Trim());
+                        row.N1 = decimal.Parse(readerDbf.GetValue(columns[23])?.ToString().Trim());
+                        row.P2 = decimal.Parse(readerDbf.GetValue(columns[24])?.ToString().Trim());
+                        row.N2 = decimal.Parse(readerDbf.GetValue(columns[25])?.ToString().Trim());
+                        row.P3 = decimal.Parse(readerDbf.GetValue(columns[26])?.ToString().Trim());
+                        row.N3 = decimal.Parse(readerDbf.GetValue(columns[27])?.ToString().Trim());
+                        row.P4 = decimal.Parse(readerDbf.GetValue(columns[28])?.ToString().Trim());
+                        row.N4 = decimal.Parse(readerDbf.GetValue(columns[29])?.ToString().Trim());
+                        row.P5 = decimal.Parse(readerDbf.GetValue(columns[30])?.ToString().Trim());
+                        row.N5 = decimal.Parse(readerDbf.GetValue(columns[31])?.ToString().Trim());
+                        row.P6 = decimal.Parse(readerDbf.GetValue(columns[32])?.ToString().Trim());
+                        row.N6 = decimal.Parse(readerDbf.GetValue(columns[33])?.ToString().Trim());
+                        row.P7 = decimal.Parse(readerDbf.GetValue(columns[34])?.ToString().Trim());
+                        row.N7 = decimal.Parse(readerDbf.GetValue(columns[35])?.ToString().Trim());
+                        row.P8 = decimal.Parse(readerDbf.GetValue(columns[36])?.ToString().Trim());
+                        row.N8 = decimal.Parse(readerDbf.GetValue(columns[37])?.ToString().Trim());
+                        zv.Add(row);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        ViewBag.error = "BadFile";
+                        return View();
+                    }
+                }
+            }
+
+            Dictionary<string, string> zap = new Dictionary<string, string>();
+            string FileScript = "napovnenia.sql";
+            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+            DataTable dt = BillingUtils.Napovnenia(path, cokCode, zv);
+
+            foreach (DataRow dtRow in dt.Rows)
+            {
+                string acc = dtRow.Field<string>("acc");
+                if (acc != null && acc.Trim() != "" && !zap.ContainsKey(acc))
+                {
+                    zap.Add(dtRow.Field<string>("acc"), dtRow.Field<string>("NewAcc"));
+                }
+            }
+
+            using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                using (var writer = new DBFWriter())
+                {
+                    writer.CharEncoding = Encoding.GetEncoding(866);
+                    writer.Signature = DBFSignature.DBase3;
+                    writer.LanguageDriver = 0x26; // кодировка 866
+                    var sur_nam = new DBFField("sur_nam", NativeDbType.Char, 30);
+                    var f_nam = new DBFField("f_nam", NativeDbType.Char, 15);
+                    var m_nam = new DBFField("m_nam", NativeDbType.Char, 20);
+                    var indx = new DBFField("indx", NativeDbType.Char, 6);
+                    var n_name = new DBFField("n_name", NativeDbType.Char, 30);
+                    var n_code = new DBFField("n_code", NativeDbType.Char, 5);
+                    var vul_cat = new DBFField("vul_cat", NativeDbType.Char, 7);
+                    var vul_name = new DBFField("vul_name", NativeDbType.Char, 30);
+                    var vul_code = new DBFField("vul_code", NativeDbType.Char, 5);
+                    var bld_num = new DBFField("bld_num", NativeDbType.Char, 7);
+                    var corp_num = new DBFField("corp_num", NativeDbType.Char, 2);
+                    var flat = new DBFField("flat", NativeDbType.Char, 7);
+                    var own_num = new DBFField("own_num", NativeDbType.Char, 15);
+                    var app_num = new DBFField("app_num", NativeDbType.Char, 8);
+                    var dat_beg = new DBFField("dat_beg", NativeDbType.Date);
+                    var dat_end = new DBFField("dat_end", NativeDbType.Date);
+                    var cm_area = new DBFField("cm_area", NativeDbType.Numeric, 7, 2);
+                    var nm_area = new DBFField("nm_area", NativeDbType.Numeric, 7, 2);
+                    var blc_area = new DBFField("blc_area", NativeDbType.Numeric, 5, 2);
+                    var frog = new DBFField("frog", NativeDbType.Numeric, 5, 1);
+                    var debt = new DBFField("debt", NativeDbType.Numeric, 10, 2);
+                    var numb = new DBFField("numb", NativeDbType.Numeric, 2);
+                    var p1 = new DBFField("p1", NativeDbType.Numeric, 10, 4);
+                    var n1 = new DBFField("n1", NativeDbType.Numeric, 10, 4);
+                    var p2 = new DBFField("p2", NativeDbType.Numeric, 10, 4);
+                    var n2 = new DBFField("n2", NativeDbType.Numeric, 10, 4);
+                    var p3 = new DBFField("p3", NativeDbType.Numeric, 10, 4);
+                    var n3 = new DBFField("n3", NativeDbType.Numeric, 10, 4);
+                    var p4 = new DBFField("p4", NativeDbType.Numeric, 10, 4);
+                    var n4 = new DBFField("n4", NativeDbType.Numeric, 10, 4);
+                    var p5 = new DBFField("p5", NativeDbType.Numeric, 10, 4);
+                    var n5 = new DBFField("n5", NativeDbType.Numeric, 10, 4);
+                    var p6 = new DBFField("p6", NativeDbType.Numeric, 10, 4);
+                    var n6 = new DBFField("n6", NativeDbType.Numeric, 10, 4);
+                    var p7 = new DBFField("p7", NativeDbType.Numeric, 10, 4);
+                    var n7 = new DBFField("n7", NativeDbType.Numeric, 10, 4);
+                    var p8 = new DBFField("p8", NativeDbType.Numeric, 10, 4);
+                    var n8 = new DBFField("n8", NativeDbType.Numeric, 10, 4);
+
+                    writer.Fields = new[] { sur_nam, f_nam, m_nam, indx, n_name, n_code, vul_cat, vul_name, vul_code,
+                        bld_num, corp_num, flat, own_num, app_num, dat_beg, dat_end, cm_area, nm_area, blc_area, frog,
+                        debt, numb, p1, n1, p2, n2, p3, n3, p4, n4, p5, n5, p6, n6, p7, n7, p8, n8
+                    };
+
+                    foreach (Zvirka zvirka in zv)
+                    {
+                        //заповнюємо дані по замовчуванні з дбф-ки
+                        string accNum = zvirka.OWN_NUM;
+                        if (zvirka.OWN_NUM != null && zap.ContainsKey(zvirka.OWN_NUM))
+                        {
+                            //заповнюємо дані з скрипта
+                            accNum = zap[zvirka.OWN_NUM];
+                        }
+
+                        writer.AddRecord(zvirka.SUR_NAM, zvirka.F_NAM, zvirka.M_NAM, zvirka.INDX, zvirka.N_NAME,
+                            zvirka.N_CODE, zvirka.VUL_CAT, zvirka.VUL_NAME, zvirka.VUL_CODE, zvirka.BLD_NUM,
+                            zvirka.CORP_NUM, zvirka.FLAT, accNum, zvirka.APP_NUM, zvirka.DAT_BEG, zvirka.DAT_END,
+                            zvirka.CM_AREA, zvirka.NM_AREA, zvirka.BLC_AREA, zvirka.FROG, zvirka.DEBT, zvirka.NUMB,
+                            zvirka.P1, zvirka.N1, zvirka.P2, zvirka.N2, zvirka.P3, zvirka.N3, zvirka.P4, zvirka.N4,
+                            zvirka.P5, zvirka.N5, zvirka.P6, zvirka.N6, zvirka.P7, zvirka.N7, zvirka.P8, zvirka.N8
+                            );
+                    }
+
+                    writer.Write(fos);
+                }
+            }
+
+            byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
+            return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
+            //return View();
+        }
+        //---------------------------------------------------
+        //Надання інформації по абонентам в УСЗН ТРДА субсидій.
+        public ActionResult Subsydia(int id)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cokCode = user.Cok.Code;
+
+            //робимо перевірку на код цоку
+            if (user.Cok.Code == null)
+            {
+                cokCode = "TR40";
+            }
+
+            if (cokCode == "TR40")
+            {
+                //запускаємо скрипт і отримуємо результат 
+                string FileScript = "Собезу на субсидії.sql";
+                string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+                DataTable dt = BillingUtils.GetResults(path, cokCode);
+
+                //зчитуємо субсидійні номера
+                Dictionary<int, string> Sub_e = new Dictionary<int, string>();
+                string PathRead = appEnv.WebRootPath + "\\files\\Obmin\\SUB_E.DBF";
+
+                using (var dbfDataReader = NDbfReader.Table.Open(PathRead))
+                {
+                    var reader = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
+                    while (reader.Read())
+                    {
+                        Sub_e.Add(int.Parse(reader.GetValue("NUMBPERS").ToString().Trim()),
+                            int.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    //обрізаємо спереді 2099
+                    }
+                }
+
+                //вказуємо шлях до файла
+                string filePath = "\\files\\Obmin\\";
+                string fileName = "TEP";
+                string FullPath = appEnv.WebRootPath + filePath + fileName;
+
+                //видаляємо файл
+                if (System.IO.File.Exists(FullPath))
+                {
+                    System.IO.File.Delete(FullPath);
+                }
+
+                //створюємо новий дбф файл згідно заданої нами структури
+                using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    using (var writer = new DBFWriter())
+                    {
+                        writer.CharEncoding = Encoding.GetEncoding(866);
+                        writer.Signature = DBFSignature.DBase3;
+
+                        //структура файлу дбф
+                        var Rash = new DBFField("Rash", NativeDbType.Numeric, 10);
+                        var Ora = new DBFField("Ora", NativeDbType.Char, 40);
+                        var Fio = new DBFField("Fio", NativeDbType.Char, 100);
+                        var Name_v = new DBFField("Name_v", NativeDbType.Char, 50);
+                        var Bld = new DBFField("Bld", NativeDbType.Char, 9);
+                        var Corp = new DBFField("Corp", NativeDbType.Char, 10);
+                        var Flat = new DBFField("Flat", NativeDbType.Char, 5);
+                        var Nazva = new DBFField("Nazva", NativeDbType.Char, 40);
+                        var Tariff = new DBFField("Tariff", NativeDbType.Char, 40);
+                        var Discount = new DBFField("Discount", NativeDbType.Numeric, 20, 5);
+                        var Pilgovuk = new DBFField("Pilgovuk", NativeDbType.Char, 100);
+                        var Gar_voda = new DBFField("Gar_voda", NativeDbType.Numeric, 20, 5);
+                        var Gaz_vn = new DBFField("Gaz_vn", NativeDbType.Numeric, 20, 5);
+                        var El_opal = new DBFField("El_opal", NativeDbType.Numeric, 20, 5);
+                        var Kilk_pilg = new DBFField("Kilk_pilg", NativeDbType.Char, 2);
+                        var T11_cod_na = new DBFField("T11_cod_na", NativeDbType.Char, 40);
+                        var Orendar = new DBFField("Orendar", NativeDbType.Char, 40);
+                        var Borg = new DBFField("Borg", NativeDbType.Numeric, 20, 5);
+
+                        writer.Fields = new[] { Rash, Ora, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
+                                                Pilgovuk, Gar_voda, Gaz_vn, El_opal, Kilk_pilg, T11_cod_na, Orendar, Borg };
+
+                        //наповнюємо файл даними
+                        foreach (DataRow dr in dt.Rows)
+                        {
+                            string pcode;
+                            if (!Sub_e.TryGetValue(dr.Field<int>("Rash"), out pcode))
+                            {
+                                pcode = "0";
+                            }
+
+                            writer.AddRecord(
+                                dr.Field<int>(("Rash")),
+                                pcode,
+                                dr.Field<string>("Fio"),
+                                dr.Field<string>("Name_v"),
+                                dr.Field<string>("Bld"),
+                                dr.Field<string>("Corp"),
+                                dr.Field<string>("Flat"),
+                                dr.Field<string>("Nazva"),
+                                dr.Field<string>("Tariff"),
+                                dr.Field<decimal>("Discount"),
+                                dr.Field<string>("Pilgovuk"),
+                                dr.Field<decimal>("Gar_voda"),
+                                dr.Field<decimal>("Gaz_vn"),
+                                dr.Field<decimal>("El_opal"),
+                                dr.Field<string>("Kilk_pilg"),
+                                dr.Field<string>("T11_cod_na"),
+                                dr.Field<string>("Orendar"),
+                                dr.Field<decimal>("Borg")
+                            );
+                        }
+                        //записуємо у файл
+                        writer.Write(fos);
+                    }
+                }
+
+                //видаємо користувачу файл
+                string fileNameNew = fileName + "_" + DateTime.Now.ToString() + ".dbf";
+                byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
+                return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
+            }
+            else if (cokCode == "TR33")
+            {
+                //запускаємо скрипт і отримуємо результат 
+                string FileScript = "Собезу на субсидії Зборів.sql";
+                string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+                DataTable dt = BillingUtils.GetResults(path, cokCode);
+
+                //зчитуємо субсидійні номера
+                Dictionary<long, string> Sub_e = new Dictionary<long, string>();
+                string PathRead = appEnv.WebRootPath + "\\files\\Obmin\\SUB.DBF";
+
+                using (var dbfDataReader = NDbfReader.Table.Open(PathRead))
+                {
+                    var reader = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
+                    while (reader.Read())
+                    {
+                        Sub_e.Add(int.Parse(reader.GetValue("NUMBPERS").ToString().Trim()),
+                            long.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    //обрізаємо спереді 2099
+                    }
+                }
+
+                //вказуємо шлях до файла
+                string filePath = "\\files\\Obmin\\";
+                string fileName = "TEP";
+                string FullPath = appEnv.WebRootPath + filePath + fileName;
+                
+                //видаляємо файл
+                if (System.IO.File.Exists(FullPath))
+                {
+                    System.IO.File.Delete(FullPath);
+                }
+
+                //створюємо новий дбф файл згідно заданої нами структури
+                using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                {
+                    using (var writer = new DBFWriter())
+                    {
+                        writer.CharEncoding = Encoding.GetEncoding(866);
+                        writer.Signature = DBFSignature.DBase3;
+
+                        //структура файлу дбф
+                        var Rash = new DBFField("Rash", NativeDbType.Numeric, 10);
+                        var Ora = new DBFField("Ora", NativeDbType.Char, 40);
+                        var Fio = new DBFField("Fio", NativeDbType.Char, 100);
+                        var Name_v = new DBFField("Name_v", NativeDbType.Char, 50);
+                        var Bld = new DBFField("Bld", NativeDbType.Char, 9);
+                        var Corp = new DBFField("Corp", NativeDbType.Char, 10);
+                        var Flat = new DBFField("Flat", NativeDbType.Char, 5);
+                        var Nazva = new DBFField("Nazva", NativeDbType.Char, 40);
+                        var Tariff = new DBFField("Tariff", NativeDbType.Char, 40);
+                        var Discount = new DBFField("Discount", NativeDbType.Numeric, 20, 5);
+                        var Pilgovuk = new DBFField("Pilgovuk", NativeDbType.Char, 100);
+                        var Gar_voda = new DBFField("Gar_voda", NativeDbType.Numeric, 20, 5);
+                        var Gaz_vn = new DBFField("Gaz_vn", NativeDbType.Numeric, 20, 5);
+                        var El_opal = new DBFField("El_opal", NativeDbType.Numeric, 20, 5);
+                        var Kilk_pilg = new DBFField("Kilk_pilg", NativeDbType.Char, 2);
+                        var T11_cod_na = new DBFField("T11_cod_na", NativeDbType.Char, 40);
+                        var Orendar = new DBFField("Orendar", NativeDbType.Char, 40);
+                        var Borg = new DBFField("Borg", NativeDbType.Numeric, 20, 5);
+
+                        writer.Fields = new[] { Rash, Ora, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
+                                            Pilgovuk, Gar_voda, Gaz_vn, El_opal, Kilk_pilg, T11_cod_na, Orendar, Borg };
+
+                        //наповнюємо файл даними
+                        foreach (DataRow dr in dt.Rows)
+                        {
+                            string pcode;
+                            if (!Sub_e.TryGetValue(dr.Field<int>("Rash"), out pcode))
+                            {
+                                pcode = "0";
+                            }
+
+                            writer.AddRecord(
+                                dr.Field<int>(("Rash")),
+                                pcode,
+                                dr.Field<string>("Fio"),
+                                dr.Field<string>("Name_v"),
+                                dr.Field<string>("Bld"),
+                                dr.Field<string>("Corp"),
+                                dr.Field<string>("Flat"),
+                                dr.Field<string>("Nazva"),
+                                dr.Field<string>("Tariff"),
+                                dr.Field<decimal>("Discount"),
+                                dr.Field<string>("Pilgovuk"),
+                                dr.Field<decimal>("Gar_voda"),
+                                dr.Field<decimal>("Gaz_vn"),
+                                dr.Field<decimal>("El_opal"),
+                                dr.Field<string>("Kilk_pilg"),
+                                dr.Field<string>("T11_cod_na"),
+                                dr.Field<string>("Orendar"),
+                                dr.Field<decimal>("Borg")
+                            );
+                        }
+                        //записуємо у файл
+                        writer.Write(fos);
+                    }
+                }
+
+                //видаємо користувачу файл
+                string fileNameNew = fileName + "_" + DateTime.Now.ToString() + ".dbf";
+                byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
+                return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
+            }
+
+            return View();
+        }
+        //---------------------------------------------------
+        //Формування файлів на Укрспецінформ
         public ActionResult Ukrspecinform()
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
@@ -492,141 +1171,20 @@ namespace Assistant_TEP.Controllers
             byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
         }
-
-        public ActionResult Subs(int id)
+        //---------------------------------------------------
+        //Монетизація субсидій та пільг
+        public ActionResult MoneySubs(int id)
         {
             return View();
         }
 
-        public ActionResult Subsydia(int id)
+        [HttpPost]
+        public ActionResult MoneySubs(IFormFile formFile)
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
-            string cokCode = user.Cok.Code;
-            
-            //запускаємо скрипт і отримуємо результат 
-            string FileScript = "Собезу на субсидії.sql";
-            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
-            DataTable dt = BillingUtils.GetResults(path, cokCode);
-            
-            //зчитуємо субсидійні номера
-            Dictionary<int, string> Sub_e = new Dictionary<int, string>();
-            string PathRead = appEnv.WebRootPath + "\\files\\Obmin\\SUB_E.DBF";
-
-            using (var dbfDataReader = NDbfReader.Table.Open(PathRead))
-            {
-                var reader = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
-                while (reader.Read())
-                {
-                    Sub_e.Add(int.Parse(reader.GetValue("NUMBPERS").ToString().Trim()), 
-                        int.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    //обрізаємо спереді 2099
-                }
-            }
-
-                //робимо перевірку на код цоку
-                if (user.Cok.Code == null)
-                {
-                    cokCode = "TR40";
-                }
-
-            //вказуємо шлях до файла
-            string filePath = "\\files\\Obmin\\";
-            string fileName = "TEP";
-            string FullPath = appEnv.WebRootPath + filePath + fileName;
-
-            //створюємо новий дбф файл згідно заданої нами структури
-            using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
-            {
-                using (var writer = new DBFWriter())
-                {
-                    writer.CharEncoding = Encoding.GetEncoding(866);
-                    writer.Signature = DBFSignature.DBase3;
-
-                    //структура файлу дбф
-                    var Rash = new DBFField("Rash", NativeDbType.Numeric, 10);
-                    var Ora = new DBFField("Ora", NativeDbType.Char, 40);
-                    var Fio = new DBFField("Fio", NativeDbType.Char, 100);
-                    var Name_v = new DBFField("Name_v", NativeDbType.Char, 50);
-                    var Bld = new DBFField("Bld", NativeDbType.Char, 9);
-                    var Corp = new DBFField("Corp", NativeDbType.Char, 10);
-                    var Flat = new DBFField("Flat", NativeDbType.Char, 5);
-                    var Nazva = new DBFField("Nazva", NativeDbType.Char, 40);
-                    var Tariff = new DBFField("Tariff", NativeDbType.Char, 40);
-                    var Discount = new DBFField("Discount", NativeDbType.Numeric, 20, 5);
-                    var Pilgovuk = new DBFField("Pilgovuk", NativeDbType.Char, 100);
-                    var Gar_voda = new DBFField("Gar_voda", NativeDbType.Numeric, 20, 5);
-                    var Gaz_vn = new DBFField("Gaz_vn", NativeDbType.Numeric, 20, 5);
-                    var El_opal = new DBFField("El_opal", NativeDbType.Numeric, 20, 5);
-                    var Kilk_pilg = new DBFField("Kilk_pilg", NativeDbType.Char, 2);
-                    var T11_cod_na = new DBFField("T11_cod_na", NativeDbType.Char, 40);
-                    var Orendar = new DBFField("Orendar", NativeDbType.Char, 40);
-                    var Borg = new DBFField("Borg", NativeDbType.Numeric, 20, 5);
-
-                    writer.Fields = new[] { Rash, Ora, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
-                                            Pilgovuk, Gar_voda, Gaz_vn, El_opal, Kilk_pilg, T11_cod_na, Orendar, Borg };
-
-                    //наповнюємо файл даними
-                    foreach (DataRow dr in dt.Rows)
-                    {
-                        string pcode;
-                        if (!Sub_e.TryGetValue(dr.Field<int>("Rash"), out pcode))
-                        {
-                            pcode = "0";
-                        }
-
-                        writer.AddRecord(
-                            dr.Field<int>(("Rash")),
-                            pcode,
-                            dr.Field<string>("Fio"),
-                            dr.Field<string>("Name_v"),
-                            dr.Field<string>("Bld"),
-                            dr.Field<string>("Corp"),
-                            dr.Field<string>("Flat"),
-                            dr.Field<string>("Nazva"),
-                            dr.Field<string>("Tariff"),
-                            dr.Field<decimal>("Discount"),
-                            dr.Field<string>("Pilgovuk"),
-                            dr.Field<decimal>("Gar_voda"),
-                            dr.Field<decimal>("Gaz_vn"),
-                            dr.Field<decimal>("El_opal"),
-                            dr.Field<string>("Kilk_pilg"),
-                            dr.Field<string>("T11_cod_na"),
-                            dr.Field<string>("Orendar"),
-                            dr.Field<decimal>("Borg")
-                        );
-                    }
-                    //записуємо у файл
-                    writer.Write(fos);
-                }
-            }
-
-            //видаємо користувачу файл
-            string fileNameNew = fileName + "_" + DateTime.Now.ToString() + ".dbf";
-            byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
-            return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
-        }
-        
-        public ActionResult Pilga2()
-        {
-            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
-            string cokCode = user.Cok.Code;
-
-            //робимо перевірку на код цоку
-            if (cokCode == null || user.AnyCok == true)
-            {
-                ViewBag.error = "BadCok";
-                return View("/Views/Home/Privacy.cshtml");
-            }
-
-            //запускаємо скрипт і отримуємо результат 
-            string FileScript = "Pilga2.sql";
-            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
-            DataTable dt = BillingUtils.GetPilga2(path, cokCode);
-
-            //вказуємо шлях до DBF файла
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
-            string fileName = cokCode + "ilg.dbf";
-            string FullPath = appEnv.WebRootPath + filePath + fileName;
+            string filePath = "\\Files\\Obmin\\Money\\" + Period.per_now().per_str + "\\";
+            string fullPath = appEnv.WebRootPath + filePath + formFile.FileName;
 
             //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
@@ -636,48 +1194,54 @@ namespace Assistant_TEP.Controllers
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //Створюємо список з категоріями пільг
-            List<Pilga2> pilga2s = new List<Pilga2>();
-            foreach (DataRow dr in dt.Rows)
-            {
-                Console.OutputEncoding = Encoding.GetEncoding(1251);
-                Console.WriteLine(dr["FIO"].ToString());
-            }
+            //зберігаємо файл
+            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                formFile.CopyTo(fileStream);
 
-            //створюємо новий дбф файл згідно заданої нами структури
-            using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            Dictionary<string, MoneySubsydii> zap = new Dictionary<string, MoneySubsydii>();
+            string FileScript = "субсидії монетизація по області.sql";
+            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+            DataTable dt = BillingUtils.GetMoneySubsData(path);
+            
+            foreach (DataRow dtRow in dt.Rows)
             {
-                using (var writer = new DBFWriter())
+                string newRah = dtRow.Field<long>("newRah").ToString();
+                string accountCode = dtRow.Field<int>("raj").ToString() + ":" + dtRow.Field<long>("osRah").ToString();
+                MoneySubsydii data = new MoneySubsydii
                 {
-                    writer.CharEncoding = Encoding.GetEncoding(866);
-                    writer.Signature = DBFSignature.DBase3;
-                    writer.LanguageDriver = 0x26; // кодировка 866
-
-                    //структура файлу дбф
-                    var CDPR = new DBFField("CDPR", NativeDbType.Numeric, 12);
-                    var IDCODE = new DBFField("IDCODE", NativeDbType.Char, 10);
-                    var FIO = new DBFField("FIO", NativeDbType.Char, 50);
-                    var PPOS = new DBFField("PPOS", NativeDbType.Char, 15);
-                    var RS = new DBFField("RS", NativeDbType.Char, 25);
-                    var YEARIN = new DBFField("YEARIN", NativeDbType.Numeric, 4);
-                    var MONTHIN = new DBFField("MONTHIN", NativeDbType.Numeric, 2);
-                    var LGCODE = new DBFField("LGCODE", NativeDbType.Numeric, 4);
-                    var DATA1 = new DBFField("DATA1", NativeDbType.Date);
-                    var DATA2 = new DBFField("DATA2", NativeDbType.Date);
-                    var LGKOL = new DBFField("LGKOL", NativeDbType.Numeric, 2);
-                    var LGKAT = new DBFField("LGKAT", NativeDbType.Numeric, 3);
-                    var LGPRC = new DBFField("LGPRC", NativeDbType.Numeric, 3);
-                    var SUMM = new DBFField("SUMM", NativeDbType.Numeric, 8, 2);
-                    var FACT = new DBFField("FACT", NativeDbType.Numeric, 19, 6);
-                    var TARIF = new DBFField("TARIF", NativeDbType.Numeric, 14, 7);
-                    var FLAG = new DBFField("FLAG", NativeDbType.Numeric, 1);
-
-                    writer.Fields = new[] { CDPR, IDCODE, FIO, PPOS, RS, YEARIN, MONTHIN, LGCODE, DATA1, DATA2, LGKOL,
-                        LGKAT, LGPRC, SUMM, FACT, TARIF, FLAG
-                    };
+                    Raj = dtRow.Field<int>("raj"),
+                    Pip = dtRow.Field<string>("FullName"),
+                    OsRah = dtRow.Field<long>("osRah").ToString(),
+                    NewRah = dtRow.Field<long>("newRah"),
+                    Spogyto = (double)dtRow.Field<decimal>("sumSpogyto"),
+                    Borg = (double)dtRow.Field<decimal>("sumBorg"),
+                };
+                if (!zap.ContainsKey(accountCode))
+                {
+                    zap.Add(accountCode, data);
                 }
+                if (!zap.ContainsKey(newRah))
+                {
+                    zap.Add(newRah, data);
+                }
+                
             }
-            return View();
+
+            MoneyExcel excel = new MoneyExcel(zap, fullPath);
+            excel.ToExcel();
+            byte[] content = excel.CreateFile();
+
+            return File(
+                            content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            formFile.FileName
+                        );
+
         }
+        //---------------------------------------------------
+        
     }
 }
+
+
+            

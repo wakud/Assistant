@@ -1,0 +1,31 @@
+﻿@{
+    ViewData["Title"] = "Zapyt";
+}
+
+<h3>Заповнення електронного списку для УСЗН з новими особовими рахунками</h3>
+
+@using (Html.BeginForm("Zapyt", "Obmin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary()
+    <div class="container">
+        <div class="row">
+            <div class="col-3">Виберіть файл для імпорту</div>
+            <div class="col-5"><input id="file-load" type="file" name="formFile" /></div>
+            <div class="w-100"></div>
+            <br />
+        </div>
+    </div>
+    <br />
+    <input id="Submit1" type="submit" value="Завантажити" />
+    @if (ViewBag.error != null)
+    {
+        @if (ViewBag.error == "BadFile")
+        {
+            <script>
+                    setTimeout(() => alert("Не тієї структури файл!"), 500);
+            </script>
+        }
+    }
+    <label></label>
+}
+
