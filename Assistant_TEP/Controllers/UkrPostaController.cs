@@ -427,7 +427,7 @@ namespace Assistant_TEP.Controllers
 
             foreach (var item in viewModel.People)
             {
-                suma = suma + decimal.Parse(item.SumaStr);
+                suma += decimal.Parse(item.SumaStr);
             }
 
             //формуємо модель для ворда

@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Data;
 using System.Linq;
+using System.Collections.Generic;
 using Assistant_TEP.Models;
 using Assistant_TEP.MyClasses;
 using Assistant_TEP.ViewModels;
@@ -10,11 +11,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.IO;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using SharpDocx;
-using System.Globalization;
+using System.Xml.Linq;
 
 namespace Assistant_TEP.Controllers
 {
@@ -267,6 +267,95 @@ namespace Assistant_TEP.Controllers
                         NewFileName
                     );
                 }
+                //то для звітів для відправлення смс
+                else if (rep.Name == "Для смс \"Борг до оплати\"" || rep.Name == "Для смс \"Сума до оплати\"")
+                {
+                    int currentRow = 1;
+                    int currentCell = 1;
+                    foreach (DataColumn coll in dt.Columns)
+                    {
+                        ws.Cell(currentRow, currentCell).Value = coll.ColumnName;
+                        currentCell++;
+                    }
+                    currentCell = 1; currentRow++;
+                    ws.Cell(currentRow, currentCell).Value = dt.Rows;
+
+                    using (var stream = new MemoryStream())
+                    {
+                        wb.SaveAs(stream);
+                        var content = stream.ToArray();
+                        User cok = db.Users.Include(c => c.Cok).FirstOrDefault(c => c.Cok.Code == cokCode);
+                        return File(
+                            content,
+                            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                            cok.Cok.Name + "_" + DateTime.Now.ToString("d") + ".xlsx");
+                    }
+                }
+                // Для звіту для Остапюк Надія Іванівна
+                else if (rep.Name == "Звіт по зонах")
+                {
+                    XDocument xdoc = new XDocument();
+
+                    // створюємо корневий елемент
+                    XElement DataSet = new XElement("NewDataSet");
+                    
+                    XElement subdiv = new XElement("SubdivisionId", cokCode.Substring(2, 2));
+                    
+                    var CurrentDate = DateTime.Now;
+                    DateTime lastDayOfLastMonth = CurrentDate.Date.AddDays(-CurrentDate.Day);
+                    XElement per = new XElement("Period", lastDayOfLastMonth.ToString("d"));
+
+                    DataSet.Add(subdiv);
+                    DataSet.Add(per);
+
+                    foreach (DataRow r in dt.Rows)
+                    {
+                        // створюємо перший елементи
+                        XElement zona = new XElement("Zones");
+                        //створюємо елементи в першому елменті
+                        XElement _id = new XElement("id", r[0].ToString().Trim());
+                        XElement AccountNumber = new XElement("AccountNumber", r[1].ToString().Trim());
+                        XElement PIP = new XElement("PIP", r[2].ToString().Trim());
+                        XElement BlockLabel = new XElement("BlockLabel", r[3].ToString().Trim());
+                        XElement BlockLabelName = new XElement("BlockLabelName", r[4].ToString().Trim());
+                        XElement TariffGroupId = new XElement("TariffGroupId", r[5].ToString().Trim());
+                        XElement TimeZonalId = new XElement("TimeZonalId", r[6].ToString().Trim());
+                        XElement isHeating = new XElement("isHeating", r[7].ToString().Trim());
+                        XElement BasePrice = new XElement("BasePrice", r[8].ToString().Trim().Replace(",", "."));
+                        XElement Quantity_Nich = new XElement("Quantity_Nich", r[9].ToString().Trim());
+                        XElement Quantity_PivPick = new XElement("Quantity_PivPick", r[10].ToString().Trim());
+                        XElement Quantity_Pick = new XElement("Quantity_Pick", r[11].ToString().Trim());
+                        XElement Tariff_Nich = new XElement("Tariff_Nich", r[12].ToString().Trim().Replace(",", "."));
+                        XElement Tariff_PivPick = new XElement("Tariff_PivPick", r[13].ToString().Trim().Replace(",", "."));
+                        XElement Tariff_Pick = new XElement("Tariff_Pick", r[14].ToString().Trim().Replace(",", "."));
+                        XElement TarifficationBlockId = new XElement("TarifficationBlockId", r[15].ToString().Trim());
+
+                        //добавляємо елементи в перший елемент
+                        zona.Add(_id, AccountNumber, PIP, BlockLabel, BlockLabelName, TariffGroupId, TimeZonalId,
+                            isHeating, BasePrice, Quantity_Nich, Quantity_PivPick, Quantity_Pick, Tariff_Nich,
+                            Tariff_PivPick, Tariff_Pick, TarifficationBlockId
+                            );
+                        
+                        //добавляємо перший елемент
+                        DataSet.Add(zona);
+                    }
+
+                    // добавляємо кореневий елемент в документ
+                    xdoc.Add(DataSet);
+
+                    using (var stream = new MemoryStream())
+                    {
+                        //зберігаємо документ 
+                        xdoc.Save(stream);
+                        var content = stream.ToArray();
+                        //видаємо користувачу
+                        return File(
+                            content,
+                            "application/xml",
+                            cokCode + "_" + DateTime.Now.ToString("d") + ".xml");
+                    }
+                }
+                // для всіх звітів решту
                 else
                 {
                     // Назва звіту
@@ -274,17 +363,17 @@ namespace Assistant_TEP.Controllers
                     ws.Cell(1, 2).Style.Font.Bold = true;
                     ws.Cell(2, 2).Value = "по " + cokCode + " за " + Dtm + " " + Dtr + " р.";
                     ws.Cell(2, 2).Style.Font.Bold = true;
-                }
 
-                int currentRow = 3;
-                int currentCell = 1;
-                foreach (DataColumn coll in dt.Columns)
-                {
-                    ws.Cell(currentRow, currentCell).Value = coll.ColumnName;
-                    currentCell++;
+                    int currentRow = 3;
+                    int currentCell = 1;
+                    foreach (DataColumn coll in dt.Columns)
+                    {
+                        ws.Cell(currentRow, currentCell).Value = coll.ColumnName;
+                        currentCell++;
+                    }
+                    currentCell = 1; currentRow++;
+                    ws.Cell(currentRow, currentCell).Value = dt.Rows;
                 }
-                currentCell = 1; currentRow++;
-                ws.Cell(currentRow, currentCell).Value = dt.Rows;
 
                 using (var stream = new MemoryStream())
                 {

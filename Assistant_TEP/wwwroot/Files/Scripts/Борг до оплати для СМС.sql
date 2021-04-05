@@ -8,10 +8,9 @@ set @m=convert(varchar(2),month(getdate()))
 IF (LEN(@m) =1)
 SET @m = '0' + @m
 
-
 IF Getdate() < convert(datetime,@y + @m + '20')
 	SELECT	pp.MobilePhoneNumber AS [Phone number]
-			,a.AccountNumber AS [1]
+			,a.AccountNumberNew AS [1]
 			,pp.FullName AS [2]
 			,o.RestSumm AS [3]
 	FROM AccountingCommon.Account a
@@ -52,7 +51,7 @@ IF Getdate() < convert(datetime,@y + @m + '20')
 		ORDER by addr.FullAddress,a.AccountNumber
 ELSE
 	SELECT	pp.MobilePhoneNumber AS [Phone number]
-			,a.AccountNumber AS [1]
+			,a.AccountNumberNew AS [1]
 			,pp.FullName AS [2]
 			,o.RestSumm AS [3]
 	FROM AccountingCommon.Account a

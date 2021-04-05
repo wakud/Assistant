@@ -1,5 +1,5 @@
 SELECT 	pp.MobilePhoneNumber AS [Phone number]
-		,a.AccountNumber AS [1]
+		,a.AccountNumberNew AS [1]
 		,pp.FullName AS [2]
 		,o.RestSumm AS [3]
 FROM AccountingCommon.Account a 

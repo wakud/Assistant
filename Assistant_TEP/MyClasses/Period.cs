@@ -47,11 +47,16 @@ namespace Assistant_TEP.Models
             this.per_date = new DateTime(rik, mis, 1);
         }
 
+        //останній день попереднього місяця
+        public DateTime GetLastDayPrevMonth(int month, int year)
+        {
+            return new DateTime(year, month, 1).AddDays(-1);
+        }
+
         public static Period per_now()
         {
             DateTime from_date = DateTime.Now;
             return new Period(from_date);
         }
-
     }
 }
