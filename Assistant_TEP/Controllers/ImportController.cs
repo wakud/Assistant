@@ -112,8 +112,8 @@ namespace Assistant_TEP.Controllers
                     }
                     catch (Exception e)
                     {
-                        Console.WriteLine(dtRow["AccountNumberNew"]);
-                        Console.WriteLine(dtRow["AccountNumber"]);
+                        //Console.WriteLine(dtRow["AccountNumberNew"]);
+                        //Console.WriteLine(dtRow["AccountNumber"]);
                         Console.WriteLine(e.ToString());
                     }
                 }
@@ -273,7 +273,7 @@ namespace Assistant_TEP.Controllers
                     {
                         //Console.WriteLine(dtRow["AccountNumberNew"]);
                         //Console.WriteLine(dtRow["AccountNumber"]);
-                        //Console.WriteLine(e.ToString());
+                        Console.WriteLine(e.ToString());
                     }
                 }
 
@@ -418,8 +418,8 @@ namespace Assistant_TEP.Controllers
                     catch (Exception e)
                     {
                         Console.WriteLine(e.ToString());
-                        Console.WriteLine(dtRow["AccountNumberNew"]);
-                        Console.WriteLine(dtRow["AccountNumber"]);
+                        //Console.WriteLine(dtRow["AccountNumberNew"]);
+                        //Console.WriteLine(dtRow["AccountNumber"]);
                     }
                 }
 

@@ -17,6 +17,11 @@
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="NmeDoc" class="control-label">Назва в документах</label>
+                <input asp-for="NmeDoc" class="form-control" />
+                <span asp-validation-for="NmeDoc" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="Code" class="control-label">код ЦОКу</label>
                 <input asp-for="Code" class="form-control" />
                 <span asp-validation-for="Code" class="text-danger"></span>
@@ -50,6 +55,11 @@
                 <label asp-for="Postal" class="control-label">Поштове відділення</label>
                 <input asp-for="Postal" class="form-control" />
                 <span asp-validation-for="Postal" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Rah_Iban" class="control-label">Рахунок у форматі IBAN</label>
+                <input asp-for="Rah_Iban" class="form-control" />
+                <span asp-validation-for="Rah_Iban" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <input type="submit" value="Зберегти" class="btn btn-primary" />

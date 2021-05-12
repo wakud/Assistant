@@ -1,0 +1,115 @@
+﻿<h1>Поділ файлу оплат по сонячним батареям</h1>
+
+<div class="accordion" id="accordionExample">
+    <div class="card">
+        <div class="card-header" id="headingOne">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    Список #1
+                </button>
+            </h2>
+        </div>
+
+        <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div class="card-body">
+                <form action='@Url.Action("Sun1", "SunFlower", new {Id = 1})' method="POST" enctype="multipart/form-data">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-3">Виберіть файл для поділу</div>
+                            <div class="col-5"><input id="file-load" type="file" name="formFile" /></div>
+                            <div class="w-100"></div>
+                            <br />
+                        </div>
+                    </div>
+                    <br />
+                    <input id="Submit" type="submit" value="Завантажити" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header" id="headingTwo">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                    Список #2
+                </button>
+            </h2>
+        </div>
+        <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+            <div class="card-body">
+                <form action='@Url.Action("Sun1", "SunFlower", new {Id = 2})' method="POST" enctype="multipart/form-data">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-3">Виберіть файл для поділу</div>
+                            <div class="col-5"><input id="file-load" type="file" name="formFile" /></div>
+                            <div class="w-100"></div>
+                            <br />
+                        </div>
+                    </div>
+                    <br />
+                    <input id="Submit" type="submit" value="Завантажити" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header" id="headingThree">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                    Список #3
+                </button>
+            </h2>
+        </div>
+        <div id="collapseThree" class="collapse" aria-labelledby="headingThree" data-parent="#accordionExample">
+            <div class="card-body">
+                <form action='@Url.Action("Sun1", "SunFlower", new {Id = 3})' method="POST" enctype="multipart/form-data">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-3">Виберіть файл для поділу</div>
+                            <div class="col-5"><input id="file-load" type="file" name="formFile" /></div>
+                            <div class="w-100"></div>
+                            <br />
+                        </div>
+                    </div>
+                    <br />
+                    <input id="Submit" type="submit" value="Завантажити" />
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header" id="heading4">
+            <h2 class="mb-0">
+                <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapse4" aria-expanded="false" aria-controls="collapse4">
+                    Список #4
+                </button>
+            </h2>
+        </div>
+        <div id="collapse4" class="collapse" aria-labelledby="heading4" data-parent="#accordionExample">
+            <div class="card-body">
+                <form action='@Url.Action("Sun1", "SunFlower", new {Id = 4})' method="POST" enctype="multipart/form-data">
+                    <div class="container">
+                        <div class="row">
+                            <div class="col-3">Виберіть файл для поділу</div>
+                            <div class="col-5"><input id="file-load" type="file" name="formFile" /></div>
+                            <div class="w-100"></div>
+                            <br />
+                        </div>
+                    </div>
+                    <br />
+                    <input id="Submit" type="submit" value="Завантажити" />
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (ViewBag.error != null)
+{
+    @if (ViewBag.error == "BadFile")
+    {
+        <script>
+            setTimeout(() => alert("Не тієї структури файл!"), 500);
+        </script>
+    }
+}

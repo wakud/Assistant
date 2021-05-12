@@ -26,12 +26,6 @@
                         @:active
                     }" asp-controller="Home" asp-action="Import">Імпорт</a>
                 </li>
-                @*<li class="nav-item">
-                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
-                        {
-                            @:active
-                        }" asp-controller="Home" asp-action="Contact">Річні звіти</a>
-                    </li>*@
                 <li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other")
                     {
@@ -56,6 +50,12 @@
                         @:active
                     }" asp-controller="UkrPosta" asp-action="Index">Форма 103</a>
                 </li>
+                <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
+                        {
+                            @:active
+                        }" asp-controller="Home" asp-action="SunFlower">Сонячники</a>
+                    </li>
                 <li class="nav-item">
                     <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")
                     {

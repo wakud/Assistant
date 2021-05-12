@@ -400,6 +400,44 @@ namespace Assistant_TEP.MyClasses
             return dt;
         }
 
+        public static DataTable PilgNewAcc(string scriptPath, string cok, List<ZvirkaOsPilg> pilg)
+        {
+            List<string> Inserts = new List<String>();
+            foreach (ZvirkaOsPilg s in pilg)
+            {
+                Inserts.Add(
+                    string.Format(
+                        "INSERT @table VALUES ('{0}') ", s.RAH
+                    )
+               );
+            }
+            string InsertScript = String.Join("\n", Inserts);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string connString = "RESConnection" + cok + "_Utility";
+            string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+            script = script.Replace("$cok$", cok);
+            script = script.Replace("$params$", InsertScript);
+            Console.WriteLine(script);
+            string connectionString = Configuration.GetConnectionString(connString);
+            DataTable dt = new DataTable();
+            using (SqlConnection conn = new SqlConnection(connectionString))
+            {
+                conn.Open();
+                using (SqlCommand command = new SqlCommand(script, conn))
+                {
+                    command.CommandTimeout = 600;
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader != null)
+                        {
+                            dt.Load(reader);
+                        }
+                    }
+                }
+            }
+            return dt;
+        }
+
         public static DataTable GetMoneySubsData(string scriptPath)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);

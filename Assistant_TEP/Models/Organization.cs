@@ -13,6 +13,9 @@ namespace Assistant_TEP.Models
         [StringLength(50)]
         public string Name { get; set; }
 
+        [StringLength(50)]
+        public string NmeDoc { get; set; }
+
         public int RegionId { get; set; }
 
         [StringLength(4)]
@@ -31,6 +34,8 @@ namespace Assistant_TEP.Models
         public string Tel { get; set; }
 
         public string Postal { get; set; }
+
+        public string Rah_Iban { get; set; }
 
         public List<User> Users { get; set; }
 

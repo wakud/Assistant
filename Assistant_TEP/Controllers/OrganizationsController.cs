@@ -81,7 +81,8 @@ namespace Assistant_TEP.Controllers
         // POST: Organizations/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,Code,Nach,Address,Buh,Tel,RegionId,Postal")] Organization organization)
+        public async Task<IActionResult> Edit(int id, 
+            [Bind("Id,Name,Code,Nach,Address,Buh,Tel,RegionId,Postal,NmeDoc,Rah_Iban")] Organization organization)
         {
             if (id != organization.Id)
             {

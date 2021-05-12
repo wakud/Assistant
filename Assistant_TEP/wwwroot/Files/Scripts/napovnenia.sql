@@ -10,6 +10,6 @@ INSERT @acc
 SELECT a.AccountNumberNew, a.AccountNumber, 
 		accId = a.AccountId
 From @table t 
-JOIN TR43_Utility.AccountingCommon.Account a ON t.AccountNumber = a.AccountNumber
+JOIN AccountingCommon.Account a ON t.AccountNumber = a.AccountNumber
  
 SELECT * FROM @acc

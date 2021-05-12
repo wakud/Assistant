@@ -639,7 +639,7 @@ namespace Assistant_TEP.Controllers
             return Redirect("Pilga2");
         }
         //----------------------------------------------------
-        //Формування файлу для УСЗН з новими особовими
+        //Формування файлу для УСЗН субсидій з новими особовими
         public ActionResult Zapyt(int id)
         {
             return View();
@@ -807,6 +807,10 @@ namespace Assistant_TEP.Controllers
                             //заповнюємо дані з скрипта
                             accNum = zap[zvirka.OWN_NUM];
                         }
+                        else
+                        {
+                            accNum = "";
+                        }
 
                         writer.AddRecord(zvirka.SUR_NAM, zvirka.F_NAM, zvirka.M_NAM, zvirka.INDX, zvirka.N_NAME,
                             zvirka.N_CODE, zvirka.VUL_CAT, zvirka.VUL_NAME, zvirka.VUL_CODE, zvirka.BLD_NUM,
@@ -826,6 +830,161 @@ namespace Assistant_TEP.Controllers
             //return View();
         }
         //---------------------------------------------------
+        //Формування файлу для УСЗН пільг з новими особовими
+        public ActionResult ZapytP(int id)
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult ZapytP(IFormFile formFile)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cokCode = user.Cok.Code;
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
+            string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
+
+            //видаляємо директорію
+            if (Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.Delete(appEnv.WebRootPath + filePath, true);
+
+            //створюємо директорію
+            if (!Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.CreateDirectory(appEnv.WebRootPath + filePath);
+
+            //зберігаємо файл
+            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                formFile.CopyTo(fileStream);
+
+            List<ZvirkaOsPilg> zv = new List<ZvirkaOsPilg>();
+
+            //Зчитуємо з .dbf і закидаємо в ліст
+            using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
+            {
+                var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
+                while (readerDbf.Read())
+                {
+                    try
+                    {
+                        var row = new ZvirkaOsPilg();
+                        List<NDbfReader.IColumn> columns = readerDbf.Table.Columns.ToList();
+                        row.COD = int.Parse(readerDbf.GetValue(columns[0])?.ToString().Trim());
+                        row.CDPR = long.Parse(readerDbf.GetValue(columns[1])?.ToString().Trim());
+                        row.NCARD = long.Parse(readerDbf.GetValue(columns[2])?.ToString().Trim());
+                        row.IDCODE = readerDbf.GetValue(columns[3])?.ToString().Trim();
+                        row.PASP = readerDbf.GetValue(columns[4])?.ToString().Trim();
+                        row.FIO = readerDbf.GetValue(columns[5])?.ToString().Trim();
+                        row.IDPIL = readerDbf.GetValue(columns[6])?.ToString().Trim();
+                        row.PASPPIL = readerDbf.GetValue(columns[7])?.ToString().Trim();
+                        row.FIOPIL = readerDbf.GetValue(columns[8])?.ToString().Trim();
+                        row.INDEX = int.Parse(readerDbf.GetValue(columns[9])?.ToString().Trim());
+                        row.CDUL = int.Parse(readerDbf.GetValue(columns[10])?.ToString().Trim());
+                        row.HOUSE = readerDbf.GetValue(columns[11])?.ToString().Trim();
+                        row.BUILD = readerDbf.GetValue(columns[12])?.ToString().Trim();
+                        row.APT = readerDbf.GetValue(columns[13])?.ToString().Trim();
+                        row.LGCODE = int.Parse(readerDbf.GetValue(columns[14])?.ToString().Trim());
+                        row.KAT = int.Parse(readerDbf.GetValue(columns[15])?.ToString().Trim());
+                        row.YEARIN = int.Parse(readerDbf.GetValue(columns[16])?.ToString().Trim());
+                        row.MONTHIN = int.Parse(readerDbf.GetValue(columns[17])?.ToString().Trim());
+                        row.YEAROUT = int.Parse(readerDbf.GetValue(columns[18])?.ToString().Trim());
+                        row.MONTHOUT = int.Parse(readerDbf.GetValue(columns[19])?.ToString().Trim());
+                        row.RAH = readerDbf.GetValue(columns[20])?.ToString().Trim();
+                        row.RIZN = int.Parse(readerDbf.GetValue(columns[21])?.ToString().Trim());
+                        row.TARIF = long.Parse(readerDbf.GetValue(columns[22])?.ToString().Trim());
+                        zv.Add(row);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                        ViewBag.error = "BadFile";
+                        return View();
+                    }
+                }
+            }
+
+            Dictionary<string, string> zap = new Dictionary<string, string>();
+            string FileScript = "napovnenia.sql";
+            string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+            DataTable dt = BillingUtils.PilgNewAcc(path, cokCode, zv);
+
+            foreach (DataRow dtRow in dt.Rows)
+            {
+                string acc = dtRow.Field<string>("acc");
+                if (acc != null && acc.Trim() != "" && !zap.ContainsKey(acc))
+                {
+                    zap.Add(dtRow.Field<string>("acc"), dtRow.Field<string>("NewAcc"));
+                }
+            }
+
+            using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                using (var writer = new DBFWriter())
+                {
+                    writer.CharEncoding = Encoding.GetEncoding(866);
+                    writer.Signature = DBFSignature.DBase3;
+                    writer.LanguageDriver = 0x26; // кодировка 866
+                    var cod = new DBFField("cod", NativeDbType.Numeric, 4);
+                    var cdpr = new DBFField("cdpr", NativeDbType.Numeric, 12);
+                    var ncard = new DBFField("ncard", NativeDbType.Numeric, 10);
+                    var idcode = new DBFField("idcode", NativeDbType.Char, 10);
+                    var pasp = new DBFField("pasp", NativeDbType.Char, 14);
+                    var fio = new DBFField("fio", NativeDbType.Char, 50);
+                    var idpil = new DBFField("idpil", NativeDbType.Char, 10);
+                    var pasppil = new DBFField("pasppil", NativeDbType.Char, 14);
+                    var fiopil = new DBFField("fiopil", NativeDbType.Char, 50);
+                    var index = new DBFField("index", NativeDbType.Numeric, 6);
+                    var cdul = new DBFField("cdul", NativeDbType.Numeric, 5);
+                    var house = new DBFField("house", NativeDbType.Char, 7);
+                    var build = new DBFField("build", NativeDbType.Char, 2);
+                    var apt = new DBFField("apt", NativeDbType.Char, 4);
+                    var lgcode = new DBFField("lgcode", NativeDbType.Numeric, 4);
+                    var kat = new DBFField("kat", NativeDbType.Numeric, 4);
+                    var yearin = new DBFField("yearin", NativeDbType.Numeric, 4);
+                    var monthin = new DBFField("monthin", NativeDbType.Numeric, 2);
+                    var yearout = new DBFField("yearout", NativeDbType.Numeric, 4);
+                    var monthout = new DBFField("monthout", NativeDbType.Numeric, 2);
+                    var rah = new DBFField("rah", NativeDbType.Char, 25);
+                    var rizn = new DBFField("rizn", NativeDbType.Numeric, 6);
+                    var tarif = new DBFField("tarif", NativeDbType.Numeric, 10);
+
+                    writer.Fields = new[] { cod, cdpr, ncard, idcode, pasp, fio, idpil, pasppil, fiopil,
+                        index, cdul, house, build, apt, lgcode, kat, yearin, monthin, yearout, monthout,
+                        rah, rizn, tarif
+                    };
+
+                    foreach (ZvirkaOsPilg zvirka in zv)
+                    {
+                        //заповнюємо дані по замовчуванні з дбф-ки
+                        string accNum = zvirka.RAH;
+                        if (zvirka.RAH != null && zap.ContainsKey(zvirka.RAH))
+                        {
+                            //заповнюємо дані з скрипта
+                            accNum = zap[zvirka.RAH];
+                        }
+                        else
+                        {
+                            accNum = "";
+                        }
+
+                        writer.AddRecord(zvirka.COD, zvirka.CDPR, zvirka.NCARD, zvirka.IDCODE, zvirka.PASP,
+                            zvirka.FIO, zvirka.IDPIL, zvirka.PASPPIL, zvirka.FIOPIL, zvirka.INDEX,
+                            zvirka.CDUL, zvirka.HOUSE, zvirka.BUILD, zvirka.APT, zvirka.LGCODE,
+                            zvirka.KAT, zvirka.YEARIN, zvirka.MONTHIN, zvirka.YEAROUT, zvirka.MONTHOUT, accNum,
+                            zvirka.RIZN, zvirka.TARIF
+                            );
+                    }
+
+                    writer.Write(fos);
+                }
+            }
+
+            byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
+            return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
+            //return View();
+        }
+        //---------------------------------------------------
+
         //Надання інформації по абонентам в УСЗН ТРДА субсидій.
         public ActionResult Subsydia(int id)
         {

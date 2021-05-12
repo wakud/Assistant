@@ -31,10 +31,8 @@ namespace Assistant_TEP.Controllers
             return View();
         }
 
-        public IActionResult Contact()
+        public IActionResult SunFlower()
         {
-            //ViewData["Message"] = "Your contact page.";
-
             return View();
         }
 

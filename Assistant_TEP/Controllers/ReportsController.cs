@@ -150,7 +150,6 @@ namespace Assistant_TEP.Controllers
                 string Dtm = DateTime.Today.ToString("MMMM");
                 string Dtr = DateTime.Today.ToString("yyyy");
                 var ws = wb.Worksheets.Add("Звіт").SetTabColor(XLColor.Amber);
-                    
 
                 if (rep.Name == "Видача довідки про оплату")
                 {
@@ -354,6 +353,57 @@ namespace Assistant_TEP.Controllers
                             "application/xml",
                             cokCode + "_" + DateTime.Now.ToString("d") + ".xml");
                     }
+                }
+                //надання претензій побутовим споживачам
+                else if (rep.Name == "Надання претензій побутовим споживачам")
+                {
+                    string filePath = "\\Files\\Shablons\\";
+                    string generatedPath = "pretenziaFO.docx";
+                    string fileName = "pretenzia.docx";
+                    string fullPath = appEnv.WebRootPath + filePath + fileName;
+                    string fullGenerated = appEnv.WebRootPath + filePath + generatedPath;
+                    Pretensia pr;
+                    if (dt.Rows.Count == 0)
+                    {
+                        pr = new Pretensia
+                        {
+                            Cok = user.Cok.Name,
+                            Vykonavets = user.FullName,
+                            Nach = user.Cok.Nach,
+                            AccountNumber = "",
+                            AccountNumberNew = "",
+                            PIP = "",
+                            FullAddress = "",
+                            SumaPay = 0
+                        };
+                    }
+                    else
+                    {
+                        pr = new Pretensia
+                        {
+                            Cok = user.Cok.NmeDoc,
+                            Vykonavets = user.FullName,
+                            Nach = user.Cok.Nach,
+                            Iban = user.Cok.Rah_Iban,
+                            AccountNumber = dt.Rows[0][0].ToString().Trim(),
+                            AccountNumberNew = dt.Rows[0][1].ToString().Trim(),
+                            PIP = dt.Rows[0][2].ToString().Trim(),
+                            FullAddress = dt.Rows[0][3].ToString().Trim(),
+                            SumaPay = decimal.Parse(dt.Rows[0][4].ToString().Trim()),
+                            DateFrom = DateTime.Parse(dt.Rows[0][5].ToString().Trim()),
+                            DateTo = DateTime.Parse(dt.Rows[0][6].ToString().Trim())
+                        };
+                    }
+
+                    var document = DocumentFactory.Create(fullPath, pr);
+                    document.Generate(fullGenerated);
+
+                    string NewFileName = "pretenzia_" + DateTime.Now.ToString() + ".docx";
+                    return File(
+                        System.IO.File.ReadAllBytes(fullGenerated),
+                        System.Net.Mime.MediaTypeNames.Application.Octet,
+                        NewFileName
+                    );
                 }
                 // для всіх звітів решту
                 else
