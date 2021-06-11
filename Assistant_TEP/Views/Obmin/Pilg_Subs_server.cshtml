@@ -1,0 +1,124 @@
+﻿@{
+    ViewData["Title"] = "Монетизація";
+}
+
+<h3>Створення файлу монетизованих субсидій та пільг для імпорту оплат району</h3>
+<br />
+@using (Html.BeginForm("Pilg_Subs_server", "Obmin", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+    @Html.ValidationSummary()
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <h4>Завантаження файлів на сервер</h4>
+            </div>
+            <br />
+            <div class="col-5">Виберіть файл для імпорту заповнений від Ощад Банку</div>
+            <div class="col-5">
+                <input id="file-load" type="file" name="formFile" onchange="checkextension()" />
+            </div>
+            <div class="w-100"></div>
+            <br />
+        </div>
+    </div>
+    <input id="Submit" type="submit" value="Завантажити" class="btn btn-outline-dark" />
+
+    @if (ViewBag.error != null)
+    {
+        @if (ViewBag.error == "BadFile")
+        {
+            <script>
+                setTimeout(() => alert("Не тієї структури файл!"), 500);
+            </script>
+        }
+    }
+}
+
+<hr />
+<br />
+<h3>Отримання файлів для імпорту в програму Утіліті</h3>
+<div id="inputForm" class="card-body">
+    <form id="import" name="import" action='@Url.Action("Pilg_Subs_raj", "Obmin")' method="POST" enctype="multipart/form-data">
+        <div class="container">
+            <div class="row">
+                <div class="col-4">
+                    Отримати файл для <b>@ViewData["Cok"]</b>.
+                </div>
+                <div class="col-3">
+                    <input checked="checked" name="file" type="radio" value="subsydija" />
+                    <span>Монетизовані субсидії</span> <br />
+                    <input name="file" type="radio" value="pilga" />
+                    <span>Монетизовані пільги</span> <br />
+                </div>
+
+                <p>
+                    <input id="Submit1" @*onclick="loadPage()"*@ type="submit" value="Отримати" class="btn btn-outline-dark" />
+                </p>
+                @if (ViewBag.error != null)
+                {
+                    @if (ViewBag.error == "NetuFile")
+                    {
+                        <script>
+                            setTimeout(() => alert("Не має файлів на сервері!"), 500);
+                        </script>
+                    }
+                    @if(ViewBag.error == "Good")
+                    {
+                        <script>
+                            setTimeout(() => alert("Файл сформовано!"), 500);
+                        </script>
+                    }
+                }
+                <br />
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        @*$(document).ready(() => {
+            $('#import').submit( e => {
+                console.log("SUBMIT")
+                $.ajax({
+                    type: 'post',
+                    url: '@Url.Action("Pilg_Subs_raj", "Obmin")',
+                    data: $('#import').serialize(),
+                    success: function (data) {
+                        var blob = new Blob([data], { type: "application/octetstream" });
+
+                        //Check the Browser type and download the File.
+                        var isIE = false || !!document.documentMode;
+                        if (isIE) {
+                            window.navigator.msSaveBlob(blob, fileName);
+                        } else {
+                            var url = window.URL || window.webkitURL;
+                            link = url.createObjectURL(blob);
+                            var a = $("<a />");
+                            a.attr("download", "output.zip");
+                            a.attr("href", link);
+                            $("body").append(a);
+                            a[0].click();
+                            $(a).remove();
+                        }
+                        disableLoadPage();
+                    }
+                });
+                e.preventDefault();
+            });
+        });*@
+        $(function checkextension() {
+            console.log("HEWRE")
+            $('input[type=file]').change(function () {
+                var val = $(this).val().toLowerCase(),
+                    regex = new RegExp("(.*?)\.(xlsx)$");
+
+                if (!(regex.test(val))) {
+                    $(this).val('');
+                    alert('Виберіть xlsx-формату файл.');
+                }
+            });
+        })
+        
+    </script>
+}

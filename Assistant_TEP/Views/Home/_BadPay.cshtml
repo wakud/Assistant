@@ -1,0 +1,31 @@
+﻿@model List<Privat>
+
+<hr />
+<h3>Не імпортовані оплати</h3>
+
+@if (Model != null)
+{
+<table class="table">
+    <thead>
+        <tr>
+            <th>Тип помилки</th>
+            <th>Особовий</th>
+            <th>Сума</th>
+            <th>Дата</th>
+            <th>Показ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.FAMILY</td>
+                <td>@item.AccountNumber</td>
+                <td>@item.SUMMA</td>
+                <td>@item.PAYDATE</td>
+                <td>@item.PARAMETER</td>
+            </tr>
+        }
+    </tbody>
+</table>
+}

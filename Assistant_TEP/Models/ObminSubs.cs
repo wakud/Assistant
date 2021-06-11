@@ -10,7 +10,7 @@ namespace Assistant_TEP.Models
         public string APP_NUM { get; set; }
         public int ZAP_R { get; set; }
         public int ZAP_N { get; set; }
-        public string OWN_NUM { get; set; }
+        public long OWN_NUM { get; set; }
         public string SUR_NAM { get; set; }
         public string F_NAM { get; set; }
         public string M_NAM { get; set; }

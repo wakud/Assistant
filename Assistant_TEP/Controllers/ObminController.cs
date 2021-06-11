@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
@@ -25,6 +26,7 @@ namespace Assistant_TEP.Controllers
         private readonly IWebHostEnvironment appEnv;
         public static IConfiguration Configuration;
         private readonly XLWorkbook wb;
+        public static Dictionary<int, float> BankImportProgress = new Dictionary<int, float>();
 
         public ObminController(MainContext context, IWebHostEnvironment appEnviroment)
         {
@@ -194,6 +196,7 @@ namespace Assistant_TEP.Controllers
             //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
+            
             List<ObminSubs> obminSubs = new List<ObminSubs>();
             //Зчитуємо з .dbf і закидаємо в ліст
             using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
@@ -207,7 +210,18 @@ namespace Assistant_TEP.Controllers
                         row.APP_NUM = readerDbf.GetValue("APP_NUM")?.ToString().Trim();
                         row.ZAP_R = int.Parse(readerDbf.GetValue("ZAP_R")?.ToString().Trim());
                         row.ZAP_N = int.Parse(readerDbf.GetValue("ZAP_N")?.ToString().Trim());
-                        row.OWN_NUM = readerDbf.GetValue("OWN_NUM")?.ToString().Trim();
+                        var rawValue = readerDbf.GetValue("OWN_NUM")?.ToString().Trim();
+                        if (!long.TryParse(rawValue, out long TempNum))
+                        {
+                            //Console.WriteLine("NOT CORRECT");
+                            //Console.WriteLine(rawValue);
+                            ViewData["Message"] = rawValue;
+                            ViewBag.error = "badOs";
+                        }
+                        else
+                        {
+                            row.OWN_NUM = TempNum;
+                        }
                         row.SUR_NAM = readerDbf.GetValue("SUR_NAM")?.ToString().Trim();
                         row.F_NAM = readerDbf.GetValue("F_NAM")?.ToString().Trim();
                         row.M_NAM = readerDbf.GetValue("M_NAM")?.ToString().Trim();
@@ -261,16 +275,16 @@ namespace Assistant_TEP.Controllers
                 }
             }
 
-            Dictionary<string, SubsRezults> zapyt = new Dictionary<string, SubsRezults>();
+            Dictionary<long, SubsRezults> zapyt = new Dictionary<long, SubsRezults>();
             string FileScript = "obmin_subs.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
             DataTable dt = BillingUtils.GetSubsData(path, cokCode, obminSubs);
 
             foreach (DataRow dtRow in dt.Rows)
             {
-                if (!zapyt.ContainsKey(dtRow.Field<long>("AccountNumberNew").ToString().Trim()))
+                if (!zapyt.ContainsKey(dtRow.Field<long>("AccountNumberNew")))
                 {
-                    zapyt.Add(dtRow.Field<long>("AccountNumberNew").ToString().Trim(), new SubsRezults
+                    zapyt.Add(dtRow.Field<long>("AccountNumberNew"), new SubsRezults
                     {
                         DEBT = dtRow.Field<decimal>("debt"),
                         NM_PAY = dtRow.Field<decimal>("nm_pay"),
@@ -336,9 +350,10 @@ namespace Assistant_TEP.Controllers
                     var NORM_F8 = new DBFField("NORM_F8", NativeDbType.Numeric, 9, 4);
                     var OZN_1 = new DBFField("OZN_1", NativeDbType.Char, 16);
 
-                    writer.Fields = new[] { APP_NUM, ZAP_R, ZAP_N, OWN_NUM, SUR_NAM, F_NAM, M_NAM, ENT_COD, DATA_S, RES2, ADR_NAM, VUL_COD,
-                                    VUL_CAT, VUL_NAM, BLD_NUM, CORP_NUM, FLAT, NUMB, NUM_P, PLG_COD, PLG_N, CM_AREA, OP_AREA, NM_AREA, DEBT,
-                                    OPP, OPL, ODV, NM_PAY, TARYF_1, TARYF_2, TARYF_3, TARYF_4, TARYF_5, TARYF_6, TARYF_7, TARYF_8, NORM_F1,
+                    writer.Fields = new[] { APP_NUM, ZAP_R, ZAP_N, OWN_NUM, SUR_NAM, F_NAM, M_NAM, ENT_COD, DATA_S, RES2,
+                                    ADR_NAM, VUL_COD, VUL_CAT, VUL_NAM, BLD_NUM, CORP_NUM, FLAT, NUMB, NUM_P, PLG_COD,
+                                    PLG_N, CM_AREA, OP_AREA, NM_AREA, DEBT, OPP, OPL, ODV, NM_PAY, TARYF_1, TARYF_2, 
+                                    TARYF_3, TARYF_4, TARYF_5, TARYF_6, TARYF_7, TARYF_8, NORM_F1,
                                     NORM_F2, NORM_F3, NORM_F4, NORM_F5, NORM_F6, NORM_F7, NORM_F8, OZN_1
                     };
 
@@ -368,7 +383,7 @@ namespace Assistant_TEP.Controllers
                         }
 
                         writer.AddRecord(
-                        obmins.APP_NUM, obmins.ZAP_R, obmins.ZAP_N, obmins.OWN_NUM, obmins.SUR_NAM, obmins.F_NAM, obmins.M_NAM, obmins.ENT_COD,
+                        obmins.APP_NUM, obmins.ZAP_R, obmins.ZAP_N, obmins.OWN_NUM.ToString(), obmins.SUR_NAM, obmins.F_NAM, obmins.M_NAM, obmins.ENT_COD,
                         obmins.DATA_S, obmins.RES2, obmins.ADR_NAM, obmins.VUL_COD, obmins.VUL_CAT, obmins.VUL_NAM, obmins.BLD_NUM,
                         obmins.CORP_NUM, obmins.FLAT, obmins.NUMB, obmins.NUM_P, obmins.PLG_COD, obmins.PLG_N, obmins.CM_AREA, obmins.OP_AREA,
                         obmins.NM_AREA, borg, opp, opl, odv, nm_pay, obmins.TARYF_1, obmins.TARYF_2, obmins.TARYF_3,
@@ -1398,7 +1413,150 @@ namespace Assistant_TEP.Controllers
 
         }
         //---------------------------------------------------
-        
+        //Монетизація субсидій та пільг
+        public ActionResult Pilg_Subs_server()
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            ViewData["Cok"] = user.Cok.NmeDoc.ToString().Trim();
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Pilg_Subs_server(IFormFile formFile)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string filePath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";
+            string fullPath = appEnv.WebRootPath + filePath + formFile.FileName;
+            //створюємо директорію, якщо не має
+            if (!Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.CreateDirectory(appEnv.WebRootPath + filePath);
+            //зберігаємо файл
+            if (formFile.FileName.ToUpper().StartsWith("LK") || formFile.FileName.ToUpper().StartsWith("RK"))
+            {
+                using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                {
+                    formFile.CopyTo(fileStream);
+                }
+            }
+            else
+            {
+                ViewBag.error = "BadFile";
+            }
+            
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult Pilg_Subs_raj(string file)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cok = user.Cok.Code;
+            //шукаємо ексель файли
+            string dir = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";  //директорія зфайлами
+            string[] FileName;  //тут буде назва файла
+            string fullPath = "";   //тут буде повний шлях до файла
+            string fl = "";
+            //Роюимо перевірку на директорію, якщо є то є і файли
+            if (Directory.Exists(appEnv.WebRootPath + dir))
+            {
+                FileName = Directory.GetFiles(appEnv.WebRootPath + dir);
+
+                for (int i = 0; i < FileName.Length; i++)
+                {
+                    fl = Path.GetFileName(FileName[i]); // только имя файла с расширением
+                    if (file == "subsydija" && fl.ToUpper().StartsWith("RK"))
+                    {
+                        fullPath = appEnv.WebRootPath + dir + fl;
+                    }
+                    else if (file == "pilga" && fl.ToUpper().StartsWith("LK"))
+                    {
+                        fullPath = appEnv.WebRootPath + dir + fl;
+                    }
+                }
+            }
+            //робимо перевірку чи є файл
+            if (System.IO.File.Exists(fullPath))
+            {
+                string FileScript = "AccNumber.sql";
+                string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+                Dictionary<string, MoneySubsydii> zap = new Dictionary<string, MoneySubsydii>();
+                MoneyExcel excel = new MoneyExcel(zap, fullPath);
+                decimal zagalSuma = 0;
+                int kt = 0;
+
+                //вказуємо шлях до DBF i TXT файла
+                Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+                string FilePath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\" + cok + "\\";
+                string FileResultPath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";
+                string DBFfileName = cok +"_"+ file + ".dbf";
+                string TXTfileName = cok +"_"+ file + ".txt";
+                string FullPath = appEnv.WebRootPath + FilePath;
+                string FullResultPath = appEnv.WebRootPath + FileResultPath;
+                string DBFfullPath = FullPath + DBFfileName;
+                string TXTfullPath = FullPath + TXTfileName;
+                // ZIP RESULT
+                string zipfile_name = cok + "_" + file + "_" + Period.per_now().per_str + ".zip";
+                string FullZipResult = FullResultPath + zipfile_name;
+
+                //видаляємо директорію
+                if (Directory.Exists(FullPath))
+                {
+                    Directory.Delete(FullPath, true);
+                }
+                //створюємо директорію
+                Directory.CreateDirectory(FullPath);
+
+                //видаляємо ZIP
+                if (System.IO.File.Exists(FullZipResult))
+                {
+                    System.IO.File.Delete(FullZipResult);
+                }
+
+                //створюємо новий дбф файл згідно заданої нами структури
+                using (Stream fos = System.IO.File.Open(DBFfullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+                { 
+                    using (var writer = new DBFWriter())
+                    {
+                        writer.CharEncoding = Encoding.GetEncoding(866);
+                        writer.Signature = DBFSignature.DBase3;
+                        writer.LanguageDriver = 0x26; // кодировка 866
+
+                        //структура файлу дбф
+                        DBFField AccountNumber = new DBFField("AccountNum", NativeDbType.Char, 20);
+                        DBFField PayDate = new DBFField("PayDate", NativeDbType.Date);
+                        DBFField TotalSumm = new DBFField("TotalSumm", NativeDbType.Numeric, 10, 2);
+                        
+                        writer.Fields = new[] { AccountNumber, PayDate, TotalSumm };
+                        kt = excel.FromExcel(cok).Count;
+                        //наповнюємо файл даними
+                        foreach (var s in excel.FromExcel(cok))
+                        {
+                            writer.AddRecord(s.OsRah, DateTime.Now.Date, s.SumaOplaty);
+                            zagalSuma += s.SumaOplaty;
+                        }
+                        //записуємо у файл
+                        writer.Write(fos);
+                        //створюємо текстовий файл
+                        using (StreamWriter sw = new StreamWriter(TXTfullPath, false, System.Text.Encoding.Default))
+                        {
+                            sw.WriteLine("Кількість абонентів: " + kt);
+                            sw.WriteLine("Загальна сума: " + zagalSuma);
+                        }
+                    }
+                }
+                //видаємо користувачу файл
+                ZipFile.CreateFromDirectory(FullPath, FullZipResult);    //створюємо архів з папки
+                byte[] mas = System.IO.File.ReadAllBytes(FullResultPath + zipfile_name);
+                return File(mas, System.Net.Mime.MediaTypeNames.Application.Zip, zipfile_name);
+            }
+            else
+            {
+                ViewBag.error = "NetuFile";
+                return View("Pilg_Subs_server");
+            }
+        }
+       
     }
 }
 

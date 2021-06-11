@@ -14,7 +14,7 @@ SELECT
 		WHERE 1 = 1 
 			AND b.AccountId = a.AccountId
 			AND b.IsDeleted = 0
-			AND b.RestSumm > 340	
+			AND b.RestSumm > 0	
 			AND b.Date < DATEADD(mm,-3,GETDATE())
 		), 0),
 	accId = a.AccountId

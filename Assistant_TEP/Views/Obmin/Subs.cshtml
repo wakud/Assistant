@@ -2,7 +2,7 @@
     ViewData["Title"] = "Pilg";
 }
 
-    <h3>Заповнення електронного списку субсидіантів, в яких сума простроченої понад три місяці заборгованості на дату надання інформації</h3>
+<h3>Заповнення електронного списку субсидіантів, в яких сума простроченої понад три місяці заборгованості на дату надання інформації</h3>
 
 @using (Html.BeginForm("Subs", "Obmin", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
@@ -18,14 +18,20 @@
     <br />
     <input id="Submit1" type="submit" value="Завантажити" />
     @if (ViewBag.error != null)
-    {
+     {
         @if (ViewBag.error == "BadFile")
         {
             <script>
-                    setTimeout(() => alert("Не тієї структури файл!"), 500);
+                setTimeout(() => alert("Не тієї структури файл!"), 500);
             </script>
         }
-    }
-    <label></label>
+        else if (ViewBag.error == "badOs")
+        {
+            <script>
+                setTimeout(() => alert(@ViewData["Message"]), 500);
+            </script>
+        }
+     }
+
 }
 

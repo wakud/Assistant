@@ -12,6 +12,8 @@ using DotNetDBF;
 using Microsoft.Extensions.Configuration;
 using System.Data;
 using Assistant_TEP.MyClasses;
+using Microsoft.Data.SqlClient;
+using Assistant_TEP.ViewModels;
 
 namespace Assistant_TEP.Controllers
 {
@@ -21,6 +23,8 @@ namespace Assistant_TEP.Controllers
         private readonly MainContext db;
         private readonly IWebHostEnvironment appEnv;
         public static IConfiguration Configuration;
+        public static Dictionary<int, float> BankImportProgress = new Dictionary<int, float>();
+
 
         public ImportController(MainContext context, IWebHostEnvironment appEnvironment)
         {
@@ -328,7 +332,7 @@ namespace Assistant_TEP.Controllers
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
-            else
+            else     //Укрспецінформ
             {
                 List<Oschad> oschads = new List<Oschad>();
                 //Зчитуємо з .dbf і закидаємо в ліст
@@ -500,10 +504,299 @@ namespace Assistant_TEP.Controllers
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
-
-
-            byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
-            return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
         }
+
+        [HttpPost]    
+        public IActionResult Bank(IFormFile file, string name, DateTime dateIn, int source)
+        {
+            User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            Console.OutputEncoding = Encoding.GetEncoding(1251);
+            string cokCode = user.Cok.Code;
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            string filePath = "\\Files\\Import\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
+            string fullPath = appEnv.WebRootPath + filePath + user.Id + file.FileName;
+
+            //видаляємо директорію
+            if (Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.Delete(appEnv.WebRootPath + filePath, true);
+
+            //створюємо директорію
+            if (!Directory.Exists(appEnv.WebRootPath + filePath))
+                Directory.CreateDirectory(appEnv.WebRootPath + filePath);
+
+            //зберігаємо файл
+            using (var fileStream = new FileStream(fullPath, FileMode.Create))
+                file.CopyTo(fileStream);
+
+            //Для файлів-оплат прихват банку
+            if (file.FileName.ToLower().StartsWith("yrp"))
+            {
+                List<Privat> pryvat = new List<Privat>();   //список всіх абонентів з файлу
+                List<Privat> badPay = new List<Privat>();   //список, що не пройшла оплата
+
+                //Зчитуємо з .dbf і закидаємо в список
+                using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
+                {
+                    var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
+                    while (readerDbf.Read())
+                    {
+                        try
+                        {
+                            var row = new Privat();
+                            row.OS_RAH_B = long.Parse(readerDbf.GetValue("OS_RAH_B").ToString().Trim());
+                            row.OS_RAH_N = long.Parse(readerDbf.GetValue("OS_RAH_N").ToString().Trim());
+                            row.PAYDATE = DateTime.Parse(readerDbf.GetValue("PAYDATE").ToString().Trim());
+                            row.SUMMA = decimal.Parse(readerDbf.GetValue("SUMMA").ToString().Trim());
+                            row.PARAMETER = readerDbf.GetValue("PARAMETER") != null ? int.Parse(readerDbf.GetValue("PARAMETER").ToString().Trim()) : 0;
+                            row.CREATDATE = DateTime.Parse(readerDbf.GetValue("CREATDATE").ToString().Trim());
+                            pryvat.Add(row);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine(ex);
+                            ViewBag.error = "BadFile";
+                            return View("/Views/Home/Import.cshtml");
+                        }
+                    }
+                }
+
+                Dictionary<long, long> search = new Dictionary<long, long>();
+                Dictionary<long, long> search1 = new Dictionary<long, long>();
+                string FileScript = "AccNumber.sql";
+                string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
+                DataTable dt = BillingUtils.GetAccNumb(path, cokCode);
+                decimal sum = 0;
+                int cnt = pryvat.Count;
+
+                foreach (DataRow dtRow in dt.Rows)
+                {
+                    try
+                    {
+                        search.Add(long.Parse(dtRow["AccountNumberNew"].ToString()), 
+                            long.Parse(dtRow["AccountNumber"].ToString()));
+                        
+                        search1.Add(long.Parse(dtRow["AccountNumberNew"].ToString()),
+                            long.Parse(dtRow["AccountId"].ToString()));
+
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.ToString());
+                    }
+                }
+
+                foreach (Privat privat in pryvat)
+                {
+                    if (search.ContainsKey(privat.OS_RAH_N))
+                    {
+                        privat.AccountNumber = search[privat.OS_RAH_N];
+                        privat.AccountId = search1[privat.OS_RAH_N];
+                    }
+                    else
+                    {
+                        privat.AccountNumber = privat.OS_RAH_N;
+                        privat.AccountId = 0;
+                    }
+                    sum += privat.SUMMA;
+                }
+
+                ReceiptPackage rp = new ReceiptPackage()
+                {
+                    Name = name,
+                    PayDate = dateIn.ToString("dd.MM.yyyy"),
+                    Summa = sum,
+                    Cnt = cnt,
+                    SourceId = source
+                };
+
+                //Створюємо пачку оплати
+                string scrypt = "INSERT_INTO ReceiptPackage.sql";
+                string scryptPath = appEnv.WebRootPath + "\\Files\\Scripts\\" + scrypt;
+                string fullscrypt = "USE " + cokCode + "_Utility" + "\n";
+                fullscrypt += System.IO.File.ReadAllText(scryptPath, Encoding.GetEncoding(1251));
+                string sqlExpression = string.Format(fullscrypt, rp.Name/*0*/, rp.PayDate/*1*/, rp.Cnt/*2*/, 
+                    rp.Summa.ToString().Replace(",",".")/*3*/, rp.SourceId/*4*/);
+
+                //BillingUtils.ExecuteRawSql(sqlExpression, cokCode);  //це буде працювати коли дадуть доступ на інсерт
+
+                string connectionString = @"Server=172.19.1.177;Database=Assistant_TEP;User Id=sa; Password=Tepo2019;";
+
+                using (SqlConnection connection = new SqlConnection(connectionString))
+                {
+                    int lastId = 0;
+                    connection.Open();
+                    SqlCommand command = new SqlCommand(sqlExpression, connection);
+            
+                    SqlDataReader reader = command.ExecuteReader();
+
+                    if (reader.HasRows) // якщо є дані
+                    {
+                        while (reader.Read())
+                        {
+                            lastId = int.Parse(reader.GetValue(0).ToString().Trim());
+                        }
+                        reader.Close();
+                        
+                        int Period = 0;
+                        string Script = "Інсерт оплат з банку.sql";
+                        string scriptPath = appEnv.WebRootPath + "\\Files\\Scripts\\" + Script;
+                        string script = "USE " + cokCode + "_Utility" + "\n";
+                        script += System.IO.File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
+                        float ProgressPerOneRecord = pryvat.Count != 0 ? (float)(100f / pryvat.Count) : 100f;
+                        if(pryvat.Count == 0)
+                        {
+                            BankImportProgress[user.Id] = 100f;
+                        }
+                        else
+                        {
+                            BankImportProgress[user.Id] = 0f; 
+                        }
+                        foreach (Privat pr in pryvat)
+                        {
+                            Period = Convert.ToDateTime(pr.PAYDATE).Year * 100 + Convert.ToDateTime(pr.PAYDATE).Month;
+
+                            string sqlExpression1 = string.Format(script
+                            , lastId/*0*/, pr.AccountId/*1*/, pr.PAYDATE.ToString("dd.MM.yyyy")/*2*/
+                            , pr.SUMMA.ToString().Replace(",", ".")/*3*/, Period.ToString()/*4*/, Period.ToString()/*5*/
+                            , pr.AccountNumber/*6*/, pr.FAMILY/*7*/,pr.PARAMETER/*8*/
+                            );
+                            try
+                            {
+                                command = new SqlCommand(sqlExpression1, connection);
+                                command.ExecuteNonQuery();
+                                //int number = command.ExecuteNonQuery();
+                                //Console.WriteLine("Добавлено: {0}", number);
+                                BankImportProgress[user.Id] += ProgressPerOneRecord;
+                            }
+                            catch (Exception ex)
+                            {
+                                badPay.Add(new Privat(){
+                                    FAMILY = "Особовий не знайдено",
+                                    AccountNumber = pr.AccountNumber,
+                                    SUMMA = pr.SUMMA,
+                                    PAYDATE = pr.PAYDATE,
+                                    PARAMETER = pr.PARAMETER
+                                });
+                                Console.WriteLine(ex.ToString());
+                            }
+                        }
+                    }
+                    connection.Close();
+                }
+
+                ViewBag.good = "Success";
+
+                if (badPay.Count != 0)
+                {
+                    return View("/Views/Home/_BadPay.cshtml", badPay);
+                }
+                
+                return View("/Views/Home/Import.cshtml");
+            }
+            //Укрпошта
+            //else if (file.FileName.ToLower().StartsWith("stand"))
+            //{
+            //    List<UkrPostal> postal = new List<UkrPostal>();
+            //    //Зчитуємо з .dbf і закидаємо в ліст
+            //    Dictionary<string, NDbfReader.IColumn> ColumnInstances = new Dictionary<string, NDbfReader.IColumn>();
+
+            //    using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
+            //    {
+            //        var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(1251));
+
+            //        //Переводимо назви стовпчиків у верхній регістр
+            //        foreach (NDbfReader.IColumn c in readerDbf.Table.Columns.ToList())
+            //        {
+            //            ColumnInstances[c.Name.ToUpper()] = c;
+            //        }
+            //        while (readerDbf.Read())
+            //        {
+            //            try
+            //            {
+            //                var row = new UkrPostal();
+            //                row.PAY_DATE = DateTime.Parse(readerDbf.GetValue(ColumnInstances["PAY_DATE"]).ToString().Trim());
+            //                row.KOD_OPZ = readerDbf.GetValue(ColumnInstances["KOD_OPZ"]).ToString().Trim();
+            //                row.REESTR_NUM = readerDbf.GetValue(ColumnInstances["REESTR_NUM"]).ToString().Trim();
+            //                object? pip = readerDbf.GetValue(ColumnInstances["FIO"]);
+            //                if (pip == null)
+            //                {
+            //                    row.FIO = "";
+            //                }
+            //                else
+            //                {
+            //                    row.FIO = readerDbf.GetValue(ColumnInstances["FIO"]).ToString().Trim();
+            //                }
+            //                object? adresa = readerDbf.GetValue(ColumnInstances["ADRESS"]);
+            //                if (adresa == null)
+            //                {
+            //                    row.ADRESS = "";
+            //                }
+            //                else
+            //                {
+            //                    row.ADRESS = readerDbf.GetValue(ColumnInstances["ADRESS"]).ToString().Trim();
+            //                }
+            //                object? tel = readerDbf.GetValue(ColumnInstances["TELEFON"]);
+            //                if (tel == null)
+            //                {
+            //                    row.TELEFON = "0";
+            //                }
+            //                else
+            //                {
+            //                    row.TELEFON = readerDbf.GetValue(ColumnInstances["TELEFON"]).ToString().Trim();
+            //                }
+            //                row.SENDER_ACC = long.Parse(readerDbf.GetValue(ColumnInstances["SENDER_ACC"]).ToString().Trim());
+            //                row.PAY_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["PAY_SUM"]).ToString().Trim());
+            //                row.SEND_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["SEND_SUM"]).ToString().Trim());
+            //                object? pre = readerDbf.GetValue(ColumnInstances["PREV"]);
+            //                if (pre == null)
+            //                {
+            //                    row.PREV = "";
+            //                }
+            //                else
+            //                {
+            //                    row.PREV = readerDbf.GetValue(ColumnInstances["PREV"]).ToString().Trim();
+            //                }
+            //                object? cur = readerDbf.GetValue(ColumnInstances["CURR"]);
+            //                if (cur == null)
+            //                {
+            //                    row.CURR = "";
+            //                }
+            //                else
+            //                {
+            //                    row.CURR = readerDbf.GetValue(ColumnInstances["CURR"]).ToString().Trim();
+            //                }
+            //                row.REESTR_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["REESTR_SUM"]).ToString().Trim());
+            //                postal.Add(row);
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                Console.WriteLine(ex);
+            //                ViewBag.error = "BadFile";
+            //                return View("/Views/Home/Import.cshtml");
+            //            }
+            //        }
+            //    }
+            //    //тут продовжу
+            //}
+            
+            return View("/Views/Home/Import.cshtml");
+        }
+    
+        public JsonResult CheckImportProgress()
+        {
+            User user = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);
+            if(!BankImportProgress.ContainsKey(user.Id))
+            {
+                BankImportProgress[user.Id] = -1f;
+            }
+            Console.WriteLine("Progress");
+            Console.WriteLine(BankImportProgress[user.Id]);
+            return Json(
+                new {
+                    progress = BankImportProgress[user.Id]
+                }
+           );
+        }
+
     }
 }

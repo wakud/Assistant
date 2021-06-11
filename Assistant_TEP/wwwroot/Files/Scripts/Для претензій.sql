@@ -14,7 +14,7 @@ DECLARE @pretensia TABLE (
 		MonthBorgu INT,
 		DateFrom DATE,
 		SummaBorgu DECIMAL(10,2),
-		Vykl DATE
+		Vykl VARCHAR(10)
 )
 
 INSERT INTO @pretensia

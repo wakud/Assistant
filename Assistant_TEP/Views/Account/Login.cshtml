@@ -22,6 +22,15 @@
             <p>
                 <input type="submit" name="submit" value="Увійти" class="btn btn-outline-dark" />
             </p>
+            @if (ViewBag.Error != null)
+            {
+                @if (ViewBag.Error == "BedLogin")
+                {
+                    <script>
+                        setTimeout(() => alert("Не вірний логін і(або) пароль!"), 500);
+                    </script>
+                }
+            }
         </div>
     </form>
 </section>

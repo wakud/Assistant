@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -48,13 +49,13 @@ namespace Assistant_TEP.MyClasses
             upszn["6120"] = "35";
             
             int currRow = 7;
-            int currCell = 5;       //стовпчик 1
-            Console.OutputEncoding = Encoding.GetEncoding(1251);
+            int currCell = 5;       
             
             foreach (var row in rows.Skip(5))
             {
                 if (!upszn.ContainsKey(row.Cell(1).Value.ToString().Substring(0, 4)))
                 {
+                    Console.OutputEncoding = Encoding.GetEncoding(1251);
                     Console.WriteLine("УПСЗН не знайдено");
                 }
                 else
@@ -128,6 +129,78 @@ namespace Assistant_TEP.MyClasses
             wb.SaveAs(stream);
             byte[] content = stream.ToArray();
             return content;
+        }
+
+        public List<MoneySubsydii> FromExcel(string cok)
+        {
+            Encoding encoding = Encoding.GetEncoding("Windows-1251");
+            ws = wb.Worksheets.First();
+            var rows = ws.RangeUsed().RowsUsed();
+            List<MoneySubsydii> subs_p = new List<MoneySubsydii>();
+            
+            Dictionary<string, string> upszn = new Dictionary<string, string>();
+            upszn["27"] = "6101";   //бережани
+            upszn["28"] = "6102";   //борщів
+            upszn["29"] = "6103";   //бучач
+            upszn["30"] = "6104";   //гусятин
+            upszn["31"] = "6105";   //заліщики
+            upszn["32"] = "6106";   //збараж
+            upszn["33"] = "6107";   //зборів
+            upszn["34"] = "6108";   //козова
+            upszn["35"] = "6109";   //кременець
+            upszn["35"] = "6120";   //кременець
+            upszn["36"] = "6110";   //ланівці
+            upszn["37"] = "6111";   //монастириськ
+            upszn["38"] = "6112";   //підволочиськ
+            upszn["39"] = "6114";   //терн. район
+            upszn["40"] = "6117";   //м. тернопіль
+            upszn["41"] = "6113";   //теребовля
+            upszn["42"] = "6115";   //чортків
+            upszn["42"] = "6119";   //чортків
+            upszn["43"] = "6116";   //шумськ
+            upszn["44"] = "6118";   //підгайці
+            
+            int currRow = 7;
+
+            foreach (var row in rows.Skip(5))
+            {
+                if (upszn[cok.Substring(2, 2)] == row.Cell(1).Value.ToString().Substring(0, 4))
+                {
+                    string accountNumberOrNew = row.Cell(4).Value != null ? row.Cell(4).Value.ToString() : "";
+                    if (accountNumberOrNew.StartsWith("0"))
+                    {
+                        accountNumberOrNew = accountNumberOrNew.TrimStart('0');
+                    }
+                    if (accountNumberOrNew.Contains("/"))
+                    {
+                        accountNumberOrNew = accountNumberOrNew.Substring(accountNumberOrNew.IndexOf('/') + 1);
+                    }
+                    if (accountNumberOrNew.Contains("\\"))
+                    {
+                        accountNumberOrNew = accountNumberOrNew.Substring(accountNumberOrNew.IndexOf('\\') + 1);
+                    }
+
+                    try
+                    {
+                        subs_p.Add(new MoneySubsydii    
+                        {
+                            Raj = int.Parse(cok.Substring(2, 2)),
+                            Pip = row.Cell(3).Value.ToString(),
+                            //DataOplaty = DateTime.Now,
+                            NumberUPSZN = row.Cell(1).Value.ToString().Substring(0, 4),
+                            SumaOplaty = decimal.Parse(row.Cell(7).Value.ToString(), CultureInfo.InvariantCulture),
+                            OsRah = accountNumberOrNew
+                        });
+                    } 
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex);
+                    }
+                }
+                currRow++;
+            }
+
+            return subs_p;
         }
     }
 }

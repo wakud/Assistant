@@ -90,10 +90,24 @@
     <script src="~/js/jquery.tablesort.js"></script>
     <script>
         $(document).ready(() => {
+            console.log("DOCUMENT READY")
             $('table').tablesort();
+            stopLoadPage();
+        });
+        $(window).on('load', () => {
+            console.log("WINDOW IS LOADING")
         });
     </script>
     <script>
+        async function stopLoadPage() {
+            $("#load").hide();
+            $("#main-content-container").show();
+            $("#load-container").css("display", "block");
+            $("#load-container").css("height", "0vh");
+            $("#load-container").css("flex", "none");
+            $("#load-container").css("align-items", "none");
+            $("#load-container").css("justify-content", "none");
+        }
         async function loadPage(nextPage) {
             $("#load").show();
             $("#main-content-container").hide();
@@ -103,15 +117,6 @@
             $("#load-container").css("align-items", "center");
             $("#load-container").css("justify-content", "center");
             console.log(nextPage);
-            const disableSelf = () => {
-                $("#load").hide();
-                $("#main-content-container").show();
-                $("#load-container").css("display", "block");
-                $("#load-container").css("height", "0vh");
-                $("#load-container").css("flex", "none");
-                $("#load-container").css("align-items", "none");
-                $("#load-container").css("justify-content", "none");
-            };
             if (nextPage) {
                 try {
                     $('body').load(nextPage);
@@ -120,7 +125,7 @@
                     disableSelf();
                 }
             }
-            return disableSelf;
+            return stopLoadPage;
         };
     </script>
     @RenderSection("Scripts", required: false)

@@ -60,7 +60,8 @@ namespace Assistant_TEP.Controllers
                     if (rp.ParamSource.StartsWith("@sql:"))
                     {
                         string script = rp.ParamSource.Substring(5);
-                        DataTable selects = BillingUtils.ExecuteRawSql(script, cokCode);
+                        DataTable selects = new DataTable();
+                        BillingUtils.ExecuteRawSql(script, cokCode, selects);
                         List<Utils.SelectParamReport> selectsList = new List<Utils.SelectParamReport>();
                         foreach (DataRow row in selects.Rows)
                         {

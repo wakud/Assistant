@@ -9,12 +9,19 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Http;
+using System.Data;
+using Microsoft.Data.SqlClient;
+using Assistant_TEP.MyClasses;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Text;
+using static Assistant_TEP.MyClasses.Utils;
 
 namespace Assistant_TEP.Controllers
 {
     public class HomeController : Controller
     {
         private MainContext _context;
+
         public HomeController(MainContext context)
         {
             _context = context;
@@ -28,6 +35,23 @@ namespace Assistant_TEP.Controllers
 
         public IActionResult Import()
         {
+            User user = _context.Users
+                .Include(u => u.Cok)
+                .FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cok = user.Cok.Code;
+            string script = "SELECT ReceiptSourceId, Name FROM FinanceDictionary.ReceiptSource ORDER BY Name";
+            DataTable dt = new DataTable();
+            BillingUtils.ExecuteRawSql(script, cok, dt);
+            List<SelectParamReport> htmlSelect = new List<SelectParamReport>();
+            foreach (DataRow row in dt.Rows)
+            {
+                htmlSelect.Add(new SelectParamReport()
+                {
+                    Id = row[0].ToString(), Name = row[1].ToString()
+                });
+            }
+            
+            ViewBag.Codes = new SelectList(htmlSelect, "Id", "Name");
             return View();
         }
 
@@ -56,5 +80,7 @@ namespace Assistant_TEP.Controllers
         {
             return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
         }
+
+
     }
 }

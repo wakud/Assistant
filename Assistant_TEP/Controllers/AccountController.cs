@@ -37,13 +37,13 @@ namespace Assistant_TEP.Controllers
                 if (user != null)
                 {
                   
-                    Console.WriteLine(user.FullName);
                     await Authenticate(user); // авторизація
                     return RedirectToAction("Index", "Home");
                 } 
                 else
                 {
                     ModelState.AddModelError("", "Не вірний логін і(або) пароль");
+                    ViewBag.Error = "BedLogin";
                 }
             }
             return View(model);

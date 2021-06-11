@@ -1,7 +1,10 @@
-﻿@{
+﻿@model List<Privat>
+
+@{
     ViewData["Title"] = "Імпорт";
 }
 
+<wbr>
 <h3>Конвертація файлу оплат з банку для втягення в програму Assistant_Utility</h3>
 
 <form action='@Url.Action("Privat", "Import")' method="POST" enctype="multipart/form-data">
@@ -16,7 +19,42 @@
     <br />
     <input id="Submit" type="submit" value="Завантажити" />
 </form>
-@if (ViewBag.error != null)
+
+<hr />
+<h3>Імпорт платіжних файлів в програмний комплекс побут.(Поки не працює, не має доступу)</h3>
+<div id="inputForm" class="card-body">
+    <form name="import" action='@Url.Action("Bank", "Import", new {Id = 1})' method="POST" enctype="multipart/form-data">
+        <div class="container">
+            <div class="row">
+                <div class="col-3">Виберіть файл</div>
+                <div class="col-5">
+                    <input required id="file-load" type="file" name="file" onchange="checkextension()" />
+                </div>
+                <div class="w-100"></div>
+                <br />
+            </div>
+            <div class="form-group">
+                <label class="control-label">Введіть номер пачки (або назву)</label>
+                <input required id="Name" name="Name" class="form-control" />
+                <label class="control-label">Введіть дату створення пачки</label>
+                <input required id="dateIN" name="dateIn" class="form-control" type="date" />
+                <label class="control-label">Введіть звідки прийшла пачка</label>
+                <br>
+                <select name="source" class="form-control" asp-items="@ViewBag.Codes"></select>
+
+            </div>
+
+        </div>
+        <br />
+        <input id="Submit" type="submit" value="Завантажити" class="btn btn-outline-success" />
+    </form>
+</div>
+
+<div class="progress" id="progressContainer">
+    <div id="loadProgress" class="progress-bar progress-bar-striped" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+</div>
+
+@if (ViewBag.error != null || ViewBag.good != null)
 {
     @if (ViewBag.error == "BadFile")
     {
@@ -24,5 +62,50 @@
             setTimeout(() => alert("Не тієї структури файл!"), 500);
         </script>
     }
+    else if (ViewBag.good == "Success")
+    {
+        <script>
+            setTimeout(() => alert("Імпортовано всі записи. Продовжіть імпорт квитанцій через програму M&I EnergySuite (Утіліті)"), 500);
+        </script>
+    }
+
 }
-<label></label>
+
+@section Scripts {
+    <script>
+        $(function checkextension() {
+            console.log("HEWRE")
+            $('input[type=file]').change(function () {
+                var val = $(this).val().toLowerCase(),
+                    regex = new RegExp("(.*?)\.(dbf)$");
+
+                if (!(regex.test(val))) {
+                    $(this).val('');
+                    alert('Виберіть DBF-формату файл.');
+                }
+            });
+        })
+        $(document).ready(() => {
+            $("#progressContainer").hide();
+            $("#inputForm").show();
+        });
+        async function fetchProgress(){
+            const progressBar = $('#loadProgress');
+            const resp = await fetch('@Url.Action("CheckImportProgress", "Import")');
+            const data = await resp.json();
+            const progress = data.progress;
+            progressBar.css("width", `${parseInt(progress)}%`);
+            progressBar.attr("aria-valuenow", parseInt(progress));
+        }
+        $('form[name=import]').submit(function () {
+
+            $("#progressContainer").show();
+            $("#inputForm").hide();
+
+            setInterval(fetchProgress, 500);
+
+            return true; // prevent default action
+
+        });
+    </script>
+}

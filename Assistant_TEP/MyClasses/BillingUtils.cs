@@ -177,31 +177,36 @@ namespace Assistant_TEP.MyClasses
             return dt;
         }
         
-        public static DataTable ExecuteRawSql(string BaseScript, string cok)
+        public static void ExecuteRawSql(string BaseScript, string cok, DataTable? dt=null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "RESConnection" + cok + "_Utility";   //то для РЕС
             string script = BaseScript;
-            Console.WriteLine(script);
             string connectionString = Configuration.GetConnectionString(connString);
-
-            DataTable dt = new DataTable();
+            
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
                     command.CommandTimeout = 600;
-                    using (SqlDataReader reader = command.ExecuteReader())
+                    if(dt != null)
                     {
-                        if(reader != null)
+                        using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            dt.Load(reader);
+                            if(reader != null)
+                            {
+                                dt.Load(reader);
+                            }
                         }
                     }
+                    else
+                    {
+                        command.ExecuteNonQuery();
+                    }
                 }
+                conn.Close();
             }
-            return dt;
         }
 
         public static DataTable AddAbon(IWebHostEnvironment env, string OsRah, string cokCode)

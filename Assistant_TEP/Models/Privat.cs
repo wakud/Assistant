@@ -10,6 +10,7 @@ namespace Assistant_TEP.Models
         public long OS_RAH_B { get; set; }      //особовий приватбанку
         public long OS_RAH_N { get; set; }      //новий особовий AccountNumberNew
         public long? AccountNumber { get; set; } //в програмі AccountNumber
+        public long? AccountId { get; set; }    //ID особового
         public DateTime PAYDATE { get; set; }   //дата оплати
         public decimal SUMMA { get; set; }      //сума оплати
         public int? PARAMETER { get; set; }

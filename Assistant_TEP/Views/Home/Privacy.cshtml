@@ -23,5 +23,20 @@
 
 <h5>Формування файлу на "Ощадбанк" </h5>
 <ul>
-    <li><a asp-action="MoneySubs" asp-controller="Obmin">Монетизація субсидій та пільг</a></li>
+    <li><a asp-action="MoneySubs" asp-controller="Obmin">Монетизація субсидій та пільг на Ощадбанк</a></li>
 </ul>
+
+<h5>Формування файлу монетизованої пільги або субсидії, для імпорту в програму Утіліті!</h5>
+<ul>
+    <li><a asp-action="Pilg_Subs_server" asp-controller="Obmin">Монетизація субсидій та пільг для району</a></li>
+</ul>
+
+@if (ViewBag.BadOs != null)
+{
+    @if (ViewBag.BadOs == "badOs")
+    {
+        <script>
+            setTimeout(() => alert("Є помилкові особові!"), 500);
+        </script>
+    }
+}
