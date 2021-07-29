@@ -572,9 +572,9 @@ namespace Assistant_TEP.Controllers
                 {
                     try
                     {
-                        search.Add(long.Parse(dtRow["AccountNumberNew"].ToString()), 
+                        search.Add(long.Parse(dtRow["AccountNumberNew"].ToString()),
                             long.Parse(dtRow["AccountNumber"].ToString()));
-                        
+
                         search1.Add(long.Parse(dtRow["AccountNumberNew"].ToString()),
                             long.Parse(dtRow["AccountId"].ToString()));
 
@@ -614,8 +614,8 @@ namespace Assistant_TEP.Controllers
                 string scryptPath = appEnv.WebRootPath + "\\Files\\Scripts\\" + scrypt;
                 string fullscrypt = "USE " + cokCode + "_Utility" + "\n";
                 fullscrypt += System.IO.File.ReadAllText(scryptPath, Encoding.GetEncoding(1251));
-                string sqlExpression = string.Format(fullscrypt, rp.Name/*0*/, rp.PayDate/*1*/, rp.Cnt/*2*/, 
-                    rp.Summa.ToString().Replace(",",".")/*3*/, rp.SourceId/*4*/);
+                string sqlExpression = string.Format(fullscrypt, rp.Name/*0*/, rp.PayDate/*1*/, rp.Cnt/*2*/,
+                    rp.Summa.ToString().Replace(",", ".")/*3*/, rp.SourceId/*4*/);
 
                 //BillingUtils.ExecuteRawSql(sqlExpression, cokCode);  //це буде працювати коли дадуть доступ на інсерт
 
@@ -626,7 +626,7 @@ namespace Assistant_TEP.Controllers
                     int lastId = 0;
                     connection.Open();
                     SqlCommand command = new SqlCommand(sqlExpression, connection);
-            
+
                     SqlDataReader reader = command.ExecuteReader();
 
                     if (reader.HasRows) // якщо є дані
@@ -636,20 +636,20 @@ namespace Assistant_TEP.Controllers
                             lastId = int.Parse(reader.GetValue(0).ToString().Trim());
                         }
                         reader.Close();
-                        
+
                         int Period = 0;
                         string Script = "Інсерт оплат з банку.sql";
                         string scriptPath = appEnv.WebRootPath + "\\Files\\Scripts\\" + Script;
                         string script = "USE " + cokCode + "_Utility" + "\n";
                         script += System.IO.File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
                         float ProgressPerOneRecord = pryvat.Count != 0 ? (float)(100f / pryvat.Count) : 100f;
-                        if(pryvat.Count == 0)
+                        if (pryvat.Count == 0)
                         {
                             BankImportProgress[user.Id] = 100f;
                         }
                         else
                         {
-                            BankImportProgress[user.Id] = 0f; 
+                            BankImportProgress[user.Id] = 0f;
                         }
                         foreach (Privat pr in pryvat)
                         {
@@ -658,7 +658,7 @@ namespace Assistant_TEP.Controllers
                             string sqlExpression1 = string.Format(script
                             , lastId/*0*/, pr.AccountId/*1*/, pr.PAYDATE.ToString("dd.MM.yyyy")/*2*/
                             , pr.SUMMA.ToString().Replace(",", ".")/*3*/, Period.ToString()/*4*/, Period.ToString()/*5*/
-                            , pr.AccountNumber/*6*/, pr.FAMILY/*7*/,pr.PARAMETER/*8*/
+                            , pr.AccountNumber/*6*/, pr.FAMILY/*7*/, pr.PARAMETER/*8*/
                             );
                             try
                             {
@@ -670,7 +670,8 @@ namespace Assistant_TEP.Controllers
                             }
                             catch (Exception ex)
                             {
-                                badPay.Add(new Privat(){
+                                badPay.Add(new Privat()
+                                {
                                     FAMILY = "Особовий не знайдено",
                                     AccountNumber = pr.AccountNumber,
                                     SUMMA = pr.SUMMA,
@@ -690,7 +691,7 @@ namespace Assistant_TEP.Controllers
                 {
                     return View("/Views/Home/_BadPay.cshtml", badPay);
                 }
-                
+
                 return View("/Views/Home/Import.cshtml");
             }
             //Укрпошта

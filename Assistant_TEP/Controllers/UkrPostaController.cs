@@ -293,7 +293,7 @@ namespace Assistant_TEP.Controllers
                 OrgIndex = currentUser.Cok.Address.ToString().Trim().Substring(0, 5),
                 Pusto = " "
             };
-            
+
             //Формуємо список людей для конвертів
             DocumentBase convert = DocumentFactory.Create(fullPath, viewModel);
             convert.Generate(fullGenerated);

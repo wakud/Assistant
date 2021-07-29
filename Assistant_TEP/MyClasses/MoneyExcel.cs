@@ -137,34 +137,41 @@ namespace Assistant_TEP.MyClasses
             ws = wb.Worksheets.First();
             var rows = ws.RangeUsed().RowsUsed();
             List<MoneySubsydii> subs_p = new List<MoneySubsydii>();
-            
-            Dictionary<string, string> upszn = new Dictionary<string, string>();
-            upszn["27"] = "6101";   //бережани
-            upszn["28"] = "6102";   //борщів
-            upszn["29"] = "6103";   //бучач
-            upszn["30"] = "6104";   //гусятин
-            upszn["31"] = "6105";   //заліщики
-            upszn["32"] = "6106";   //збараж
-            upszn["33"] = "6107";   //зборів
-            upszn["34"] = "6108";   //козова
-            upszn["35"] = "6109";   //кременець
-            upszn["35"] = "6120";   //кременець
-            upszn["36"] = "6110";   //ланівці
-            upszn["37"] = "6111";   //монастириськ
-            upszn["38"] = "6112";   //підволочиськ
-            upszn["39"] = "6114";   //терн. район
-            upszn["40"] = "6117";   //м. тернопіль
-            upszn["41"] = "6113";   //теребовля
-            upszn["42"] = "6115";   //чортків
-            upszn["42"] = "6119";   //чортків
-            upszn["43"] = "6116";   //шумськ
-            upszn["44"] = "6118";   //підгайці
-            
+
+            //Dictionary<string, string> upszn = new Dictionary<string, string>();
+            Dictionary<string, List<string>> upszn = new Dictionary<string, List<string>>
+            {
+                ["27"] = new List<string> { "6101" },   //бережани
+                ["28"] = new List<string> { "6102" },   //борщів
+                ["29"] = new List<string> { "6103" },   //бучач
+                ["30"] = new List<string> { "6104" },   //гусятин
+                ["31"] = new List<string> { "6105" },   //заліщики
+                ["32"] = new List<string> { "6106" },   //збараж
+                ["33"] = new List<string> { "6107" },   //зборів
+                ["34"] = new List<string> { "6108" },   //козова
+                ["35"] = new List<string> { "6109", "6120" },   //кременець ПОМИЛКА АЛО, в Dictionary по ключу може бути лише одне значення
+                                   // Можеш зробити ліст просто List, а внизу змінити на перебір значень.
+                                   // Наприклад
+                //["35"] = "6120",   //кременець
+                ["36"] = new List<string> { "6110" },   //ланівці
+                ["37"] = new List<string> { "6111" },   //монастириськ
+                ["38"] = new List<string> { "6112" },   //підволочиськ
+                ["39"] = new List<string> { "6114" },   //терн. район
+                ["40"] = new List<string> { "6117" },   //м. тернопіль
+                ["41"] = new List<string> { "6113" },   //теребовля
+                ["42"] = new List<string> { "6115", "6119" },
+                //upszn["42"] = "6115";   //чортків ПОМИЛКА АЛО
+                //upszn["42"] = "6119";   //чортків
+                ["43"] = new List<string> { "6116" },   //шумськ
+                ["44"] = new List<string> { "6118" }   //підгайці
+            };
+
             int currRow = 7;
 
             foreach (var row in rows.Skip(5))
             {
-                if (upszn[cok.Substring(2, 2)] == row.Cell(1).Value.ToString().Substring(0, 4))
+                 if(upszn[cok.Substring(2, 2)].Contains(row.Cell(1).Value.ToString().Substring(0, 4)))
+                //if (upszn[cok.Substring(2, 2)] == row.Cell(1).Value.ToString().Substring(0, 4))
                 {
                     string accountNumberOrNew = row.Cell(4).Value != null ? row.Cell(4).Value.ToString() : "";
                     if (accountNumberOrNew.StartsWith("0"))
@@ -189,7 +196,8 @@ namespace Assistant_TEP.MyClasses
                             //DataOplaty = DateTime.Now,
                             NumberUPSZN = row.Cell(1).Value.ToString().Substring(0, 4),
                             SumaOplaty = decimal.Parse(row.Cell(7).Value.ToString(), CultureInfo.InvariantCulture),
-                            OsRah = accountNumberOrNew
+                            //OsRah = accountNumberOrNew,
+                            AccNumber = long.Parse(accountNumberOrNew)
                         });
                     } 
                     catch(Exception ex)

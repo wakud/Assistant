@@ -9,7 +9,7 @@ IF (LEN(@m) =1)
 SET @m = '0' + @m
 
 IF Getdate() < convert(datetime,@y + @m + '20')
-	SELECT	pp.MobilePhoneNumber AS [Phone number]
+	SELECT	'38' + pp.MobilePhoneNumber AS [Phone number]
 			,a.AccountNumberNew AS [1]
 			,pp.FullName AS [2]
 			,o.RestSumm AS [3]
@@ -50,7 +50,7 @@ IF Getdate() < convert(datetime,@y + @m + '20')
 				)	
 		ORDER by addr.FullAddress,a.AccountNumber
 ELSE
-	SELECT	pp.MobilePhoneNumber AS [Phone number]
+	SELECT	'38' + pp.MobilePhoneNumber AS [Phone number]
 			,a.AccountNumberNew AS [1]
 			,pp.FullName AS [2]
 			,o.RestSumm AS [3]

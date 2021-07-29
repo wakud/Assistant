@@ -215,8 +215,8 @@ namespace Assistant_TEP.Controllers
                         {
                             //Console.WriteLine("NOT CORRECT");
                             //Console.WriteLine(rawValue);
-                            ViewData["Message"] = rawValue;
                             ViewBag.error = "badOs";
+                            ViewData["Message"] = rawValue;
                         }
                         else
                         {
@@ -1457,7 +1457,7 @@ namespace Assistant_TEP.Controllers
             string[] FileName;  //тут буде назва файла
             string fullPath = "";   //тут буде повний шлях до файла
             string fl = "";
-            //Роюимо перевірку на директорію, якщо є то є і файли
+            //Робимо перевірку на директорію, якщо є то є і файли
             if (Directory.Exists(appEnv.WebRootPath + dir))
             {
                 FileName = Directory.GetFiles(appEnv.WebRootPath + dir);
@@ -1488,14 +1488,14 @@ namespace Assistant_TEP.Controllers
                 //вказуємо шлях до DBF i TXT файла
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 string FilePath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\" + cok + "\\";
-                string FileResultPath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";
                 string DBFfileName = cok +"_"+ file + ".dbf";
                 string TXTfileName = cok +"_"+ file + ".txt";
                 string FullPath = appEnv.WebRootPath + FilePath;
-                string FullResultPath = appEnv.WebRootPath + FileResultPath;
                 string DBFfullPath = FullPath + DBFfileName;
                 string TXTfullPath = FullPath + TXTfileName;
-                // ZIP RESULT
+                // ZIP результат
+                string FileResultPath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";
+                string FullResultPath = appEnv.WebRootPath + FileResultPath;
                 string zipfile_name = cok + "_" + file + "_" + Period.per_now().per_str + ".zip";
                 string FullZipResult = FullResultPath + zipfile_name;
 
@@ -1523,20 +1523,48 @@ namespace Assistant_TEP.Controllers
                         writer.LanguageDriver = 0x26; // кодировка 866
 
                         //структура файлу дбф
-                        DBFField AccountNumber = new DBFField("AccountNum", NativeDbType.Char, 20);
+                        DBFField Os_Rah = new DBFField("Os_Rah", NativeDbType.Char, 20);
                         DBFField PayDate = new DBFField("PayDate", NativeDbType.Date);
                         DBFField TotalSumm = new DBFField("TotalSumm", NativeDbType.Numeric, 10, 2);
                         
-                        writer.Fields = new[] { AccountNumber, PayDate, TotalSumm };
+                        writer.Fields = new[] { Os_Rah, PayDate, TotalSumm };
                         kt = excel.FromExcel(cok).Count;
-                        //наповнюємо файл даними
+
+                        Dictionary<string, string> search = new Dictionary<string, string>();
+                        DataTable dt = BillingUtils.GetAccNumb(path, cok);
+                        //Отримуємо по скрипту всі особові номери 
+                        foreach (DataRow dtRow in dt.Rows)
+                        {
+                            try
+                            {
+                                search.Add(dtRow["AccountNumberNew"].ToString().Trim(),
+                                    dtRow["AccountNumber"].ToString().Trim());
+                            }
+                            catch (Exception e)
+                            {
+                                Console.WriteLine(e.ToString());
+                            }
+                        }
+
                         foreach (var s in excel.FromExcel(cok))
                         {
+                            //Потрібно всі нові особові перевести на старі
+                            if (search.ContainsKey(s.AccNumber.ToString()))
+                            {
+                                s.OsRah = (search[s.AccNumber.ToString()]);
+                            }
+                            else
+                            {
+                                s.OsRah = s.AccNumber.ToString();
+                            }
+
+                            //наповнюємо файл даними
                             writer.AddRecord(s.OsRah, DateTime.Now.Date, s.SumaOplaty);
                             zagalSuma += s.SumaOplaty;
                         }
                         //записуємо у файл
                         writer.Write(fos);
+
                         //створюємо текстовий файл
                         using (StreamWriter sw = new StreamWriter(TXTfullPath, false, System.Text.Encoding.Default))
                         {
