@@ -4,7 +4,8 @@
 @{
     ViewData["Title"] = "Місячні Звіти";
 }
-
+@if (User.Identity.Name != "moskestr")
+{
     <div class="row">
         <div class="col-md-5">
             <h2>Побутові абоненти</h2>
@@ -40,3 +41,5 @@
             }
         </div>
     </div>
+
+}

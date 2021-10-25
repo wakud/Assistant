@@ -26,6 +26,7 @@ namespace Assistant_TEP
             string connection = Configuration.GetConnectionString("TEPConnection");
             BillingUtils.Configuration = Configuration;
             ObminController.Configuration = Configuration;
+            ImportController.Configuration = Configuration;
 
             // створюємо БД
             services.AddDbContext<MainContext>(options => options.UseSqlServer(connection));
@@ -73,6 +74,7 @@ namespace Assistant_TEP
             // устанавливаем адреса, которые будут обрабатываться
             app.UseEndpoints(endpoints =>
             {
+                // само определение маршрута - он должен соответствовать запросу {controller}/{action}
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Account}/{action=Login}/{id?}"        //при старті проги запускаємо сторінку логіну

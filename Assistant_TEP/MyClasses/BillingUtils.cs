@@ -54,7 +54,7 @@ namespace Assistant_TEP.MyClasses
         )
         {
             int currentTry = 0;
-            int maxTries = 5;
+            int maxTries = 2;   //було 5 спроб
             string exceptionDesc = "";
             while(currentTry < maxTries)
             {
@@ -98,14 +98,21 @@ namespace Assistant_TEP.MyClasses
                 }
                 catch (Exception e)
                 {
-                    //string logPath = scriptsPath + "..\\Logs\\logs.txt";
-                    //if (!File.Exists(logPath))
-                    //{
-                    //    using (FileStream c = File.Create(logPath))
-                    //        Console.WriteLine("Created");
-                    //}
-                    //using (StreamWriter w = File.AppendText(logPath))
-                    //    Log(e.ToString(), w);
+                    string logPath = scriptsPath + "..\\Logs\\logs.txt";
+                    if (!File.Exists(logPath))
+                    {
+                        using (FileStream c = File.Create(logPath))
+                            Console.WriteLine("Created");
+                    }
+                    using (StreamWriter w = File.AppendText(logPath))
+                        Log(e.ToString(), w);
+
+                    if (e.Message.ToLower().Contains("deadlock"))
+                    {
+                        //System.Threading.Thread.Sleep(50000);
+                        throw new Exception("База заблокована вибірка не можлива!" + exceptionDesc);
+                    }
+
                     exceptionDesc = e.Message.ToString();
                     currentTry++;
                 }

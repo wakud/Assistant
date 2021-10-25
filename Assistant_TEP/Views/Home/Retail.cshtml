@@ -1,0 +1,25 @@
+﻿@model IEnumerable<Assistant_TEP.Models.Report>
+
+@{
+    ViewData["Title"] = "Звіти, вибірки для роздрібного відділу";
+}
+<hr />
+<h3>@ViewData["Title"]</h3>
+
+<div class="row">
+    <div class="col-md-5">
+        @foreach (var item in Model)
+        {
+            @if (item.DbType.Type == "Utility")
+            {
+                @if (item.ReportType.Name == "Роздрібний")
+                {
+                    <ul>
+                        <li><a asp-action="GetReport" asp-controller="Reports" asp-route-id="@item.Id">@Html.DisplayFor(modelItem => item.Name)</a></li>
+                    </ul>
+
+                }
+            }
+        }
+    </div>
+</div>

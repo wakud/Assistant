@@ -1420,7 +1420,7 @@ namespace Assistant_TEP.Controllers
             ViewData["Cok"] = user.Cok.NmeDoc.ToString().Trim();
             return View();
         }
-
+        //Заливка файла відповіді на сервер
         [HttpPost]
         public ActionResult Pilg_Subs_server(IFormFile formFile)
         {
@@ -1446,7 +1446,7 @@ namespace Assistant_TEP.Controllers
             
             return View();
         }
-
+        //Видача файлів для району
         [HttpPost]
         public ActionResult Pilg_Subs_raj(string file)
         {
@@ -1559,7 +1559,7 @@ namespace Assistant_TEP.Controllers
                             }
 
                             //наповнюємо файл даними
-                            writer.AddRecord(s.OsRah, DateTime.Now.Date, s.SumaOplaty);
+                            writer.AddRecord(s.OsRah, s.DataOplaty, s.SumaOplaty);
                             zagalSuma += s.SumaOplaty;
                         }
                         //записуємо у файл

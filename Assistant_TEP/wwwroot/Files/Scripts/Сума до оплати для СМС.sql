@@ -10,7 +10,8 @@ JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm,CEILING(SUM(o.RestSumm)) as Re
 	AND DocumentTypeId IN (15)---1,9/15
 	AND o.RestSumm>0
 	GROUP BY o.AccountId
-	HAVING SUM(o.RestSumm) >= @sum_pay) o ON a.AccountId = o.AccountId
+	--HAVING SUM(o.RestSumm) >= @sum_pay) o ON a.AccountId = o.AccountId
+	HAVING SUM(o.RestSumm) >= @sum_pay AND SUM(o.RestSumm) < @sum_max) o ON a.AccountId = o.AccountId
 JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = a.PhysicalPersonId
 JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
 JOIN AccountingCommon.UsageObject uo ON uo.AccountId = a.AccountId
@@ -36,7 +37,8 @@ WHERE (		pp.MobilePhoneNumber IS NOT NULL
 				OR pp.MobilePhoneNumber LIKE '093%' OR pp.MobilePhoneNumber LIKE '094%' 
 				OR pp.MobilePhoneNumber LIKE '095%' OR pp.MobilePhoneNumber LIKE '096%'
 				OR pp.MobilePhoneNumber LIKE '097%' OR pp.MobilePhoneNumber LIKE '098%' 
-				OR pp.MobilePhoneNumber LIKE '099%'
+				OR pp.MobilePhoneNumber LIKE '099%' OR pp.MobilePhoneNumber LIKE '039%' 
+						OR pp.MobilePhoneNumber LIKE '089%' 
 				)
 			)	
 ORDER BY a.AccountNumber

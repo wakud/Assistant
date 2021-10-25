@@ -1,4 +1,5 @@
-﻿@model IEnumerable<Assistant_TEP.Models.User>
+﻿@using Assistant_TEP.MyClasses
+@model IEnumerable<Assistant_TEP.Models.User>
 
 @{
     ViewData["Title"] = "Користувачі";
@@ -14,6 +15,7 @@
         <tr>
             <th>Прізвище, Ім'я, По батькові</th>
             <th>Логін</th>
+            @*<th>Пароль</th>*@
             <th>ЦОК</th>
             <th>Права адміна</th>
             <th>Всі райони</th>
@@ -21,29 +23,36 @@
         </tr>
     </thead>
     <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.FullName)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Login)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Cok.Code)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IsAdmin)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.AnyCok)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Детально</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
-            </td>
-        </tr>
-}
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.FullName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Login)
+                </td>
+                @*<td>
+                    @{
+                        string decryptedData = Utils.Decrypt(item.Password);
+                        @Html.DisplayFor(model => decryptedData)
+                    }
+                </td>*@
+                <td>
+                    @Html.DisplayFor(modelItem => item.Cok.Code)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.IsAdmin)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.AnyCok)
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.Id">Змінити</a> |
+                    <a asp-action="Details" asp-route-id="@item.Id">Детально</a> |
+                    <a asp-action="Delete" asp-route-id="@item.Id">Видалити</a>
+                </td>
+            </tr>
+        }
     </tbody>
 </table>

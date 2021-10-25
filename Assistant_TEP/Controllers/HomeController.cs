@@ -30,6 +30,16 @@ namespace Assistant_TEP.Controllers
         [Authorize]
         public IActionResult Index()
         {
+            if (User.Identity.Name == "moskestr")
+            {
+                return RedirectToAction ("SunFlower");
+            }
+            return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
+        }
+
+        [Authorize]
+        public IActionResult Retail()
+        {
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
         }
 

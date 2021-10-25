@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Assistant_TEP.Models;
+using Assistant_TEP.MyClasses;
 
 namespace Assistant_TEP.Controllers
 {
@@ -58,6 +59,7 @@ namespace Assistant_TEP.Controllers
         {
             if (ModelState.IsValid)
             {
+                user.Password = Utils.Encrypt(user.Password);
                 _context.Add(user);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
@@ -79,7 +81,10 @@ namespace Assistant_TEP.Controllers
             {
                 return NotFound();
             }
+            string decryptedData = Utils.Decrypt(user.Password);
+            ViewData["Pass"] = decryptedData;
             ViewData["CokId"] = new SelectList(_context.Coks, "Id", "Code", user.CokId);
+
             return View(user);
         }
 
@@ -97,6 +102,7 @@ namespace Assistant_TEP.Controllers
             {
                 try
                 {
+                    user.Password = Utils.Encrypt(user.Password);
                     _context.Update(user);
                     await _context.SaveChangesAsync();
                 }

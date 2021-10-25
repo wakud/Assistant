@@ -1,3 +1,5 @@
+DROP TABLE IF EXISTS ##tmp$cok$
+
 DECLARE @date$cok$ DATETIME; SET @date$cok$ = dateadd(DAY, 1 - DAY(GETDATE()), GETDATE());
 DECLARE @date_from$cok$ DATETIME; SET @date_from$cok$ = dateadd( month, datediff( MONTH, 0, DATEADD(month,-1,GETDATE())), 0);
 DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = dateadd(month,1,dateadd(day,1-day(@date_from$cok$),@date_from$cok$))-1
@@ -67,65 +69,71 @@ FROM (
 	) AS s
 WHERE [@analiza].AccountId = s.AccountId
 
----- скільки є рахунків по середньому
+---- скільки має до оплати
 UPDATE @analiza
-SET kil = s.kil
-	, debetend = s.[До оплати]
-	, kVt = s.[Спож.кВт]
-	, spog = s.[Спож.грн]
-	, minus = s.Мінус
-	, ser = s.ser
-FROM (SELECT a.accountid
-			,accountnumber
-			,pp.FullName,
-  ---- скільки має до оплати
-			  (SELECT debetend 
-				FROM FinanceCommon.SupplierSaldoCurrent_Light sscl
-				WHERE sscl.accountid=a.AccountId
-			) AS 'До оплати',
-
-			  (SELECT count(billid)  ---- скільки є рахунків по середньому
-				FROM FinanceCommon.BillRegular BR (NOLOCK)
-				WHERE br.consumptionfrom >=convert(datetime,'01.01.19',3) AND IsDeleted = 0
-				AND calcmethod in (3) and a.accountid=br.accountid
-			) AS kil,
-
-			  (SELECT ROUND(SUM(br.ConsumptionQuantity),0) --- скільки квт буде в поточному періоді враховано
-			   FROM FinanceCommon.BillRegular br
-			   WHERE br.AccountId=a.AccountId
-				AND br.IsDeleted=0
-				AND br.ConsumptionFrom = @date_from$cok$
-			) AS 'Спож.кВт',
-
-			  (SELECT SUM(br.TotalSumm)		-- скільки нараховано грн.
-				FROM FinanceCommon.BillRegular br
-				WHERE br.AccountId=a.AccountId
-					AND br.IsDeleted=0
-					AND br.ConsumptionFrom = @date_from$cok$
-					--AND br.CalculatePeriod=@period$cok$
-			) AS 'Спож.грн',
-
-			  (SELECT avg(br.ConsumptionQuantity) ---вириховуемо середнє споживання
-			  FROM FinanceCommon.BillRegular br
-				WHERE br.AccountId=a.AccountId
-				AND br.IsDeleted=0
-				AND  br.ConsumptionFrom BETWEEN DATEADD(mm,-7,@date$cok$) AND @date_from$cok$
-			) AS ser, ---від якого місяця рахуемо середнє
-
-			  (SELECT  ISNULL(sum(br5.totalsumm ),0)   --- скільки квт пішло мінусом в поточному періоді
-                           FROM FinanceCommon.BillRegular br5,FinanceMain.Operation fo
-                           WHERE isdeleted=1 AND br5.date > CONVERT(DATETIME,'01.01.2019',103)
-                           AND fo.AccountId=br5.AccountId  AND br5.BillId=fo.DocumentId
-                           AND fo.PeriodTo=@period$cok$ AND DocumentTypeId=15
-                           AND br5.AccountId=a.AccountId
-			   ) AS 'Мінус'
- 
-  FROM AccountingCommon.Account a
-		,AccountingCommon.PhysicalPerson pp
-  WHERE pp.PhysicalPersonId=a.PhysicalPersonId 
+SET debetend = s.DebetEnd
+FROM (
+		SELECT debetend, sscl.AccountId 
+		FROM FinanceCommon.SupplierSaldoCurrent_Light sscl
 		)s
 WHERE [@analiza].AccountId = s.AccountId
 
+--вибираємо дані з вюшки для подальшого наповнення
+SELECT * 
+INTO ##tmp$cok$
+FROM FinanceCommon.BillRegular (NOLOCK)
+WHERE consumptionfrom >= CONVERT(datetime,'01.01.2019', 103)
+
+---- скільки є рахунків по середньому
+UPDATE @analiza
+SET kil = s.kil
+FROM(
+		SELECT count(billid) AS kil, AccountId
+		FROM ##tmp$cok$
+		WHERE consumptionfrom >= CONVERT(datetime,'01.01.2019', 103) AND IsDeleted = 0 AND calcmethod in (3) 
+		GROUP BY AccountId
+) s
+WHERE [@analiza].AccountId = s.AccountId
+
+--- скільки квт буде в поточному періоді враховано i скільки нараховано грн.
+UPDATE @analiza
+SET kVt = s.kwt, spog = s.summ
+FROM(
+		SELECT ROUND(SUM(ConsumptionQuantity),0) AS kwt,
+				SUM(TotalSumm) AS summ,
+				AccountId
+		FROM ##tmp$cok$
+		WHERE IsDeleted=0 AND ConsumptionFrom = @date_from$cok$
+		GROUP BY AccountId
+)s
+WHERE [@analiza].AccountId = s.AccountId
+
+---вириховуемо середнє споживання
+UPDATE @analiza
+SET ser = s.ser
+FROM(
+		SELECT avg(ConsumptionQuantity)AS ser, AccountId
+		FROM ##tmp$cok$
+		WHERE IsDeleted=0 AND  ConsumptionFrom BETWEEN DATEADD(mm,-7,@date$cok$) AND @date_from$cok$
+		GROUP BY AccountId
+)s
+WHERE [@analiza].AccountId = s.AccountId
+
+--- скільки квт пішло мінусом в поточному періоді
+--UPDATE @analiza
+--SET minus = s.minus
+--FROM (
+--		SELECT ISNULL(sum(br.totalsumm ),0) minus
+--				, br.AccountId
+--		FROM ##tmp$cok$ br, FinanceMain.Operation fo
+--		WHERE isdeleted=1 AND br.date > CONVERT(DATETIME,'01.01.2019',103)
+--		AND fo.AccountId = br.AccountId  AND br.BillId=fo.DocumentId
+--		AND fo.PeriodTo = @period$cok$ AND DocumentTypeId = 15
+--		GROUP BY br.AccountId
+--)s
+--WHERE [@analiza].AccountId = s.AccountId
+
+--Вираховуємо помилки
 UPDATE @analiza
 SET tarif = s.tarif, err = s.err
 FROM (
@@ -145,6 +153,7 @@ FROM (
 	) AS s
 WHERE [@analiza].AccountId = s.AccountId
 
+-- виводимо хто подав показник і який
 UPDATE @analiza
 SET whoFiled = s.LastName, pokaz = s.CachedIndexes
 FROM(
@@ -168,6 +177,7 @@ FROM(
 	) AS s
 WHERE [@analiza].AccountId = s.AccountId
 
+--виводимо результат
 SELECT a.AccountNumber AS [Ос. рах], a.pip AS [ПІП], a.tarif AS [Тариф], a.pokaz AS [показник], a.whoFiled AS [хто подав], a.err AS [помилка]
 FROM @analiza a
 WHERE a.err <> ''

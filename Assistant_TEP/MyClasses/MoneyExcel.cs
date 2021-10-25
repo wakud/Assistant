@@ -166,6 +166,7 @@ namespace Assistant_TEP.MyClasses
                 ["44"] = new List<string> { "6118" }   //підгайці
             };
 
+            DateTime datePay = DateTime.Parse(ws.Row(3).Cell(6).Value.ToString());  //дата формування оплат
             int currRow = 7;
 
             foreach (var row in rows.Skip(5))
@@ -193,12 +194,13 @@ namespace Assistant_TEP.MyClasses
                         {
                             Raj = int.Parse(cok.Substring(2, 2)),
                             Pip = row.Cell(3).Value.ToString(),
-                            //DataOplaty = DateTime.Now,
+                            DataOplaty = datePay,
                             NumberUPSZN = row.Cell(1).Value.ToString().Substring(0, 4),
                             SumaOplaty = decimal.Parse(row.Cell(7).Value.ToString(), CultureInfo.InvariantCulture),
                             //OsRah = accountNumberOrNew,
                             AccNumber = long.Parse(accountNumberOrNew)
                         });
+
                     } 
                     catch(Exception ex)
                     {

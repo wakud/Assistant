@@ -74,12 +74,13 @@ WHERE s.AccountId = [@tbl$cok$].AccountId
 SELECT zipcode AS [Індекс]
 		,name_city AS [Нас.пункт]
 		,adresa AS [Адреса абонента]
-		--,AccountNumber AS [особовий рахунок]
-		,AccountNumberNew AS [особовий рахунок]
+		,AccountNumber AS [Рахунок РЕС]
+		,AccountNumberNew AS [Рахунок ТЕП]
 		,pip AS [ПІП абонента]
 		,suma_pay AS [сума до оплати]
 		,pokaz AS [Показ]
 FROM @tbl$cok$
 WHERE (@zip_code = '' OR ZipCode = @zip_code)
 		AND suma_pay >= @sum_pay AND suma_pay <= @sum1_pay
+		AND AccountNumberNew IS NOT NULL
 ORDER BY zipcode, name_city, adresa

@@ -32,7 +32,12 @@ namespace Assistant_TEP.Controllers
         {
             if(ModelState.IsValid)
             {
-                User user = await db.Users.FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
+                string encryptedData = Utils.Encrypt(model.Password);
+                string decryptedData = Utils.Decrypt(encryptedData);
+                User user = await db.Users.FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == encryptedData);
+                //Console.WriteLine("Zakodovanyj parol - " + encryptedData);
+                //Console.WriteLine("Rozkodovanyj parol - " + decryptedData);
+                //User user = await db.Users.FirstOrDefaultAsync(u => u.Login == model.Login && u.Password == model.Password);
 
                 if (user != null)
                 {

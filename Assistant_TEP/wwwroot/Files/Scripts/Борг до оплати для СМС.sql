@@ -45,7 +45,8 @@ IF Getdate() < convert(datetime,@y + @m + '20')
 					OR pp.MobilePhoneNumber LIKE '093%' OR pp.MobilePhoneNumber LIKE '094%' 
 					OR pp.MobilePhoneNumber LIKE '095%' OR pp.MobilePhoneNumber LIKE '096%'
 					OR pp.MobilePhoneNumber LIKE '097%' OR pp.MobilePhoneNumber LIKE '098%' 
-					OR pp.MobilePhoneNumber LIKE '099%'
+					OR pp.MobilePhoneNumber LIKE '099%' OR pp.MobilePhoneNumber LIKE '039%' 
+						OR pp.MobilePhoneNumber LIKE '089%' 
 					)
 				)	
 		ORDER by addr.FullAddress,a.AccountNumber
@@ -86,7 +87,8 @@ ELSE
 					OR pp.MobilePhoneNumber LIKE '093%' OR pp.MobilePhoneNumber LIKE '094%' 
 					OR pp.MobilePhoneNumber LIKE '095%' OR pp.MobilePhoneNumber LIKE '096%'
 					OR pp.MobilePhoneNumber LIKE '097%' OR pp.MobilePhoneNumber LIKE '098%' 
-					OR pp.MobilePhoneNumber LIKE '099%'
+					OR pp.MobilePhoneNumber LIKE '099%' OR pp.MobilePhoneNumber LIKE '039%' 
+						OR pp.MobilePhoneNumber LIKE '089%' 
 					)
 				)	
 		ORDER by addr.FullAddress,a.AccountNumber

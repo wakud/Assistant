@@ -14,54 +14,69 @@
         <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Assistant_TEP</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Index")
+                @if (User.Identity.Name != "moskestr")
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Index")
                     {
                         @:active
                     }" asp-controller="Home" asp-action="Index">Місячні звіти</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "About")
-                    {
-                        @:active
-                    }" asp-controller="Home" asp-action="Import">Імпорт</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other")
-                    {
-                        @:active
-                    }" asp-controller="Home" asp-action="Other">Інші звіти</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Privacy")
-                    {
-                        @:active
-                    }" asp-controller="Home" asp-action="Privacy">Обмін інформацією</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Dovidka")
-                    {
-                        @:active
-                    }" asp-controller="Home" asp-action="Dovidka">Видача довідок</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Forma103")
-                    {
-                        @:active
-                    }" asp-controller="UkrPosta" asp-action="Index">Форма 103</a>
-                </li>
-                <li class="nav-item">
-                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "About")
                         {
                             @:active
-                        }" asp-controller="Home" asp-action="SunFlower">Сонячники</a>
+                        }" asp-controller="Home" asp-action="Import">Імпорт</a>
                     </li>
-                <li class="nav-item">
-                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Other")
+                        {
+                            @:active
+                        }" asp-controller="Home" asp-action="Other">Інші звіти</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Privacy")
+                        {
+                            @:active
+                        }" asp-controller="Home" asp-action="Privacy">Обмін інформацією</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Dovidka")
+                        {
+                            @:active
+                        }" asp-controller="Home" asp-action="Dovidka">Видача довідок</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Forma103")
+                        {
+                            @:active
+                        }" asp-controller="UkrPosta" asp-action="Index">Форма 103</a>
+                    </li>
+                }
+                @if (User.Identity.Name == "moskestr" || User.Identity.Name == "admin")
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
+                            {
+                                @:active
+                            }" asp-controller="Home" asp-action="SunFlower">Сонячники</a>
+                    </li>
+                }
+                @*<li class="nav-item">
+            <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Retail")
+                {
+                    @:active
+                }" asp-controller="Home" asp-action="Retail">Роздрібний</a>
+        </li>*@
+                @if (User.Identity.Name == "admin")
+                {
+                    <li class="nav-item">
+                        <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")
                     {
                         @:active
                     }" asp-controller="Admin" asp-action="Index">Адміністрування</a>
-                </li>
+                    </li>
+                }
             </ul>
             <form class="form-inline my-2 my-lg-0" style="margin: 1rem; position:absolute; right: 1rem;" method="post" asp-controller="Account" asp-action="Logout">
                 <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Вихід</button>
@@ -79,7 +94,7 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; 2020 - Тернопільелектропостач. Розробив Кудрик В.П. Консультація: Дідик В.Р.</p>
+            <p>&copy; 2020 - Тернопільелектропостач. Розробив Кудрик В.П. По всім питанням звонити - +38(097)-21-39-399</p>
         </footer>
     </div>
 

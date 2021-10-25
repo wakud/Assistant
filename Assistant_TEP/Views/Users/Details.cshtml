@@ -1,4 +1,5 @@
-﻿@model Assistant_TEP.Models.User
+﻿@using Assistant_TEP.MyClasses
+@model Assistant_TEP.Models.User
 
 @{
     ViewData["Title"] = "Детально";
@@ -8,27 +9,33 @@
     <h4>Детально про користувача @Html.DisplayFor(model => model.FullName)</h4>
     <hr />
     <dl class="row">
-        <dt class = "col-sm-2">ПІП</dt>
-        <dd class = "col-sm-10">
+        <dt class="col-sm-2">ПІП</dt>
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.FullName)
         </dd>
-        <dt class = "col-sm-2">Логін</dt>
-        <dd class = "col-sm-10">
+        <dt class="col-sm-2">Логін</dt>
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Login)
         </dd>
-        <dt class = "col-sm-2">Пароль
+        <dt class="col-sm-2">
+            Пароль
         </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Password)
+        <dd class="col-sm-10">
+            @{
+                string decryptedData = Utils.Decrypt(Model.Password);
+                @Html.DisplayFor(model => decryptedData)
+            }
         </dd>
-        <dt class = "col-sm-2"> Код ЦОКу
+        <dt class="col-sm-2">
+            Код ЦОКу
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.Cok.Id)
         </dd>
-        <dt class = "col-sm-2">Права адміна
+        <dt class="col-sm-2">
+            Права адміна
         </dt>
-        <dd class = "col-sm-10">
+        <dd class="col-sm-10">
             @Html.DisplayFor(model => model.IsAdmin)
         </dd>
     </dl>

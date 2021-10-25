@@ -64,5 +64,5 @@ LEFT JOIN [AccountingDictionary].[DisconnectionPlace] dp ON dp.DisconnectionPlac
 		WHERE a.DateTo = '2079-06-06' -- тільки незакриті ОР
 	) x
 --WHERE kwt>0 
-WHERE CONVERT(DATETIME, x.[Дата викл], 103) <= CONVERT (DATETIME, '2020-03-01', 103) 
+WHERE CONVERT(DATETIME, x.[Дата викл], 103) <= CONVERT (DATETIME, GETDATE(), 103) 
 ORDER BY x.[Дата викл], x.Особовий
