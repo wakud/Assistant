@@ -46,15 +46,12 @@ namespace Assistant_TEP.Controllers
                 DataTable dt = new DataTable();
                 string Fulltext;
 
-                //видаляємо директорію
                 if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-                //створюємо директорію
                 if (!Directory.Exists(appEnv.WebRootPath + filePath))
                     Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-                //зберігаємо файл
                 using (var fileStream = new FileStream(fullPath, FileMode.Create))
                     formFile.CopyTo(fileStream);
 
@@ -63,16 +60,14 @@ namespace Assistant_TEP.Controllers
                 {
                     while (!sr.EndOfStream)
                     {
-                        Fulltext = sr.ReadToEnd().ToString(); //зчитуємо весь файл
-                        string[] rows = Fulltext.Split('\n'); //розділяємо файл на рядки 
-                        //перебираємо по рядках пропускаємо перший і два останніх
+                        Fulltext = sr.ReadToEnd().ToString(); 
+                        string[] rows = Fulltext.Split('\n'); 
                         for (int i = 1; i < rows.Count(); i++)  
                         {
-                            string[] rowValues = rows[i].Split(";"); //розділовий знак між полями ';'  
+                            string[] rowValues = rows[i].Split(";"); 
                             {
                                 if (i == 1)
                                 {
-                                    //добавляємо заголовоки таблиці
                                     dt.Columns.Add("Kb_a");
                                     dt.Columns.Add("Kb_a1");
                                     dt.Columns.Add("Kk_a");
@@ -100,7 +95,7 @@ namespace Assistant_TEP.Controllers
                                     {
                                         dr[k] = rowValues[k].ToString();
                                     }
-                                    dt.Rows.Add(dr); //добавляємо решта рядків  
+                                    dt.Rows.Add(dr); 
                                 }
                             }
                         }
@@ -243,7 +238,6 @@ namespace Assistant_TEP.Controllers
                         writer.Write(fos);
                     }
                 }
-                //видаємо користувачу файл
                 string fileNameNew = "ClientBank_" + DateTime.Now.ToString("d") + ".dbf";
                 byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
                 if(System.IO.File.Exists(fullPath))

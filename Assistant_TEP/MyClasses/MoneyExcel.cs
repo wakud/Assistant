@@ -149,9 +149,7 @@ namespace Assistant_TEP.MyClasses
                 ["32"] = new List<string> { "6106" },   //збараж
                 ["33"] = new List<string> { "6107" },   //зборів
                 ["34"] = new List<string> { "6108" },   //козова
-                ["35"] = new List<string> { "6109", "6120" },   //кременець ПОМИЛКА АЛО, в Dictionary по ключу може бути лише одне значення
-                                   // Можеш зробити ліст просто List, а внизу змінити на перебір значень.
-                                   // Наприклад
+                ["35"] = new List<string> { "6109", "6120" },   
                 //["35"] = "6120",   //кременець
                 ["36"] = new List<string> { "6110" },   //ланівці
                 ["37"] = new List<string> { "6111" },   //монастириськ
@@ -160,13 +158,13 @@ namespace Assistant_TEP.MyClasses
                 ["40"] = new List<string> { "6117" },   //м. тернопіль
                 ["41"] = new List<string> { "6113" },   //теребовля
                 ["42"] = new List<string> { "6115", "6119" },
-                //upszn["42"] = "6115";   //чортків ПОМИЛКА АЛО
+                //upszn["42"] = "6115";   //чортків 
                 //upszn["42"] = "6119";   //чортків
                 ["43"] = new List<string> { "6116" },   //шумськ
                 ["44"] = new List<string> { "6118" }   //підгайці
             };
 
-            DateTime datePay = DateTime.Parse(ws.Row(3).Cell(6).Value.ToString());  //дата формування оплат
+            DateTime datePay = DateTime.Parse(ws.Row(3).Cell(6).Value.ToString());  
             int currRow = 7;
 
             foreach (var row in rows.Skip(5))

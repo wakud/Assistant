@@ -109,7 +109,6 @@ namespace Assistant_TEP.Controllers
             {
                 return NotFound();
             }
-            //заміна Id на назви
             ViewData["DbTypeId"] = new SelectList(_context.DbTypes, "Id", "Type");
             ViewData["TypeReportId"] = new SelectList(_context.TypeReports, "Id", "Name");
             ViewData["RepId"] = id;

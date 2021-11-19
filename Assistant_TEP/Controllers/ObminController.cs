@@ -50,21 +50,17 @@ namespace Assistant_TEP.Controllers
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
 
             List<ObminPerson> obmins = new List<ObminPerson>();
 
-            //Зчитуємо з .dbf і закидаємо в ліст
             using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
             {
                 var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -185,20 +181,16 @@ namespace Assistant_TEP.Controllers
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
             
             List<ObminSubs> obminSubs = new List<ObminSubs>();
-            //Зчитуємо з .dbf і закидаємо в ліст
             using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
             {
                 var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -359,7 +351,6 @@ namespace Assistant_TEP.Controllers
 
                     foreach (ObminSubs obmins in obminSubs)
                     {
-                        //заповнюємо дані по замовчуванні з дбф-ки
                         decimal borg = obmins.DEBT;
                         decimal nm_pay = obmins.NM_PAY;
                         decimal taryf_6 = (decimal)obmins.TARYF_6;
@@ -371,7 +362,6 @@ namespace Assistant_TEP.Controllers
 
                         if (zapyt.ContainsKey(obmins.OWN_NUM))
                         {
-                            //заповнюємо дані з скрипта
                             borg = zapyt[obmins.OWN_NUM].DEBT;
                             nm_pay = zapyt[obmins.OWN_NUM].NM_PAY;
                             norm_f6 = zapyt[obmins.OWN_NUM].NORM_F6;
@@ -412,29 +402,24 @@ namespace Assistant_TEP.Controllers
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             string cokCode = user.Cok.Code;
 
-            //робимо перевірку на код цоку
             if (cokCode == null || user.AnyCok == true)
             {
                 ViewBag.error = "BadCok";
                 return View("/Views/Home/Privacy.cshtml");
             }
 
-            //запускаємо скрипт і отримуємо результат 
             string FileScript = "Pilga_Naseleni.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
             DataTable dt = BillingUtils.GetPilgaCity(path, cokCode);
 
-            //вказуємо шлях до DBF файла
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fileName = cokCode + "ilg.dbf";
             string FullPath = appEnv.WebRootPath + filePath + fileName;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
@@ -456,22 +441,19 @@ namespace Assistant_TEP.Controllers
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             string cokCode = user.Cok.Code;
             Console.WriteLine(period);
-            List<int> listNumber = new List<int>();     //записуємо отримані коди вибраних населених пунктів
+            List<int> listNumber = new List<int>();     
 
             foreach (int i in ids)
             {
                 listNumber.Add(i);
             }
 
-            //запускаємо скрипт і отримуємо результат 
             string FileScript = "Pilga2.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
             DataTable dt = BillingUtils.GetPilga2(path, cokCode, int.Parse(period.Replace("-", "")), listNumber);
 
-            //Створюємо список з категоріями пільг
             List<Pilga2> pilga2s = new List<Pilga2>();
 
-            //виводимо на екран
             if (exportType == "screen")
             {
                 foreach (DataRow dr in dt.Rows)
@@ -503,20 +485,17 @@ namespace Assistant_TEP.Controllers
                 return Json(pilga2s);
             }
 
-            //виводимо у дбф
             if (exportType == "dbf")
             {
                 string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
                 string FileName = "ilg_" + user.Id.ToString() + "__";
                 string fullPath = appEnv.WebRootPath + filePath + FileName;
 
-                //якщо є файл то видаляємо його
                 if (System.IO.File.Exists(fullPath))
                 {
                     System.IO.File.Delete(fullPath);
                 }
 
-                //створюємо новий дбф файл згідно заданої нами структури
                 using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
                     using DBFWriter writer = new DBFWriter
@@ -525,7 +504,6 @@ namespace Assistant_TEP.Controllers
                         Signature = DBFSignature.DBase3
                     };
 
-                    //структура файлу дбф
                     var CDPR = new DBFField("CDPR", NativeDbType.Numeric, 12);
                     var IDCODE = new DBFField("IDCODE", NativeDbType.Char, 10);
                     var FIO = new DBFField("FIO", NativeDbType.Char, 50);
@@ -548,7 +526,6 @@ namespace Assistant_TEP.Controllers
                                             LGKAT, LGPRC, SUMM, FACT, TARIF, FLAG
                                           };
 
-                    //зберігаємо вибрані дані з скрипта в файл
                     foreach (DataRow dr in dt.Rows)
                     {
                         writer.AddRecord( int.Parse(dr["CDPR"].ToString()), dr["IDCODE"], dr["FIO"], dr["PPOS"], dr["RS"],
@@ -558,20 +535,16 @@ namespace Assistant_TEP.Controllers
                         );
                     }
 
-                    //записуємо у файл
                     writer.Write(fos);
                 }
 
-                //видаємо користувачу файл
                 string fileNameNew = FileName + DateTime.Now.ToString() + ".dbf";
                 byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
                 return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
             }
 
-            //виводимо на друк
             if (exportType == "excel")
             {
-                //запускаємо скрипт і отримуємо результат 
                 string FileScript1 = "Pilga2Excel.sql";
                 string path1 = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript1;
                 DataTable dt1 = BillingUtils.GetPilga2(path1, cokCode, int.Parse(period.Replace("-", "")), listNumber);
@@ -669,21 +642,17 @@ namespace Assistant_TEP.Controllers
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
 
             List<Zvirka> zv = new List<Zvirka>();
 
-            //Зчитуємо з .dbf і закидаємо в ліст
             using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
             {
                 var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -815,11 +784,9 @@ namespace Assistant_TEP.Controllers
 
                     foreach (Zvirka zvirka in zv)
                     {
-                        //заповнюємо дані по замовчуванні з дбф-ки
                         string accNum = zvirka.OWN_NUM;
                         if (zvirka.OWN_NUM != null && zap.ContainsKey(zvirka.OWN_NUM))
                         {
-                            //заповнюємо дані з скрипта
                             accNum = zap[zvirka.OWN_NUM];
                         }
                         else
@@ -860,21 +827,17 @@ namespace Assistant_TEP.Controllers
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName + user.Id;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
 
             List<ZvirkaOsPilg> zv = new List<ZvirkaOsPilg>();
 
-            //Зчитуємо з .dbf і закидаємо в ліст
             using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
             {
                 var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -970,11 +933,9 @@ namespace Assistant_TEP.Controllers
 
                     foreach (ZvirkaOsPilg zvirka in zv)
                     {
-                        //заповнюємо дані по замовчуванні з дбф-ки
                         string accNum = zvirka.RAH;
                         if (zvirka.RAH != null && zap.ContainsKey(zvirka.RAH))
                         {
-                            //заповнюємо дані з скрипта
                             accNum = zap[zvirka.RAH];
                         }
                         else
@@ -1006,7 +967,6 @@ namespace Assistant_TEP.Controllers
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             string cokCode = user.Cok.Code;
 
-            //робимо перевірку на код цоку
             if (user.Cok.Code == null)
             {
                 cokCode = "TR40";
@@ -1014,12 +974,10 @@ namespace Assistant_TEP.Controllers
 
             if (cokCode == "TR40")
             {
-                //запускаємо скрипт і отримуємо результат 
                 string FileScript = "Собезу на субсидії.sql";
                 string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
                 DataTable dt = BillingUtils.GetResults(path, cokCode);
 
-                //зчитуємо субсидійні номера
                 Dictionary<int, string> Sub_e = new Dictionary<int, string>();
                 string PathRead = appEnv.WebRootPath + "\\files\\Obmin\\SUB_E.DBF";
 
@@ -1029,22 +987,19 @@ namespace Assistant_TEP.Controllers
                     while (reader.Read())
                     {
                         Sub_e.Add(int.Parse(reader.GetValue("NUMBPERS").ToString().Trim()),
-                            int.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    //обрізаємо спереді 2099
+                            int.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    
                     }
                 }
 
-                //вказуємо шлях до файла
                 string filePath = "\\files\\Obmin\\";
                 string fileName = "TEP";
                 string FullPath = appEnv.WebRootPath + filePath + fileName;
 
-                //видаляємо файл
                 if (System.IO.File.Exists(FullPath))
                 {
                     System.IO.File.Delete(FullPath);
                 }
 
-                //створюємо новий дбф файл згідно заданої нами структури
                 using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
                     using (var writer = new DBFWriter())
@@ -1052,7 +1007,6 @@ namespace Assistant_TEP.Controllers
                         writer.CharEncoding = Encoding.GetEncoding(866);
                         writer.Signature = DBFSignature.DBase3;
 
-                        //структура файлу дбф
                         var Rash = new DBFField("Rash", NativeDbType.Numeric, 10);
                         var Ora = new DBFField("Ora", NativeDbType.Char, 40);
                         var Fio = new DBFField("Fio", NativeDbType.Char, 100);
@@ -1075,7 +1029,6 @@ namespace Assistant_TEP.Controllers
                         writer.Fields = new[] { Rash, Ora, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
                                                 Pilgovuk, Gar_voda, Gaz_vn, El_opal, Kilk_pilg, T11_cod_na, Orendar, Borg };
 
-                        //наповнюємо файл даними
                         foreach (DataRow dr in dt.Rows)
                         {
                             string pcode;
@@ -1105,24 +1058,20 @@ namespace Assistant_TEP.Controllers
                                 dr.Field<decimal>("Borg")
                             );
                         }
-                        //записуємо у файл
                         writer.Write(fos);
                     }
                 }
 
-                //видаємо користувачу файл
                 string fileNameNew = fileName + "_" + DateTime.Now.ToString() + ".dbf";
                 byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
                 return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
             }
             else if (cokCode == "TR33")
             {
-                //запускаємо скрипт і отримуємо результат 
                 string FileScript = "Собезу на субсидії Зборів.sql";
                 string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
                 DataTable dt = BillingUtils.GetResults(path, cokCode);
 
-                //зчитуємо субсидійні номера
                 Dictionary<long, string> Sub_e = new Dictionary<long, string>();
                 string PathRead = appEnv.WebRootPath + "\\files\\Obmin\\SUB.DBF";
 
@@ -1132,22 +1081,19 @@ namespace Assistant_TEP.Controllers
                     while (reader.Read())
                     {
                         Sub_e.Add(int.Parse(reader.GetValue("NUMBPERS").ToString().Trim()),
-                            long.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());    //обрізаємо спереді 2099
+                            long.Parse(reader.GetValue("PCODE").ToString().Substring(4)).ToString().Trim());
                     }
                 }
 
-                //вказуємо шлях до файла
                 string filePath = "\\files\\Obmin\\";
                 string fileName = "TEP";
                 string FullPath = appEnv.WebRootPath + filePath + fileName;
                 
-                //видаляємо файл
                 if (System.IO.File.Exists(FullPath))
                 {
                     System.IO.File.Delete(FullPath);
                 }
 
-                //створюємо новий дбф файл згідно заданої нами структури
                 using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
                     using (var writer = new DBFWriter())
@@ -1155,7 +1101,6 @@ namespace Assistant_TEP.Controllers
                         writer.CharEncoding = Encoding.GetEncoding(866);
                         writer.Signature = DBFSignature.DBase3;
 
-                        //структура файлу дбф
                         var Rash = new DBFField("Rash", NativeDbType.Numeric, 10);
                         var Ora = new DBFField("Ora", NativeDbType.Char, 40);
                         var Fio = new DBFField("Fio", NativeDbType.Char, 100);
@@ -1178,7 +1123,6 @@ namespace Assistant_TEP.Controllers
                         writer.Fields = new[] { Rash, Ora, Fio, Name_v, Bld, Corp, Flat, Nazva, Tariff, Discount,
                                             Pilgovuk, Gar_voda, Gaz_vn, El_opal, Kilk_pilg, T11_cod_na, Orendar, Borg };
 
-                        //наповнюємо файл даними
                         foreach (DataRow dr in dt.Rows)
                         {
                             string pcode;
@@ -1208,12 +1152,10 @@ namespace Assistant_TEP.Controllers
                                 dr.Field<decimal>("Borg")
                             );
                         }
-                        //записуємо у файл
                         writer.Write(fos);
                     }
                 }
 
-                //видаємо користувачу файл
                 string fileNameNew = fileName + "_" + DateTime.Now.ToString() + ".dbf";
                 byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
                 return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
@@ -1228,26 +1170,21 @@ namespace Assistant_TEP.Controllers
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             string cokCode = user.Cok.Code;
 
-            //запускаємо скрипт і отримуємо результат 
             string FileScript = "UkrSpecInform.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
             DataTable dt = BillingUtils.Ukrspecinform(path, cokCode);
 
-            //вказуємо шлях до DBF файла
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string filePath = "\\Files\\Obmin\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fileName = cokCode + "EE.dbf";
             string FullPath = appEnv.WebRootPath + filePath + fileName;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //створюємо новий дбф файл згідно заданої нами структури
             using (Stream fos = System.IO.File.Open(FullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 using (var writer = new DBFWriter())
@@ -1256,7 +1193,6 @@ namespace Assistant_TEP.Controllers
                     writer.Signature = DBFSignature.DBase3;
                     writer.LanguageDriver = 0x26; // кодировка 866
 
-                    //структура файлу дбф
                     var Ptr = new DBFField("PTR", NativeDbType.Numeric, 20, 5);
                     var Numbpers = new DBFField("NUMBPERS", NativeDbType.Numeric, 20, 5);
                     var NewNumber = new DBFField("NEW_NUMBER", NativeDbType.Numeric, 20, 5);
@@ -1294,7 +1230,6 @@ namespace Assistant_TEP.Controllers
                         Lcount, Billdate, Datestart, CStart, Dateons, COns, Ecount, Billsumma, Subsyd, Borgsumma, Tariff, Limit,
                         Discount, Kredyt, Realsumm, UsSubsyd, DataClose, Lastpaydat, OplataPop, OplataCur, SaldoP, DoOplaty };
 
-                    //наповнюємо файл даними
                     foreach (DataRow dr in dt.Rows)
                     {
                         int lcount = string.IsNullOrEmpty(dr["lcount"].ToString()) ? 0 : int.Parse(dr["lcount"].ToString());
@@ -1337,11 +1272,9 @@ namespace Assistant_TEP.Controllers
                             dr.Field<decimal?>("do_oplaty")
                         );
                     }
-                    //записуємо у файл
                     writer.Write(fos);
                 }
             }
-            //видаємо користувачу файл
             byte[] fileBytes = System.IO.File.ReadAllBytes(FullPath);
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileName);
         }
@@ -1356,26 +1289,24 @@ namespace Assistant_TEP.Controllers
         public ActionResult MoneySubs(IFormFile formFile)
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
+            string cokCode = user.Cok.Code;
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string filePath = "\\Files\\Obmin\\Money\\" + Period.per_now().per_str + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
 
             Dictionary<string, MoneySubsydii> zap = new Dictionary<string, MoneySubsydii>();
             string FileScript = "субсидії монетизація по області.sql";
             string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
-            DataTable dt = BillingUtils.GetMoneySubsData(path);
+            DataTable dt = BillingUtils.GetMoneySubsData(path, cokCode);
             
             foreach (DataRow dtRow in dt.Rows)
             {
@@ -1428,10 +1359,8 @@ namespace Assistant_TEP.Controllers
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string filePath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";
             string fullPath = appEnv.WebRootPath + filePath + formFile.FileName;
-            //створюємо директорію, якщо не має
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
-            //зберігаємо файл
             if (formFile.FileName.ToUpper().StartsWith("LK") || formFile.FileName.ToUpper().StartsWith("RK"))
             {
                 using (var fileStream = new FileStream(fullPath, FileMode.Create))
@@ -1452,19 +1381,17 @@ namespace Assistant_TEP.Controllers
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             string cok = user.Cok.Code;
-            //шукаємо ексель файли
-            string dir = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";  //директорія зфайлами
-            string[] FileName;  //тут буде назва файла
-            string fullPath = "";   //тут буде повний шлях до файла
+            string dir = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";  
+            string[] FileName;  
+            string fullPath = "";   
             string fl = "";
-            //Робимо перевірку на директорію, якщо є то є і файли
             if (Directory.Exists(appEnv.WebRootPath + dir))
             {
                 FileName = Directory.GetFiles(appEnv.WebRootPath + dir);
 
                 for (int i = 0; i < FileName.Length; i++)
                 {
-                    fl = Path.GetFileName(FileName[i]); // только имя файла с расширением
+                    fl = Path.GetFileName(FileName[i]); 
                     if (file == "subsydija" && fl.ToUpper().StartsWith("RK"))
                     {
                         fullPath = appEnv.WebRootPath + dir + fl;
@@ -1475,7 +1402,6 @@ namespace Assistant_TEP.Controllers
                     }
                 }
             }
-            //робимо перевірку чи є файл
             if (System.IO.File.Exists(fullPath))
             {
                 string FileScript = "AccNumber.sql";
@@ -1485,7 +1411,6 @@ namespace Assistant_TEP.Controllers
                 decimal zagalSuma = 0;
                 int kt = 0;
 
-                //вказуємо шлях до DBF i TXT файла
                 Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                 string FilePath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\" + cok + "\\";
                 string DBFfileName = cok +"_"+ file + ".dbf";
@@ -1493,27 +1418,22 @@ namespace Assistant_TEP.Controllers
                 string FullPath = appEnv.WebRootPath + FilePath;
                 string DBFfullPath = FullPath + DBFfileName;
                 string TXTfullPath = FullPath + TXTfileName;
-                // ZIP результат
                 string FileResultPath = "\\Files\\Obmin\\MoneyToUtility\\" + Period.per_now().per_str + "\\";
                 string FullResultPath = appEnv.WebRootPath + FileResultPath;
                 string zipfile_name = cok + "_" + file + "_" + Period.per_now().per_str + ".zip";
                 string FullZipResult = FullResultPath + zipfile_name;
 
-                //видаляємо директорію
                 if (Directory.Exists(FullPath))
                 {
                     Directory.Delete(FullPath, true);
                 }
-                //створюємо директорію
                 Directory.CreateDirectory(FullPath);
 
-                //видаляємо ZIP
                 if (System.IO.File.Exists(FullZipResult))
                 {
                     System.IO.File.Delete(FullZipResult);
                 }
 
-                //створюємо новий дбф файл згідно заданої нами структури
                 using (Stream fos = System.IO.File.Open(DBFfullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 { 
                     using (var writer = new DBFWriter())
@@ -1522,7 +1442,6 @@ namespace Assistant_TEP.Controllers
                         writer.Signature = DBFSignature.DBase3;
                         writer.LanguageDriver = 0x26; // кодировка 866
 
-                        //структура файлу дбф
                         DBFField Os_Rah = new DBFField("Os_Rah", NativeDbType.Char, 20);
                         DBFField PayDate = new DBFField("PayDate", NativeDbType.Date);
                         DBFField TotalSumm = new DBFField("TotalSumm", NativeDbType.Numeric, 10, 2);
@@ -1532,7 +1451,6 @@ namespace Assistant_TEP.Controllers
 
                         Dictionary<string, string> search = new Dictionary<string, string>();
                         DataTable dt = BillingUtils.GetAccNumb(path, cok);
-                        //Отримуємо по скрипту всі особові номери 
                         foreach (DataRow dtRow in dt.Rows)
                         {
                             try
@@ -1548,7 +1466,6 @@ namespace Assistant_TEP.Controllers
 
                         foreach (var s in excel.FromExcel(cok))
                         {
-                            //Потрібно всі нові особові перевести на старі
                             if (search.ContainsKey(s.AccNumber.ToString()))
                             {
                                 s.OsRah = (search[s.AccNumber.ToString()]);
@@ -1558,14 +1475,11 @@ namespace Assistant_TEP.Controllers
                                 s.OsRah = s.AccNumber.ToString();
                             }
 
-                            //наповнюємо файл даними
                             writer.AddRecord(s.OsRah, s.DataOplaty, s.SumaOplaty);
                             zagalSuma += s.SumaOplaty;
                         }
-                        //записуємо у файл
                         writer.Write(fos);
 
-                        //створюємо текстовий файл
                         using (StreamWriter sw = new StreamWriter(TXTfullPath, false, System.Text.Encoding.Default))
                         {
                             sw.WriteLine("Кількість абонентів: " + kt);
@@ -1573,8 +1487,7 @@ namespace Assistant_TEP.Controllers
                         }
                     }
                 }
-                //видаємо користувачу файл
-                ZipFile.CreateFromDirectory(FullPath, FullZipResult);    //створюємо архів з папки
+                ZipFile.CreateFromDirectory(FullPath, FullZipResult);
                 byte[] mas = System.IO.File.ReadAllBytes(FullResultPath + zipfile_name);
                 return File(mas, System.Net.Mime.MediaTypeNames.Application.Zip, zipfile_name);
             }

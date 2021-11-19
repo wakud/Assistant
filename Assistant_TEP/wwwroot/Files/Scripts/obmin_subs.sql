@@ -84,7 +84,7 @@ SELECT tg.TariffGroupId,t.DateFrom,t.DateTo,t.price,tbl.shortname,tg.Name AS Tar
         t.MaxTariffLimit,
         at.QuantityTo,
         at.Discount/100.00 AS DiscountKoeff
-        , d.debet AS debt -- 2017051 Лемешко
+        , d.debet AS debt
         FROM AccountingCommon.Account a 
         JOIN @debt d ON d.accId = a.AccountId
         JOIN @table tbl ON tbl.AccountNumberNew = a.AccountNumberNew
@@ -109,9 +109,8 @@ c AS (
             +convert(DECIMAL(10,2),(norm_f6-MaxTariffLimit)*ISNULL(taryf_61,taryf_6))
         ELSE convert(DECIMAL(10,2),norm_f6*taryf_6)
         END SanNormaSubsGrn,
-        -- 2017-03-18 Лемешко: тарифи taryf_6 і taryf_61 вже включають ПДВ, забрано множник 1.2
         CASE
-        WHEN DiscountKoeff<>0 THEN -- 2017-03-18 Лемешко: було DiscountKoeff<>1 !!
+        WHEN DiscountKoeff<>0 THEN
             CASE 
             WHEN QuantityTo>norm_f6 THEN 
                 CASE WHEN norm_f6>MaxTariffLimit THEN convert(DECIMAL(10,2),MaxTariffLimit*taryf_6*DiscountKoeff)

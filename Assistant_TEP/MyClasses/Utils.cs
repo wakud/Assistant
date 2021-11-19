@@ -33,7 +33,6 @@ namespace Assistant_TEP.MyClasses
             public string NameDesc { get; set; }
         }
 
-        //Утиліта для кодування паролів
         public static string Encrypt(string clearText)
         {
             string EncryptionKey = "RJdpFwmvPB";        //https://www.random.org/strings/
@@ -54,7 +53,6 @@ namespace Assistant_TEP.MyClasses
             return clearText;
         }
 
-        //Утиліта для розкодування паролів
         public static string Decrypt(string cipherText)
         {
             string EncryptionKey = "RJdpFwmvPB";

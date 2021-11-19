@@ -93,15 +93,15 @@ namespace Assistant_TEP.MyClasses
             bool More4 = (Dek > 4) || (Dek == 0);
             if (((ThNum > 2) && In234) || ((ThNum == 2) && (Dek == 1)))
             {
-                return "а";     //закінчення тисяч_"а"
+                return "а";     
             }
             else if ((ThNum > 2) && More4)
             {
-                return "ів";         //це напевно мільйон_"ів"
+                return "ів";         
             }
             else if ((ThNum == 2) && In234)
             {
-                return "і";                 //закінчення тисяч_"і"
+                return "і";                 
             }
             else
             {
@@ -123,18 +123,18 @@ namespace Assistant_TEP.MyClasses
                 //}
                 //else
                 //{
-                return "на";          //виводить закінчення Од_"на" гривня
+                return "на";          
                 //}
             }
             else
             {
                 if (IsMale)
                 {
-                    return "і";       //виводить закінчення дв_"і" гривні
+                    return "і";       
                 }
                 else
                 {
-                    return "і";          //виводить закінчення дв_"і" тисячі
+                    return "і";          
                 }
             }
         }

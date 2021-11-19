@@ -65,7 +65,6 @@ namespace Assistant_TEP.MyClasses
                     string connString = "RESConnection" + cok + "_" + report.DbType.Type;
                     string script = File.ReadAllText(path, Encoding.GetEncoding(1251));
                     script = script.Replace("$cok$", cok);
-                    //Console.WriteLine(connString);
                     string connectionString = Configuration.GetConnectionString(connString);
                     DataTable results = new DataTable();
                     using(SqlConnection conn = new SqlConnection(connectionString))
@@ -450,10 +449,10 @@ namespace Assistant_TEP.MyClasses
             return dt;
         }
 
-        public static DataTable GetMoneySubsData(string scriptPath)
+        public static DataTable GetMoneySubsData(string scriptPath, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnectionTR27_Utility";
+            string connString = "RESConnection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             string connectionString = Configuration.GetConnectionString(connString);
             DataTable dt = new DataTable();

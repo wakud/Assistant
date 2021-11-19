@@ -103,11 +103,10 @@ namespace Assistant_TEP.MyClasses
             string Edrpou = "42145798";
             
             ws = wb.Worksheets.Add();
-            ExcelStyling styler = new ExcelStyling(ws);  // Створюємо інстанс стиліста 
-            SetDefaultSettings(); // Встановлюємо базові налаштування для Сторінки
-            //шапка документу
+            ExcelStyling styler = new ExcelStyling(ws);  
+            SetDefaultSettings(); 
             SetZvitHeader("Код ЄДРПОУ: " + Edrpou);
-            styler.CenterCellText("B1"); // Центруємо перший параметр комірку, і з'єднуємо її з другим параметром
+            styler.CenterCellText("B1"); 
             ws.Cell("C1").Value = NameDoc;
             styler.CenterAndMerge("C1", "I1");
             ws.Cell("K1").Value = "Форма 2-пільга";
@@ -117,7 +116,6 @@ namespace Assistant_TEP.MyClasses
             ws.Cell("C3").Value = GetDateToReport(period);
             styler.CenterAndMerge("C3", "H3");
 
-            //виставляємо ширину стовпчиків
             ws.Column(1).Width = 5.43;       //A
             ws.Column(2).Width = 32.71;      //B
             ws.Column(3).Width = 6;          //C
@@ -131,10 +129,8 @@ namespace Assistant_TEP.MyClasses
             ws.Column(11).Width = 6;         //K
             ws.Column(12).Width = 3.29;      //L
             ws.Column(13).Width = 6;         //M
-            //виставляємо висоту 6 рядочка
             ws.Rows("6").Height = 142;
             
-            //робимо шапку таблиці
             ws.Cell("A5").Value = "№ з/п";
 
             ws.Cell("B5").Value = "Дані про пільговика";
@@ -168,7 +164,7 @@ namespace Assistant_TEP.MyClasses
 
             styler.CenterAndMergeStreamWithOneOffset(new List<string>() {
                 "A5", "F5", "G5", "M5"
-            }); // Потоково центруємо клітинки і з'єднуємо їх із наступними під ними( А3 з'єднує з A4 і т.д.)
+            }); 
 
             ws.Cell("A7").Value = "1";
             ws.Cell("A7").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
@@ -197,7 +193,6 @@ namespace Assistant_TEP.MyClasses
             ws.Cell("M7").Value = "8";
             ws.Cell("M7").Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
 
-            //встановлюємо початок запису даних
             int currRow = 8;        //рядок 8
             int currCell = 1;       //стовпчик 1
             int i = 1;
@@ -219,8 +214,8 @@ namespace Assistant_TEP.MyClasses
                 ws.Cell(currRow, currCell + 11).Value = categoryTotals[cat.Key].Lights;
                 ws.Cell(currRow, currCell + 12).Value = categoryTotals[cat.Key].TotalCharged;
                 styler.SetStreamBold(currRow, currCell + 5, currCell + 12);
-                currCell = 1;   //переводимо на перший стовбець
-                currRow++;     //збільшеємо рядок на 1
+                currCell = 1;   
+                currRow++;     
                 foreach (Pilga2 pilga2 in cat.Value)
                 {
                     ws.Cell(currRow, currCell).Value = 
@@ -242,7 +237,7 @@ namespace Assistant_TEP.MyClasses
                     ws.Cell(currRow, currCell + 11).Value = pilga2.z4;
                     ws.Cell(currRow, currCell + 12).FormulaR1C1 = $"=SUM(R{currRow}C{currCell + 7}:R{currRow}C{currCell + 11})";
 
-                    currRow++;     //збільшеємо рядок на 1
+                    currRow++;     
                     ws.Cell(currRow, currCell + 1).Value = pilga2.NasPunkt.Trim() + ", " + pilga2.VulName.Trim() + ", " + 
                                                            pilga2.Bild.Trim() + pilga2.Korp.Trim() + "/" + pilga2.Apartment.Trim();
                     ws.Range(ws.Cell(currRow, currCell + 1), ws.Cell(currRow, currCell + 2)).Merge();
@@ -257,9 +252,9 @@ namespace Assistant_TEP.MyClasses
                     ws.Cell(currRow, currCell + 12).FormulaR1C1 = $"=SUM(R{currRow}C{currCell + 7}:R{currRow}C{currCell + 11})";
 
                     debFact = debFact + pilga2.woz + pilga2.z1 + pilga2.z2 + pilga2.z3 + pilga2.z4;
-                    currRow++;     //збільшеємо рядок на 1
+                    currRow++;     
                     i++;
-                    currCell = 1;   //переводимо на перший стовбець
+                    currCell = 1;   
                 }
             }
 

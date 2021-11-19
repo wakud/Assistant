@@ -4,52 +4,109 @@ DECLARE @period INT = YEAR(@date_from) * 100 + MONTH(@date_from)
 --DECLARE @cntZones INT; SET @cntZones = 2
 DECLARE @dtPeriod DATETIME; SET @dtPeriod = convert(DATETIME,'01/'+LTRIM(RTRIM(@Period%100))+'/'+LTRIM(RTRIM(@Period/100)),103)
 
-DECLARE @zones TABLE (
-	id INT IDENTITY(1,1),
-	AccountNumber VARCHAR(20),
-	PIP VARCHAR(200),
-    TarifficationBlockId INT,
-	BlockLabel VARCHAR(5),
-    BlockLabelName varchar(50),
-	TariffGroupId INT,
-	TimeZonalId INT,
-    isHeating int,
-	BasePrice DECIMAL(16,5),
-	Quantity_Nich INT,
-	Quantity_PivPick INT,
-	Quantity_Pick INT,
-	Tariff_Nich DECIMAL(16,5),
-	Tariff_PivPick DECIMAL(16,5),
-	Tariff_Pick DECIMAL(16,5)
+DECLARE @tableZone TABLE (
+		id INT IDENTITY(1,1),
+		AccountNumber VARCHAR(20),
+		AccountId INT,
+		PIP VARCHAR(200),
+		TarifficationBlockId INT,
+		BlockLabel VARCHAR(5),
+		BlockLabelName varchar(50),
+		TimeZonalId INT,
+		All_kWt DECIMAL(10, 2),
+		kategory CHAR(50),
+		TariffGroupId INT,
+		isHeating int,
+		BasePrice DECIMAL(16,5),
+		Quantity_PivPick INT,
+		Tariff_PivPick DECIMAL(16,5),
+		Quantity_Nich INT,
+		Tariff_Nich DECIMAL(16,5),
+		Quantity_Pick INT,
+		Tariff_Pick DECIMAL(16,5)
 )
-;
-WITH oper AS(
-	SELECT o.AccountId,bc.TarifficationBlockId,t.TariffId,
-    t.TariffGroupId,
-    --CASE WHEN t.TarifficationBlockLineId = 1 THEN 7 ELSE t.TariffGroupId END AS TariffGroupId, -- 20180515 Лемешко: збут хоче, щоб всі споживачі з безблочним тарифом були відокремлені в одну групу,
-           --так буде працювати лише поки безблочні тарифи однакові для різних тарифних груп, потім потрібно буде прийняти рішення, яка поведінка має бути реалізована, і переробити
-    t.Price,t.IsHeating,tz.TimeZonalId,t.TimeZoneId,t.TarifficationBlockLineId,
-    REPLACE(tbl.shortname,'кВт*год','') as ShortName,
-	t1.Price AS BasePrice,
-	SUM(
-	CASE WHEN o.PeriodTo=@Period THEN -1 ELSE 1 END *op.Summ) TotalSumm,
-	SUM(op.Quantity*CASE WHEN o.PeriodTo=@Period THEN -1 ELSE 1 END) Quantity
-	FROM FinanceMain.Operation o
-	JOIN FinanceMain.OperationRow op ON o.OperationId = op.OperationId
-	AND @Period IN (o.PeriodFrom,o.PeriodTo)
-	AND MONTH(op.ConsumptionFrom) = MONTH(@dtPeriod)
-	AND YEAR(op.ConsumptionFrom) = YEAR(@dtPeriod)
---    and op.Discount=0
-	AND o.IsIncome=0
-	JOIN AccountingDictionary.BenefitsCategory bc ON  bc.BenefitsCategoryId = op.BenefitsCategoryId
-	JOIN Dictionary.Tariff t ON t.TariffId = op.TariffId
-	JOIN Dictionary.TimeZone tz ON tz.TimeZoneId = t.TimeZoneId
-	JOIN Dictionary.TimeZonal ttz ON ttz.TimeZonalId = tz.TimeZonalId
-    AND ttz.TimeZoneCount=isnull(@cntZones,ttz.TimeZoneCount)
-    and ttz.TimeZoneCount in (2,3)
-	JOIN Dictionary.TarifficationBlockLine tbl ON t.TarifficationBlockLineId = tbl.TarifficationBlockLineId
-	left join Dictionary.Tariff t1  
-		on	t1.DateFrom=t.DateFrom
+--завантажуємо всіх в кого є диф. облік
+INSERT @tableZone
+(
+    AccountId,
+	AccountNumber,
+    PIP,
+	TimeZonalId
+)
+SELECT  acc.AccountId
+		, acc.AccountNumber
+		, pp.LastName+' '+pp.FirstName+' '+pp.SecondName AS pip
+		, MAX(ucm.TimeZonalId) AS zona
+FROM AccountingCommon.Account acc
+LEFT JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = acc.PhysicalPersonId
+LEFT JOIN AccountingCommon.UsageObject as uo ON uo.AccountId = acc.AccountId
+LEFT JOIN AccountingCommon.Point as p ON p.UsageObjectId = uo.UsageObjectId
+LEFT JOIN AccountingCommon.TarifficationMethod tm ON tm.PointId = p.PointId
+LEFT JOIN AccountingCommon.UsageCalculationMethod ucm ON ucm.PointId = p.PointId
+		AND ucm.DateFrom <= @date_from
+        AND ucm.Dateto >= @date_from
+WHERE acc.DateTo = convert(DATETIME,'6/6/2079',103)
+GROUP BY acc.AccountId, pp.LastName+' '+pp.FirstName+' '+pp.SecondName, acc.AccountNumber
+HAVING MAX(ucm.TimeZonalId) <> 1
+
+----проставляємо електроопалення
+UPDATE @tableZone
+SET isHeating = s.IsHeating
+	, TariffGroupId = s.TariffGroupId
+FROM (
+		SELECT acc.AccountId
+				, tm.IsHeating	-- наявність електроопалення
+				, tm.TariffGroupId AS TariffGroupId
+		FROM @tableZone acc
+		LEFT JOIN AccountingCommon.UsageObject as uo ON uo.AccountId = acc.AccountId
+		LEFT JOIN AccountingCommon.Point as p ON p.UsageObjectId = uo.UsageObjectId
+		LEFT JOIN AccountingCommon.TarifficationMethod tm ON tm.PointId = p.PointId
+) AS s
+WHERE [@tableZone].AccountId = s.AccountId
+
+---- заповнюємо кіловати і тарифи
+UPDATE @tableZone
+SET All_kWt = s.Quantity
+	, Quantity_PivPick = s.кВт1
+	, Quantity_Nich = s.кВт2
+	, Quantity_Pick = s.кВт3
+	, Tariff_PivPick = s.tarif1
+	, Tariff_nich = s.tarif2
+	, Tariff_Pick = s.tarif3
+	, BlockLabelName = s.ShortName
+	,BasePrice = s.BasePrice
+	,TarifficationBlockId = s.TarifficationBlockId
+	,BlockLabel = s.BlockLabel
+FROM (
+		SELECT o.AccountId
+				, SUM(op.Quantity*CASE WHEN o.PeriodTo=@Period THEN -1 ELSE 1 END) Quantity
+				, SUM(CASE WHEN t.TimeZoneId in (2, 4) THEN op.Quantity ELSE 0 end) кВт1
+				, SUM(CASE WHEN t.TimeZoneId in (5, 3) THEN op.Quantity ELSE 0 end) кВт2
+				, SUM(CASE WHEN t.TimeZoneId = 6 THEN op.Quantity ELSE 0 end) кВт3
+				, SUM(CASE WHEN t.TimeZoneId = 2 THEN t.Price 
+						   WHEN t.TimeZoneId = 4 THEN t.Price
+					  ELSE 0 END) AS tarif1
+				, SUM(CASE WHEN t.TimeZoneId = 3 THEN t.Price 
+						   WHEN t.TimeZoneId = 5 THEN t.Price
+					  ELSE 0 END) AS tarif2
+				, SUM(CASE WHEN t.TimeZoneId = 6 THEN t.Price ELSE 0 END) AS tarif3
+				, REPLACE(tbl.shortname,'кВт*год','') as ShortName
+				, t1.Price AS BasePrice
+				, isnull(tbl.TarifficationBlockId,0) as TarifficationBlockId
+				, CASE 
+					WHEN t1.Price = 1.4 THEN 'Б1'
+					WHEN t1.Price = 1.2 THEN 'Б2'
+					ELSE '' 
+				  END AS BlockLabel
+		FROM FinanceMain.Operation o
+		JOIN FinanceMain.OperationRow op ON o.OperationId = op.OperationId
+			AND @Period IN (o.PeriodFrom,o.PeriodTo)
+			AND MONTH(op.ConsumptionFrom) = MONTH(@dtPeriod)
+			AND YEAR(op.ConsumptionFrom) = YEAR(@dtPeriod)
+			AND o.IsIncome=0
+		JOIN Dictionary.Tariff t ON t.TariffId = op.TariffId
+		JOIN Dictionary.TarifficationBlockLine tbl ON tbl.TarifficationBlockLineId = t.TarifficationBlockLineId
+		left join Dictionary.Tariff t1 ON t1.DateFrom=t.DateFrom
 		and t1.DateTo=t.DateTo
 		and t1.TariffGroupId=t.TariffGroupId
 		and t1.VoltageId=t.VoltageId
@@ -59,66 +116,16 @@ WITH oper AS(
 		and t1.IsHeating=t.IsHeating
 		and t1.TarifficationBlockLineId=t.TarifficationBlockLineId
 		and t1.TimeZoneId=1
-	GROUP BY o.AccountId,bc.TarifficationBlockId,t.TariffId,t.TariffGroupId,t.Price,t.IsHeating,tz.TimeZonalId,t.TimeZoneId,t.TarifficationBlockLineId,t1.Price,tbl.ShortName
-),zvit AS 
-(
-	SELECT a.AccountNumber,
-	pp.LastName+' '+pp.FirstName+' '+pp.SecondName AS pip,
-    isnull(o.TarifficationBlockId,0) as TarifficationBlockId,
-	CASE 
-		-- WHEN o.TarifficationBlockLineId IN (3,5,7,10,21,24,27,29) THEN 'Б1' -- 20170420: ,27,29 added
-		-- WHEN o.TarifficationBlockLineId IN (8,11,13,15,17,19,22,25) THEN 'Б2'
-		-- 20171221 Lemeshko
-		WHEN vtb.BlockNumber = 2 THEN 'Б1'
-		WHEN vtb.BlockNumber = 3 THEN 'Б2'
-		ELSE '' 
-	END AS BlockLabel,
-    o.shortname as BlockLabelName,
-	o.TariffGroupId,o.TimeZonalId,o.isHeating,o.BasePrice,
-	SUM(
-	CASE 
-		WHEN o.TimeZoneId IN (3,5) THEN o.Quantity ELSE 0 
-	END) AS kwt_nich,
-	SUM(
-	CASE 
-		WHEN o.TimeZoneId IN (2,4) THEN o.Quantity ELSE 0 
-	END ) AS kwt_pivpick,
-	SUM(
-	CASE WHEN o.TimeZoneId IN (6) THEN o.Quantity ELSE 0 
-	END) AS kwt_pick,
-		MAX(CASE 
-		WHEN o.TimeZoneId IN (3,5) THEN o.Price ELSE 0 
-	END) tariff_nich,
-	MAX(
-	CASE 
-		WHEN o.TimeZoneId IN (2,4) THEN o.Price ELSE 0 
-	END) tariff_pivpick,
-	MAX(CASE 
-		WHEN o.TimeZoneId IN (6) THEN o.Price ELSE 0 
-	END) tariff_pick
-	FROM AccountingCommon.Account a 
-	JOIN oper o ON o.AccountId = a.AccountId
-	JOIN AccountingCommon.PhysicalPerson pp ON a.PhysicalPersonId = pp.PhysicalPersonId
-    JOIN SupportDefined.V_TarifficationBlock vtb ON vtb.TarifficationBlockLineId = o.TarifficationBlockLineId -- 20171221 Lemeshko
-	GROUP BY 
-	a.AccountId,a.AccountNumber,
-	LastName,FirstName,SecondName,
-	CASE 
-		-- WHEN o.TarifficationBlockLineId IN (3,5,7,10,21,24,27,29) THEN 'Б1' -- 20170420: ,27,29 added
-		-- WHEN o.TarifficationBlockLineId IN (8,11,13,15,17,19,22,25) THEN 'Б2'
-		-- 20171221 Lemeshko
-		WHEN vtb.BlockNumber = 2 THEN 'Б1'
-		WHEN vtb.BlockNumber = 3 THEN 'Б2'
-		ELSE '' 
-	END ,
-o.TariffGroupId,o.TimeZonalId,o.ShortName,o.BasePrice,o.isHeating,
-	o.TarifficationBlockId
-)
-INSERT @Zones
-SELECT * FROM zvit
+		WHERE 1=1 
+		GROUP BY o.AccountId, REPLACE(tbl.shortname,'кВт*год',''), t1.Price, TarifficationBlockId
+) AS s
+WHERE [@tableZone].AccountId = s.AccountId
 
 SELECT 	id,AccountNumber,PIP,BlockLabel,BlockLabelName,TariffGroupId,
 	TimeZonalId,isHeating,BasePrice,Quantity_Nich,Quantity_PivPick,Quantity_Pick,
 	Tariff_Nich,Tariff_PivPick,Tariff_Pick,TarifficationBlockId
-FROM @Zones
-order by id
+FROM @tableZone
+WHERE 1=1
+		AND BasePrice IS NOT NULL
+		AND TimeZonalId = @cntZones
+ORDER BY id

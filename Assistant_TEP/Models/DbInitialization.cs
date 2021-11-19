@@ -10,7 +10,6 @@ namespace Assistant_TEP.Models
     {
         public static void Initial(MainContext context)
         {
-            //Добавимо початкові дані в БД
             if (!context.Coks.Any())
             {
                 Organization misto = new Organization 

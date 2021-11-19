@@ -38,3 +38,101 @@ Log Entry : 16:48:28 7 вересня 2021 р.
 ClientConnectionId:9d5e4d94-7aad-473e-b0f5-dcc6675c4a4d
 Error Number:102,State:1,Class:15
 -------------------------------
+
+Log Entry : 11:53:32 8 листопада 2021 р.
+  :
+  :System.IO.FileNotFoundException: Could not find file 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'.
+File name: 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'
+   at System.IO.FileStream.ValidateFileHandle(SafeFileHandle fileHandle)
+   at System.IO.FileStream.CreateFileOpenHandle(FileMode mode, FileShare share, FileOptions options)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, FileOptions options)
+   at System.IO.StreamReader.ValidateArgsAndOpenPath(String path, Encoding encoding, Int32 bufferSize)
+   at System.IO.StreamReader..ctor(String path, Encoding encoding, Boolean detectEncodingFromByteOrderMarks)
+   at System.IO.File.InternalReadAllText(String path, Encoding encoding)
+   at System.IO.File.ReadAllText(String path, Encoding encoding)
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 58
+-------------------------------
+
+Log Entry : 11:53:32 8 листопада 2021 р.
+  :
+  :System.IO.FileNotFoundException: Could not find file 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'.
+File name: 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'
+   at System.IO.FileStream.ValidateFileHandle(SafeFileHandle fileHandle)
+   at System.IO.FileStream.CreateFileOpenHandle(FileMode mode, FileShare share, FileOptions options)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, FileOptions options)
+   at System.IO.StreamReader.ValidateArgsAndOpenPath(String path, Encoding encoding, Int32 bufferSize)
+   at System.IO.StreamReader..ctor(String path, Encoding encoding, Boolean detectEncodingFromByteOrderMarks)
+   at System.IO.File.InternalReadAllText(String path, Encoding encoding)
+   at System.IO.File.ReadAllText(String path, Encoding encoding)
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 58
+-------------------------------
+
+Log Entry : 11:53:47 8 листопада 2021 р.
+  :
+  :System.IO.FileNotFoundException: Could not find file 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'.
+File name: 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'
+   at System.IO.FileStream.ValidateFileHandle(SafeFileHandle fileHandle)
+   at System.IO.FileStream.CreateFileOpenHandle(FileMode mode, FileShare share, FileOptions options)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, FileOptions options)
+   at System.IO.StreamReader.ValidateArgsAndOpenPath(String path, Encoding encoding, Int32 bufferSize)
+   at System.IO.StreamReader..ctor(String path, Encoding encoding, Boolean detectEncodingFromByteOrderMarks)
+   at System.IO.File.InternalReadAllText(String path, Encoding encoding)
+   at System.IO.File.ReadAllText(String path, Encoding encoding)
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 58
+-------------------------------
+
+Log Entry : 11:53:47 8 листопада 2021 р.
+  :
+  :System.IO.FileNotFoundException: Could not find file 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'.
+File name: 'D:\my_project\c#\Assistant_TEP\Assistant_TEP\wwwroot\Files\Scripts\АСИСТЕНТ ВЦОплатаНаПупБойцун.sql'
+   at System.IO.FileStream.ValidateFileHandle(SafeFileHandle fileHandle)
+   at System.IO.FileStream.CreateFileOpenHandle(FileMode mode, FileShare share, FileOptions options)
+   at System.IO.FileStream..ctor(String path, FileMode mode, FileAccess access, FileShare share, Int32 bufferSize, FileOptions options)
+   at System.IO.StreamReader.ValidateArgsAndOpenPath(String path, Encoding encoding, Int32 bufferSize)
+   at System.IO.StreamReader..ctor(String path, Encoding encoding, Boolean detectEncodingFromByteOrderMarks)
+   at System.IO.File.InternalReadAllText(String path, Encoding encoding)
+   at System.IO.File.ReadAllText(String path, Encoding encoding)
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 58
+-------------------------------
+
+Log Entry : 15:58:49 17 листопада 2021 р.
+  :
+  :System.InvalidOperationException: The ConnectionString property has not been initialized.
+   at Microsoft.Data.SqlClient.SqlConnection.PermissionDemand()
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.PermissionDemand(DbConnection outerConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 76
+-------------------------------
+
+Log Entry : 15:58:49 17 листопада 2021 р.
+  :
+  :System.InvalidOperationException: The ConnectionString property has not been initialized.
+   at Microsoft.Data.SqlClient.SqlConnection.PermissionDemand()
+   at Microsoft.Data.SqlClient.SqlConnectionFactory.PermissionDemand(DbConnection outerConnection)
+   at Microsoft.Data.ProviderBase.DbConnectionInternal.TryOpenConnectionInternal(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.ProviderBase.DbConnectionClosed.TryOpenConnection(DbConnection outerConnection, DbConnectionFactory connectionFactory, TaskCompletionSource`1 retry, DbConnectionOptions userOptions)
+   at Microsoft.Data.SqlClient.SqlConnection.TryOpen(TaskCompletionSource`1 retry, SqlConnectionOverrides overrides)
+   at Microsoft.Data.SqlClient.SqlConnection.Open(SqlConnectionOverrides overrides)
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 76
+-------------------------------
+
+Log Entry : 16:01:22 17 листопада 2021 р.
+  :
+  :System.FormatException: The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.
+   at System.Convert.FromBase64CharPtr(Char* inputPtr, Int32 inputLength)
+   at System.Convert.FromBase64String(String s)
+   at Assistant_TEP.MyClasses.Utils.Decrypt(String cipherText) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\Utils.cs:line 60
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 66
+-------------------------------
+
+Log Entry : 16:01:22 17 листопада 2021 р.
+  :
+  :System.FormatException: The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.
+   at System.Convert.FromBase64CharPtr(Char* inputPtr, Int32 inputLength)
+   at System.Convert.FromBase64String(String s)
+   at Assistant_TEP.MyClasses.Utils.Decrypt(String cipherText) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\Utils.cs:line 60
+   at Assistant_TEP.MyClasses.BillingUtils.GetReportResults(String scriptsPath, Report report, Dictionary`2 parameters, String cok, Dictionary`2 parametersReplacements) in D:\my_project\c#\Assistant_TEP\Assistant_TEP\MyClasses\BillingUtils.cs:line 66
+-------------------------------

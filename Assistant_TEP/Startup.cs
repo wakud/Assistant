@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace Assistant_TEP
 {
@@ -23,7 +24,7 @@ namespace Assistant_TEP
         public void ConfigureServices(IServiceCollection services)
         {
             //отримуємо рядок підключення до БД
-            string connection = Configuration.GetConnectionString("TEPConnection");
+            string connection = Utils.Decrypt(Configuration.GetConnectionString("TEPConnection"));
             BillingUtils.Configuration = Configuration;
             ObminController.Configuration = Configuration;
             ImportController.Configuration = Configuration;

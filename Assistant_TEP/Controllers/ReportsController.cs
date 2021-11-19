@@ -291,14 +291,10 @@ namespace Assistant_TEP.Controllers
                             cok.Cok.Name + "_" + DateTime.Now.ToString("d") + ".xlsx");
                     }
                 }
-                // Для звіту для Остапюк Надія Іванівна
                 else if (rep.Name == "Звіт по зонах")
                 {
                     XDocument xdoc = new XDocument();
-
-                    // створюємо корневий елемент
                     XElement DataSet = new XElement("NewDataSet");
-                    
                     XElement subdiv = new XElement("SubdivisionId", cokCode.Substring(2, 2));
                     
                     var CurrentDate = DateTime.Now;
@@ -310,9 +306,7 @@ namespace Assistant_TEP.Controllers
 
                     foreach (DataRow r in dt.Rows)
                     {
-                        // створюємо перший елементи
                         XElement zona = new XElement("Zones");
-                        //створюємо елементи в першому елменті
                         XElement _id = new XElement("id", r[0].ToString().Trim());
                         XElement AccountNumber = new XElement("AccountNumber", r[1].ToString().Trim());
                         XElement PIP = new XElement("PIP", r[2].ToString().Trim());
@@ -330,32 +324,26 @@ namespace Assistant_TEP.Controllers
                         XElement Tariff_Pick = new XElement("Tariff_Pick", r[14].ToString().Trim().Replace(",", "."));
                         XElement TarifficationBlockId = new XElement("TarifficationBlockId", r[15].ToString().Trim());
 
-                        //добавляємо елементи в перший елемент
                         zona.Add(_id, AccountNumber, PIP, BlockLabel, BlockLabelName, TariffGroupId, TimeZonalId,
                             isHeating, BasePrice, Quantity_Nich, Quantity_PivPick, Quantity_Pick, Tariff_Nich,
                             Tariff_PivPick, Tariff_Pick, TarifficationBlockId
                             );
                         
-                        //добавляємо перший елемент
                         DataSet.Add(zona);
                     }
 
-                    // добавляємо кореневий елемент в документ
                     xdoc.Add(DataSet);
 
                     using (var stream = new MemoryStream())
                     {
-                        //зберігаємо документ 
                         xdoc.Save(stream);
                         var content = stream.ToArray();
-                        //видаємо користувачу
                         return File(
                             content,
                             "application/xml",
                             cokCode + "_" + DateTime.Now.ToString("d") + ".xml");
                     }
                 }
-                //надання претензій побутовим споживачам
                 else if (rep.Name == "Надання претензій побутовим споживачам")
                 {
                     string filePath = "\\Files\\Shablons\\";
@@ -406,10 +394,8 @@ namespace Assistant_TEP.Controllers
                         NewFileName
                     );
                 }
-                // для всіх звітів решту
                 else
                 {
-                    // Назва звіту
                     ws.Cell(1, 2).Value = rep.Name;
                     ws.Cell(1, 2).Style.Font.Bold = true;
                     ws.Cell(2, 2).Value = "по " + cokCode + " за " + Dtm + " " + Dtr + " р.";

@@ -140,7 +140,8 @@ FROM (
 		SELECT AccountId, spog/kVt AS tarif
 				,CASE
 					WHEN kVt > 2000 THEN 'Спожито більше 2000'
-					WHEN spog/kVt < 1.68 AND zona = 1 THEN 'Tариф менше 1,68'
+					WHEN kVt <= 250 AND spog/kVt < 1.44 AND zona = 1 THEN 'Tариф менше 1,44'
+					WHEN kVt >= 251 AND spog/kVt < 1.68 AND zona = 1 THEN 'Tариф менше 1,68'
 					WHEN Status LIKE '%закрит%' THEN 'Закриті з боргом'
 					WHEN kVt > (ser * 2) AND debetend > 100 THEN 'Спож. більше середнього.'
 					WHEN spog > 2000 THEN 'До оплати більше 2000'

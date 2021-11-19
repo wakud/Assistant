@@ -48,15 +48,12 @@ namespace Assistant_TEP.Controllers
                 return View("/Views/Home/Import.cshtml");
             }
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
 
@@ -64,7 +61,6 @@ namespace Assistant_TEP.Controllers
             {
                 List<Privat> pryvat = new List<Privat>();
 
-                //Зчитуємо з .dbf і закидаємо в ліст
                 using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
                 {
                     var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -116,8 +112,6 @@ namespace Assistant_TEP.Controllers
                     }
                     catch (Exception e)
                     {
-                        //Console.WriteLine(dtRow["AccountNumberNew"]);
-                        //Console.WriteLine(dtRow["AccountNumber"]);
                         Console.WriteLine(e.ToString());
                     }
                 }
@@ -179,18 +173,15 @@ namespace Assistant_TEP.Controllers
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
-            //Укрпошта
             else if (formFile.FileName.ToLower().StartsWith("stand"))
             {
                 List<UkrPostal> postal = new List<UkrPostal>();
-                //Зчитуємо з .dbf і закидаємо в ліст
                 Dictionary<string, NDbfReader.IColumn> ColumnInstances = new Dictionary<string, NDbfReader.IColumn>();
 
                 using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
                 {
                     var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(1251));
                     
-                    //Переводимо назви стовпчиків у верхній регістр
                     foreach(NDbfReader.IColumn c in readerDbf.Table.Columns.ToList()){
                         ColumnInstances[c.Name.ToUpper()] = c;
                     }
@@ -275,8 +266,6 @@ namespace Assistant_TEP.Controllers
                     }
                     catch (Exception e)
                     {
-                        //Console.WriteLine(dtRow["AccountNumberNew"]);
-                        //Console.WriteLine(dtRow["AccountNumber"]);
                         Console.WriteLine(e.ToString());
                     }
                 }
@@ -332,10 +321,9 @@ namespace Assistant_TEP.Controllers
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
-            else     //Укрспецінформ
+            else     
             {
                 List<Oschad> oschads = new List<Oschad>();
-                //Зчитуємо з .dbf і закидаємо в ліст
                 using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
                 {
                     var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -422,8 +410,6 @@ namespace Assistant_TEP.Controllers
                     catch (Exception e)
                     {
                         Console.WriteLine(e.ToString());
-                        //Console.WriteLine(dtRow["AccountNumberNew"]);
-                        //Console.WriteLine(dtRow["AccountNumber"]);
                     }
                 }
 
@@ -516,25 +502,20 @@ namespace Assistant_TEP.Controllers
             string filePath = "\\Files\\Import\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + user.Id + file.FileName;
 
-            //видаляємо директорію
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
 
-            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
 
-            //зберігаємо файл
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 file.CopyTo(fileStream);
 
-            //Для файлів-оплат прихват банку
             if (file.FileName.ToLower().StartsWith("yrp"))
             {
-                List<Privat> pryvat = new List<Privat>();   //список всіх абонентів з файлу
-                List<Privat> badPay = new List<Privat>();   //список, що не пройшла оплата
+                List<Privat> pryvat = new List<Privat>();   
+                List<Privat> badPay = new List<Privat>();   
 
-                //Зчитуємо з .dbf і закидаємо в список
                 using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
                 {
                     var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(866));
@@ -609,7 +590,6 @@ namespace Assistant_TEP.Controllers
                     SourceId = source
                 };
 
-                //Створюємо пачку оплати
                 string scrypt = "INSERT_INTO ReceiptPackage.sql";
                 string scryptPath = appEnv.WebRootPath + "\\Files\\Scripts\\" + scrypt;
                 string fullscrypt = "USE " + cokCode + "_Utility" + "\n";
@@ -694,91 +674,6 @@ namespace Assistant_TEP.Controllers
 
                 return View("/Views/Home/Import.cshtml");
             }
-            //Укрпошта
-            //else if (file.FileName.ToLower().StartsWith("stand"))
-            //{
-            //    List<UkrPostal> postal = new List<UkrPostal>();
-            //    //Зчитуємо з .dbf і закидаємо в ліст
-            //    Dictionary<string, NDbfReader.IColumn> ColumnInstances = new Dictionary<string, NDbfReader.IColumn>();
-
-            //    using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
-            //    {
-            //        var readerDbf = dbfDataReader.OpenReader(Encoding.GetEncoding(1251));
-
-            //        //Переводимо назви стовпчиків у верхній регістр
-            //        foreach (NDbfReader.IColumn c in readerDbf.Table.Columns.ToList())
-            //        {
-            //            ColumnInstances[c.Name.ToUpper()] = c;
-            //        }
-            //        while (readerDbf.Read())
-            //        {
-            //            try
-            //            {
-            //                var row = new UkrPostal();
-            //                row.PAY_DATE = DateTime.Parse(readerDbf.GetValue(ColumnInstances["PAY_DATE"]).ToString().Trim());
-            //                row.KOD_OPZ = readerDbf.GetValue(ColumnInstances["KOD_OPZ"]).ToString().Trim();
-            //                row.REESTR_NUM = readerDbf.GetValue(ColumnInstances["REESTR_NUM"]).ToString().Trim();
-            //                object? pip = readerDbf.GetValue(ColumnInstances["FIO"]);
-            //                if (pip == null)
-            //                {
-            //                    row.FIO = "";
-            //                }
-            //                else
-            //                {
-            //                    row.FIO = readerDbf.GetValue(ColumnInstances["FIO"]).ToString().Trim();
-            //                }
-            //                object? adresa = readerDbf.GetValue(ColumnInstances["ADRESS"]);
-            //                if (adresa == null)
-            //                {
-            //                    row.ADRESS = "";
-            //                }
-            //                else
-            //                {
-            //                    row.ADRESS = readerDbf.GetValue(ColumnInstances["ADRESS"]).ToString().Trim();
-            //                }
-            //                object? tel = readerDbf.GetValue(ColumnInstances["TELEFON"]);
-            //                if (tel == null)
-            //                {
-            //                    row.TELEFON = "0";
-            //                }
-            //                else
-            //                {
-            //                    row.TELEFON = readerDbf.GetValue(ColumnInstances["TELEFON"]).ToString().Trim();
-            //                }
-            //                row.SENDER_ACC = long.Parse(readerDbf.GetValue(ColumnInstances["SENDER_ACC"]).ToString().Trim());
-            //                row.PAY_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["PAY_SUM"]).ToString().Trim());
-            //                row.SEND_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["SEND_SUM"]).ToString().Trim());
-            //                object? pre = readerDbf.GetValue(ColumnInstances["PREV"]);
-            //                if (pre == null)
-            //                {
-            //                    row.PREV = "";
-            //                }
-            //                else
-            //                {
-            //                    row.PREV = readerDbf.GetValue(ColumnInstances["PREV"]).ToString().Trim();
-            //                }
-            //                object? cur = readerDbf.GetValue(ColumnInstances["CURR"]);
-            //                if (cur == null)
-            //                {
-            //                    row.CURR = "";
-            //                }
-            //                else
-            //                {
-            //                    row.CURR = readerDbf.GetValue(ColumnInstances["CURR"]).ToString().Trim();
-            //                }
-            //                row.REESTR_SUM = decimal.Parse(readerDbf.GetValue(ColumnInstances["REESTR_SUM"]).ToString().Trim());
-            //                postal.Add(row);
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                Console.WriteLine(ex);
-            //                ViewBag.error = "BadFile";
-            //                return View("/Views/Home/Import.cshtml");
-            //            }
-            //        }
-            //    }
-            //    //тут продовжу
-            //}
             
             return View("/Views/Home/Import.cshtml");
         }
