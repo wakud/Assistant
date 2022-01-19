@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using System.Text;
 using System.IO;
 using DotNetDBF;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Assistant_TEP.Controllers
 {
@@ -29,7 +30,7 @@ namespace Assistant_TEP.Controllers
         }
 
         // GET: UkrPost
-        public ActionResult Index()
+        public ActionResult Index(int? tariff)
         {
             string UserName = User.Identity.Name;   
             User currentUser = _context.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == UserName); 
@@ -42,7 +43,22 @@ namespace Assistant_TEP.Controllers
 
             IEnumerable<Abonents> abon = _context.abonents
                 .Where(a => a.UserId == id);
-            return View(abon);
+
+            List<TarifUkrPost> tarifs = _context.TarifUkrPosts.ToList();
+            tarifs.Insert(0, new TarifUkrPost { Name = "Виберіть тариф", Id = 0 });
+
+            SelectList tarifList = tariff != null
+                ? new SelectList(tarifs, "Id", "Name", tariff)
+                : new SelectList(tarifs, "Id", "Name", 0);
+
+            ViewTarif viewTarif = new ViewTarif
+            {
+                People = abon,
+                Tarifs = tarifList,
+                TarifUkrPosts = _context.TarifUkrPosts.ToList()
+            };
+
+            return View(viewTarif);
         }
 
         // POST: UkrPost/Create
@@ -275,29 +291,25 @@ namespace Assistant_TEP.Controllers
 
         public ActionResult Dbf()
         {
-            string userName = User.Identity.Name;       //витягуємо який користувач залогінився
-            User currentUser = _context.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == userName); //витягуємо користувача з бази
-            string vykonavets = currentUser.FullName;   //витягуємо ПІП користувача
-            int id = currentUser.Id;    //витягуємо айді юзера
+            string userName = User.Identity.Name;
+            User currentUser = _context.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == userName);
+            string vykonavets = currentUser.FullName;
+            int id = currentUser.Id;
             
-            //створюємо модель для дбф-ки
             Forma103 viewModel = new Forma103
             {
                 People = _context.abonents.Where(a => a.UserId == id).ToList(),
             };
             
-            //вказуємо шлях до файла
             string filePath = "\\files\\Forma103\\";
             string fileName = "42145798_" + id.ToString() + "_";
             string fullPath = appEnvir.WebRootPath + filePath + fileName;
 
-            //якщо є файл то видаляємо його
             if (System.IO.File.Exists(fullPath))
             {
                 System.IO.File.Delete(fullPath);
             }
 
-            //створюємо новий дбф файл згідно заданої нами структури
             using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             {
                 using DBFWriter writer = new DBFWriter
@@ -306,7 +318,6 @@ namespace Assistant_TEP.Controllers
                     Signature = DBFSignature.DBase3
                 };
 
-                //структура дбф-файлу
                 DBFField field1 = new DBFField("psgvno", NativeDbType.Numeric, 9);
                 DBFField field2 = new DBFField("psbarc", NativeDbType.Char, 13);
                 DBFField field3 = new DBFField("rccn3c", NativeDbType.Numeric, 9);
@@ -339,7 +350,6 @@ namespace Assistant_TEP.Controllers
                 int aftpay = 0;
                 string phone = "";
 
-                //наповнюємо файл даними
                 foreach (var dibifi in viewModel.People)
                 {
                     string rcpidx = dibifi.PostalCode.ToString();
@@ -349,14 +359,12 @@ namespace Assistant_TEP.Controllers
                     writer.AddRecord(psgvno, psbarc, rccn3c, rcpidx, rcaddr, rcname, snmtdc, psappc,
                                         pscatc, psrazc, psnotc, pswgt, pkprice, aftpay, phone);
                 }
-                writer.Write(fos);  //записуємо у файл
+                writer.Write(fos);
             }
             
-            //видаємо користувачу файл
             string fileNameNew = fileName + DateTime.Now.ToString() + ".dbf";
             byte[] fileBytes = System.IO.File.ReadAllBytes(fullPath);
             
-            //якщо є файл то видаляємо його
             if (System.IO.File.Exists(fullPath))
             {
                 System.IO.File.Delete(fullPath);

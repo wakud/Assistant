@@ -7,16 +7,14 @@ namespace Assistant_TEP.Models
     {
         [Key]
         public int Id { get; set; }
-        public string Name { get; set; }            //Назва звіту
-        public string Description { get; set; }     //Опис звіту
-        public string FileScript { get; set; }      //назва файлу скрипта
-        // Juridical, Utility
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string FileScript { get; set; }
         public int DbTypeId { get; set; }
-        public DbType DbType { get; set; }        //префікс назви бази (База для виконання скрипта: район + _ + тип бази)
+        public DbType DbType { get; set; }
 
         public int TypeReportId { get; set; }
         public TypeReport ReportType { get; set; }
-        //посилання на список параметрів один до багатьох
         public List<ReportParam> ReportParams { get; set; }     
 
         public Report()
@@ -61,13 +59,11 @@ namespace Assistant_TEP.Models
     {
         [Key]
         public int Id { get; set; }
-        public string Name { get; set; }                            //назва параметру в скрипті
-        public string Description { get; set; }                     //назва параметру для користувача
+        public string Name { get; set; }
+        public string Description { get; set; }
         public string ParamSource { get; set; }
-        //посилання на репорт
         public int ReportId { get; set; }
         public Report Report { get; set; }
-        //посилання на тип параметру один до одного
         public int ParamTypeId { get; set; }
         public ReportParamType ParamType { get; set; }
     }
@@ -77,8 +73,8 @@ namespace Assistant_TEP.Models
         [Key]
         public int Id { get; set; }
         public string Name { get; set; }
-        public string TypeC { get; set; }           //тип параметру в прозі (бекенд)
-        public string TypeHtml { get; set; }        //тип параметру для юзера (фронтенд)
+        public string TypeC { get; set; }
+        public string TypeHtml { get; set; }
     }
 
 }

@@ -7,7 +7,9 @@ DROP TABLE IF EXISTS ##qwerty$cok$
 
 DECLARE @ExBill INT 
 SET @ExBill =       --Термін погашення боргу по рахунках
-	(SELECT TOP 1 cast([Value] as int)  FROM [Services].[Setting] WHERE [Guid] = '826C4666-F79C-4558-A0BB-2D5A428FCE1B')  
+	(SELECT TOP 1 cast([Value] as int)  FROM [Services].[Setting] WHERE [Guid] = '826C4666-F79C-4558-A0BB-2D5A428FCE1B')
+DECLARE @start datetime = '2019-01-01', @finish datetime = GETDATE()
+
 SELECT	a.AccountNumber AS [ос.рах]
 		, pp.FullName AS [ПІП]		
 		, addr.FullAddress AS [Адреса]
@@ -27,7 +29,9 @@ JOIN (SELECT o.AccountId,SUM(o.RestSumm) RestSumm, o.PeriodFrom, o.Date
 	FROM FinanceMain.Operation o
 	WHERE PeriodTo=207906
 	AND IsIncome=0
-	AND DocumentTypeId IN (15)
+	--AND DocumentTypeId IN (15)
+	AND o.PeriodFrom >= 201901
+	AND o.SaldoKind = 4
 	AND o.RestSumm>0
 	AND o.Date<=DATEADD(dd,-@ExBill,GETDATE())
 	GROUP BY o.AccountId, o.PeriodFrom, o.Date
@@ -46,5 +50,5 @@ ORDER by a.AccountNumber, addr.FullAddress
 
 SELECT * FROM ##qwerty$cok$
 WHERE борг>=1000.00 
-		OR (борг>=100.00 AND місяць BETWEEN 3 AND 30)
+		OR (борг>=100.00 AND місяць BETWEEN 3 AND datediff(month,0,dateadd(ss,DATEDIFF(ss,@start,@finish),0)))
 ORDER BY [ос.рах]

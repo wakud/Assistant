@@ -138,7 +138,6 @@ namespace Assistant_TEP.MyClasses
             var rows = ws.RangeUsed().RowsUsed();
             List<MoneySubsydii> subs_p = new List<MoneySubsydii>();
 
-            //Dictionary<string, string> upszn = new Dictionary<string, string>();
             Dictionary<string, List<string>> upszn = new Dictionary<string, List<string>>
             {
                 ["27"] = new List<string> { "6101" },   //бережани
@@ -150,7 +149,6 @@ namespace Assistant_TEP.MyClasses
                 ["33"] = new List<string> { "6107" },   //зборів
                 ["34"] = new List<string> { "6108" },   //козова
                 ["35"] = new List<string> { "6109", "6120" },   
-                //["35"] = "6120",   //кременець
                 ["36"] = new List<string> { "6110" },   //ланівці
                 ["37"] = new List<string> { "6111" },   //монастириськ
                 ["38"] = new List<string> { "6112" },   //підволочиськ
@@ -158,20 +156,17 @@ namespace Assistant_TEP.MyClasses
                 ["40"] = new List<string> { "6117" },   //м. тернопіль
                 ["41"] = new List<string> { "6113" },   //теребовля
                 ["42"] = new List<string> { "6115", "6119" },
-                //upszn["42"] = "6115";   //чортків 
-                //upszn["42"] = "6119";   //чортків
                 ["43"] = new List<string> { "6116" },   //шумськ
                 ["44"] = new List<string> { "6118" }   //підгайці
             };
 
             DateTime datePay = DateTime.Parse(ws.Row(3).Cell(6).Value.ToString());  
             int currRow = 7;
-
+            //робим перебір по екселю
             foreach (var row in rows.Skip(5))
             {
                  if(upszn[cok.Substring(2, 2)].Contains(row.Cell(1).Value.ToString().Substring(0, 4)))
-                //if (upszn[cok.Substring(2, 2)] == row.Cell(1).Value.ToString().Substring(0, 4))
-                {
+                 {
                     string accountNumberOrNew = row.Cell(4).Value != null ? row.Cell(4).Value.ToString() : "";
                     if (accountNumberOrNew.StartsWith("0"))
                     {
@@ -204,7 +199,7 @@ namespace Assistant_TEP.MyClasses
                     {
                         Console.WriteLine(ex);
                     }
-                }
+                 }
                 currRow++;
             }
 

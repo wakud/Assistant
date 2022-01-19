@@ -53,7 +53,7 @@
                         }" asp-controller="UkrPosta" asp-action="Index">Форма 103</a>
                     </li>
                 }
-                @if (User.Identity.Name == "moskestr" || User.Identity.Name == "admin")
+                @if (User.Identity.Name == "moskestr" || User.Identity.Name == "admin" || User.Identity.Name == "wakud")
                 {
                     <li class="nav-item">
                         <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
@@ -68,7 +68,7 @@
                     @:active
                 }" asp-controller="Home" asp-action="Retail">Роздрібний</a>
         </li>*@
-                @if (User.Identity.Name == "admin")
+                @if (User.Identity.Name == "admin" || User.Identity.Name == "wakud")
                 {
                     <li class="nav-item">
                         <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "")

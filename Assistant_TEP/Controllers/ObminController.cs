@@ -198,10 +198,12 @@ namespace Assistant_TEP.Controllers
                 {
                     try
                     {
-                        var row = new ObminSubs();
-                        row.APP_NUM = readerDbf.GetValue("APP_NUM")?.ToString().Trim();
-                        row.ZAP_R = int.Parse(readerDbf.GetValue("ZAP_R")?.ToString().Trim());
-                        row.ZAP_N = int.Parse(readerDbf.GetValue("ZAP_N")?.ToString().Trim());
+                        var row = new ObminSubs
+                        {
+                            APP_NUM = readerDbf.GetValue("APP_NUM")?.ToString().Trim(),
+                            ZAP_R = int.Parse(readerDbf.GetValue("ZAP_R")?.ToString().Trim()),
+                            ZAP_N = int.Parse(readerDbf.GetValue("ZAP_N")?.ToString().Trim())
+                        };
                         var rawValue = readerDbf.GetValue("OWN_NUM")?.ToString().Trim();
                         if (!long.TryParse(rawValue, out long TempNum))
                         {

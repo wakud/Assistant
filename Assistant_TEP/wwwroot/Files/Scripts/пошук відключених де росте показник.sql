@@ -2,16 +2,14 @@ SELECT * FROM (
 SELECT	a.AccountNumber AS [ос.рахунок]
 		,pp.FullName AS [ПІП споживача]
 		,addr.FullAddress AS [Адреса споживача]
-		--d.[DisconnectionId]
-        ,dp.[Name] AS [Де відключений]
-        ,d.[DisconnectionStatus] AS [Статус відкл.]
-        ,CONVERT (VARCHAR, d.[DateFrom], 104) AS [Дата відкл.]
-        --,d.[Note] AS [Нотатки]
-        ,ISNULL((SELECT SUM(Usage)
-                FROM Measuring.UsageCache
-                WHERE PointId = p.PointId AND DateFrom>=d.DateFrom
-                ),0) AS [Кіловати]
-        ,CAST((CASE WHEN d.DateFrom>= '2019-01-01' THEN 
+		,dp.[Name] AS [Де відключений]
+		,d.[DisconnectionStatus] AS [Статус відкл.]
+		,CONVERT (VARCHAR, d.[DateFrom], 104) AS [Дата відкл.]
+		,ISNULL((SELECT SUM(Usage)
+				FROM Measuring.UsageCache
+				WHERE PointId = p.PointId AND DateFrom>=d.DateFrom
+				),0) AS [Кіловати]
+		,CAST((CASE WHEN d.DateFrom>= '2019-01-01' THEN 
 				(SELECT DebetEnd FROM FinanceCommon.SupplierSaldo 
 					WHERE Period = 
 					(CAST(
@@ -41,7 +39,7 @@ SELECT	a.AccountNumber AS [ос.рахунок]
 			ELSE NULL
 			END
 		) AS CHAR(100)) AS [Борг відкл.]
-	    ,ss.DebetEnd AS [Сума боргу]
+		,ss.DebetEnd AS [Сума боргу]
 FROM AccountingCommon.Account a
 JOIN AccountingCommon.PhysicalPerson pp ON pp.PhysicalPersonId = a.PhysicalPersonId
 JOIN AccountingCommon.Address addr ON addr.AddressId = a.AddressId
@@ -51,11 +49,11 @@ JOIN FinanceCommon.SupplierSaldo ss ON ss.AccountId = a.AccountId AND ss.Period 
 JOIN AccountingCommon.Disconnection d ON p.PointId = d.PointId AND d.DisconnectionStatus=1
 JOIN (
 SELECT
-             d2.[DisconnectionId],
+			 d2.[DisconnectionId],
 ROW_NUMBER() OVER (PARTITION BY d2.PointId ORDER BY d2.DateFrom DESC) AS 
 RowNumber
-             FROM [AccountingCommon].[Disconnection] as d2)
-             AS dtemp ON dtemp.[DisconnectionId] = d.[DisconnectionId] 
+			 FROM [AccountingCommon].[Disconnection] as d2)
+			 AS dtemp ON dtemp.[DisconnectionId] = d.[DisconnectionId] 
 AND dtemp.RowNumber = 1
 LEFT JOIN [AccountingDictionary].[DisconnectionPlace] dp ON 
 dp.DisconnectionPlaceId = d.DisconnectionPlaceId

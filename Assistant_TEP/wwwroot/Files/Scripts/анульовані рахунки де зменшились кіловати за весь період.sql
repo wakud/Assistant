@@ -13,15 +13,15 @@ SELECT  br.accountid
 		, SUM(br.ConsumptionQuantity) kvt_plus
 		, SUM(br.TotalSumm) sum_plus
 		, (SELECT SUM( br1.ConsumptionQuantity)
-            FROM FinanceCommon.BillRegular br1
-            WHERE isdeleted=1
+			FROM FinanceCommon.BillRegular br1
+			WHERE isdeleted=1
 			AND br1.ConsumptionFrom BETWEEN @date_from$cok$ AND @date_to$cok$
-            AND br1.AccountId=br.AccountId) kvt_minus
+			AND br1.AccountId=br.AccountId) kvt_minus
 		, (SELECT SUM( br1.totalsumm)
-            FROM FinanceCommon.BillRegular br1
-            WHERE isdeleted=1
+			FROM FinanceCommon.BillRegular br1
+			WHERE isdeleted=1
 			AND br1.ConsumptionFrom BETWEEN @date_from$cok$ AND @date_to$cok$
-            AND br1.AccountId=br.AccountId) sum_minus
+			AND br1.AccountId=br.AccountId) sum_minus
 INTO #anul$cok$
 FROM FinanceCommon.BillRegular br
 LEFT JOIN AccountingCommon.Account a ON a.AccountId = br.AccountId

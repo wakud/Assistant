@@ -32,10 +32,10 @@ namespace Assistant_TEP.Controllers
         [HttpPost]
         public IActionResult Sun1(IFormFile formFile, int Id)
         {
+            Console.OutputEncoding = Encoding.GetEncoding(1251);
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             string filePath = "\\Files\\SunFlower\\" + Period.per_now().per_str + "\\";
             string fullPath = appEnv.WebRootPath + filePath + user.Id + formFile.FileName;
-
             if (!formFile.FileName.ToLower().EndsWith(".csv"))
             {
                 ViewBag.error = "BadFile";
@@ -102,39 +102,43 @@ namespace Assistant_TEP.Controllers
                     }
 
                 }
-                
                 if (Id == 1)
                 {
                     people = System.IO.File.ReadAllLines(appEnv.WebRootPath + "\\Files\\SunFlower\\spisok1.txt", Encoding.Default)
                         .Select(x => x.Split(new[] { ',' }))
+                        .Where(x => x.Length == 2)
                         .ToDictionary(x => x[0], x => x[1]);
                 }
                 else if (Id == 2)
                 {
                     people = System.IO.File.ReadAllLines(appEnv.WebRootPath + "\\Files\\SunFlower\\spisok2.txt", Encoding.Default)
                         .Select(x => x.Split(new[] { ',' }))
+                        .Where(x => x.Length == 2)
                         .ToDictionary(x => x[0], x => x[1]);
                 }
                 else if (Id == 3)
                 {
                     people = System.IO.File.ReadAllLines(appEnv.WebRootPath + "\\Files\\SunFlower\\spisok3.txt", Encoding.Default)
                         .Select(x => x.Split(new[] { ',' }))
+                        .Where(x => x.Length == 2)
                         .ToDictionary(x => x[0], x => x[1]);
                 }
                 else if (Id == 4)
                 {
                     Dictionary<string, string> people1 = System.IO.File.ReadAllLines(appEnv.WebRootPath + "\\Files\\SunFlower\\spisok1.txt", Encoding.Default)
                         .Select(x => x.Split(new[] { ',' }))
+                        .Where(x => x.Length == 2)
                         .ToDictionary(x => x[0], x => x[1]);
                     Dictionary<string, string> people2 = System.IO.File.ReadAllLines(appEnv.WebRootPath + "\\Files\\SunFlower\\spisok2.txt", Encoding.Default)
                         .Select(x => x.Split(new[] { ',' }))
+                        .Where(x => x.Length == 2)
                         .ToDictionary(x => x[0], x => x[1]);
                     Dictionary<string, string> people3 = System.IO.File.ReadAllLines(appEnv.WebRootPath + "\\Files\\SunFlower\\spisok3.txt", Encoding.Default)
                         .Select(x => x.Split(new[] { ',' }))
+                        .Where(x => x.Length == 2)
                         .ToDictionary(x => x[0], x => x[1]);
                     people = people1.Concat(people2).ToDictionary(x => x.Key, x => x.Value);
                     people = people.Concat(people3).ToDictionary(x => x.Key, x => x.Value);
-
                 }
 
                 List<SunFL> pay = new List<SunFL>();
@@ -192,13 +196,13 @@ namespace Assistant_TEP.Controllers
                             }
                         );
                     }
+
                 }
 
                 if (Id == 4)
                 {
                     pay = pay.GetRange(0, pay.Count - 3);
                 }
-
                 fullPath = appEnv.WebRootPath + "\\Files\\SunFlower\\ClientBank.dbf";
                 using (Stream fos = System.IO.File.Open(fullPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {

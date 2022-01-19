@@ -15,8 +15,8 @@ namespace Assistant_TEP.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "3.1.8")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
+                .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
             modelBuilder.Entity("Assistant_TEP.Models.Abonents", b =>
@@ -105,8 +105,8 @@ namespace Assistant_TEP.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Type")
-                        .HasColumnType("nvarchar(10)")
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
@@ -121,34 +121,41 @@ namespace Assistant_TEP.Migrations
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
                     b.Property<string>("Address")
-                        .HasColumnType("nvarchar(100)")
-                        .HasMaxLength(100);
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Buh")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Code")
-                        .HasColumnType("nvarchar(4)")
-                        .HasMaxLength(4);
+                        .HasMaxLength(4)
+                        .HasColumnType("nvarchar(4)");
 
                     b.Property<string>("Nach")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("NmeDoc")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Postal")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Rah_Iban")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("RegionId")
                         .HasColumnType("int");
 
                     b.Property<string>("Tel")
-                        .HasColumnType("nvarchar(10)")
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.HasKey("Id");
 
@@ -238,6 +245,24 @@ namespace Assistant_TEP.Migrations
                     b.ToTable("ReportParamTypes");
                 });
 
+            modelBuilder.Entity("Assistant_TEP.Models.TarifUkrPost", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TarifUkrPost");
+                });
+
             modelBuilder.Entity("Assistant_TEP.Models.TypeReport", b =>
                 {
                     b.Property<int>("Id")
@@ -267,8 +292,8 @@ namespace Assistant_TEP.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("FullName")
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("IsAdmin")
                         .IsRequired()
@@ -276,8 +301,8 @@ namespace Assistant_TEP.Migrations
 
                     b.Property<string>("Login")
                         .IsRequired()
-                        .HasColumnType("nvarchar(10)")
-                        .HasMaxLength(10);
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -303,6 +328,10 @@ namespace Assistant_TEP.Migrations
                         .HasForeignKey("TypeReportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("DbType");
+
+                    b.Navigation("ReportType");
                 });
 
             modelBuilder.Entity("Assistant_TEP.Models.ReportParam", b =>
@@ -318,6 +347,10 @@ namespace Assistant_TEP.Migrations
                         .HasForeignKey("ReportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("ParamType");
+
+                    b.Navigation("Report");
                 });
 
             modelBuilder.Entity("Assistant_TEP.Models.User", b =>
@@ -325,6 +358,28 @@ namespace Assistant_TEP.Migrations
                     b.HasOne("Assistant_TEP.Models.Organization", "Cok")
                         .WithMany("Users")
                         .HasForeignKey("CokId");
+
+                    b.Navigation("Cok");
+                });
+
+            modelBuilder.Entity("Assistant_TEP.Models.DbType", b =>
+                {
+                    b.Navigation("Reports");
+                });
+
+            modelBuilder.Entity("Assistant_TEP.Models.Organization", b =>
+                {
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("Assistant_TEP.Models.Report", b =>
+                {
+                    b.Navigation("ReportParams");
+                });
+
+            modelBuilder.Entity("Assistant_TEP.Models.TypeReport", b =>
+                {
+                    b.Navigation("Reports");
                 });
 #pragma warning restore 612, 618
         }

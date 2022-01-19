@@ -267,7 +267,6 @@ namespace Assistant_TEP.Controllers
                         NewFileName
                     );
                 }
-                //то для звітів для відправлення смс
                 else if (rep.Name == "Для смс \"Борг до оплати\"" || rep.Name == "Для смс \"Сума до оплати\"")
                 {
                     int currentRow = 1;

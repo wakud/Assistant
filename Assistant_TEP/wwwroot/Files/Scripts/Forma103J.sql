@@ -1,8 +1,8 @@
 SELECT    sett.Value AS [Код ЦОК]
-        , c.ContractNumber AS [номер договору]
-        , ct.ShortName AS [Коротка назва]
-        , ct.FullName AS [Повна назва]
-        , (
+		, c.ContractNumber AS [номер договору]
+		, ct.ShortName AS [Коротка назва]
+		, ct.FullName AS [Повна назва]
+		, (
 			--(CASE WHEN d.Name IS NULL THEN  '' ELSE d.Name END) +
 			(CASE WHEN ISNULL(r.Name, r2.Name) IS NULL THEN  '' ELSE r.Name + ' р-н' END) +
 			(CASE WHEN ci.Name IS NULL THEN  '' ELSE ', ' + ctp.ShortName + ' ' + ci.Name END) +
@@ -10,18 +10,18 @@ SELECT    sett.Value AS [Код ЦОК]
 			(CASE WHEN addr.Building IS NULL THEN  '' ELSE ', буд. ' + addr.Building END) +
 			(CASE WHEN addr.Apartment IS NULL THEN  '' ELSE ', кв. ' + addr.Apartment END)
 		) AS [Повна адреса]
-        , z.ZipCode AS [Індекс]
-        , d.Name AS [область],
-        ISNULL(r.Name, r2.Name) AS [район],
-        ctp.Name AS [тип пункту],
-        ctp.ShortName AS [тип н.п.],
-        ci.Name AS [Нас.пункт],
-        st.ShortName AS [тип в],
-        st.Name AS [тип вул],
-        s.Name AS [вулиця],
-        addr.Building AS [будинок],
-        addr.BuildingPart AS [корпус],
-        addr.Apartment AS [квартира]
+		, z.ZipCode AS [Індекс]
+		, d.Name AS [область],
+		ISNULL(r.Name, r2.Name) AS [район],
+		ctp.Name AS [тип пункту],
+		ctp.ShortName AS [тип н.п.],
+		ci.Name AS [Нас.пункт],
+		st.ShortName AS [тип в],
+		st.Name AS [тип вул],
+		s.Name AS [вулиця],
+		addr.Building AS [будинок],
+		addr.BuildingPart AS [корпус],
+		addr.Apartment AS [квартира]
 FROM Contract c
 JOIN Contractor ct on ct.ContractorId = c.ContractorId
 LEFT JOIN Address addr on addr.AddressId = ct.JuridicalAddressId

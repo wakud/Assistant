@@ -2,7 +2,7 @@
 --яка виникла у 2020 році і є неоплаченою на звітну дату
 
 DECLARE @date_from$cok$ DATE; SET @date_from$cok$ = '2020-01-01 00:00:00'
-DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = '2020-12-01 00:00:00'
+DECLARE @date_to$cok$ DATE; SET @date_to$cok$ = '2021-01-01 00:00:00'
 
 SELECT 	acc.AccountNumber AS [Особовий]
 		,pp.FullName AS [ПІП]

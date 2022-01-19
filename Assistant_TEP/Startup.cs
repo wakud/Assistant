@@ -1,12 +1,16 @@
 ﻿using Assistant_TEP.Controllers;
 using Assistant_TEP.Models;
 using Assistant_TEP.MyClasses;
+using ElmahCore;
+using ElmahCore.Mvc;
+using ElmahCore.Mvc.Notifiers;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using System;
 
 namespace Assistant_TEP
@@ -20,19 +24,15 @@ namespace Assistant_TEP
 
         public IConfiguration Configuration { get; }
 
-        // Цей метод викликається під час старту проги. Використовуйте цей метод, щоб додати послуги до контейнера.
         public void ConfigureServices(IServiceCollection services)
         {
-            //отримуємо рядок підключення до БД
             string connection = Utils.Decrypt(Configuration.GetConnectionString("TEPConnection"));
             BillingUtils.Configuration = Configuration;
             ObminController.Configuration = Configuration;
             ImportController.Configuration = Configuration;
 
-            // створюємо БД
             services.AddDbContext<MainContext>(options => options.UseSqlServer(connection));
 
-            // авторизація користувача
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options => //CookieAuthenticationOptions
                 {
@@ -40,7 +40,6 @@ namespace Assistant_TEP
                     options.AccessDeniedPath = new Microsoft.AspNetCore.Http.PathString("/Account/Login");
                 });
             
-            //робимо перевірку на адміністратора
             services.AddAuthorization(opts => 
                 {
                     opts.AddPolicy("OnlyForAdministrator", policy => {
@@ -50,40 +49,54 @@ namespace Assistant_TEP
             
             services.AddControllersWithViews();
             services.AddMvc();
+            _ = services.AddElmah();
+            _ = services.AddElmah(options =>
+            {
+                options.OnPermissionCheck = context => context.User.Identity.IsAuthenticated;
+            });
+            _ = services.AddElmah(options => options.Path = "/Home/Error");
+            EmailOptions emailOptions = new EmailOptions
+            {
+                MailRecipient = "v.kudryk@tepo.com.ua",
+                MailSender = "Assistant_TEP@tepo.com.ua",
+                SmtpServer = "mail.adm.tools",
+                AuthUserName = "v.kudryk@tepo.com.ua",
+                AuthPassword = "T1RIzz5D5x8d"
+            };
+            _ = services.AddElmah<XmlFileErrorLog>(options =>
+            {
+                options.Path = "/Home/Error";
+                options.LogPath = "~/logs";
+                options.Notifiers.Add(new ErrorMailNotifier("Email", emailOptions));
+            });
         }
 
-        // Цей метод викликається під час виконання. Використовуйте цей метод для налаштування протоколу HTTP-запиту.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-                app.UseDeveloperExceptionPage();
-            // если приложение в процессе разработки
-            //if (env.IsDevelopment())
-            //{
-            //    // то выводим информацию об ошибке, при наличии ошибки
-            //}
-            //else
-            //{
-                //app.UseExceptionHandler("/Home/Error");
-                //app.UseHsts();
-            //}
+            if (env.IsDevelopment())
+            {
+                app.UseElmahExceptionPage();
+            }
+            else
+            {
+                app.UseExceptionHandler("/Home/Error");
+                app.UseHsts();
+            }
 
-            app.UseStaticFiles();       //чтобы приложение могло бы отдавать статические файлы клиенту
-            app.UseRouting();           // добавляем возможности маршрутизации
-            app.UseAuthentication();    // аутентификация
-            app.UseAuthorization();     // авторизация
+            app.UseStaticFiles();
+            app.UseRouting();
+            app.UseAuthentication();
+            app.UseAuthorization();
+            app.UseElmah();
 
-            // устанавливаем адреса, которые будут обрабатываться
             app.UseEndpoints(endpoints =>
             {
-                // само определение маршрута - он должен соответствовать запросу {controller}/{action}
                 endpoints.MapControllerRoute(
                     name: "default",
-                    pattern: "{controller=Account}/{action=Login}/{id?}"        //при старті проги запускаємо сторінку логіну
-                    //pattern: "{controller=Home}/{action=Index}/{id?}"         //при старті проги запускаємо основну сторінку
+                    pattern: "{controller=Account}/{action=Login}/{id?}"
                 );
             });
 
-            //наповнюємо табл юзерів  і права
             using (var scope = app.ApplicationServices.CreateScope())
             {
                 MainContext context = scope.ServiceProvider.GetRequiredService<MainContext>();

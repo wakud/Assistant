@@ -17,6 +17,7 @@ namespace Assistant_TEP.MyClasses
     public static class BillingUtils
     {
         public static IConfiguration Configuration;
+        public static string serv = "[10.85.5.58]";
 
         public static string ConvertDataTableToHTML(DataTable dt)
         {
@@ -109,7 +110,7 @@ namespace Assistant_TEP.MyClasses
                     if (e.Message.ToLower().Contains("deadlock"))
                     {
                         //System.Threading.Thread.Sleep(50000);
-                        throw new Exception("База заблокована вибірка не можлива!" + exceptionDesc);
+                        throw new Exception("База заблокована, вибірка не можлива!" + exceptionDesc);
                     }
 
                     exceptionDesc = e.Message.ToString();
@@ -189,18 +190,17 @@ namespace Assistant_TEP.MyClasses
             string connString = "RESConnection" + cok + "_Utility";   //то для РЕС
             string script = BaseScript;
             string connectionString = Configuration.GetConnectionString(connString);
-            
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
                 using (SqlCommand command = new SqlCommand(script, conn))
                 {
                     command.CommandTimeout = 600;
-                    if(dt != null)
+                    if (dt != null)
                     {
                         using (SqlDataReader reader = command.ExecuteReader())
                         {
-                            if(reader != null)
+                            if (reader != null)
                             {
                                 dt.Load(reader);
                             }
@@ -213,6 +213,7 @@ namespace Assistant_TEP.MyClasses
                 }
                 conn.Close();
             }
+
         }
 
         public static DataTable AddAbon(IWebHostEnvironment env, string OsRah, string cokCode)
@@ -282,7 +283,7 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        
         public static DataTable GetAccNumb(string scriptPath, string cokCode)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -308,6 +309,7 @@ namespace Assistant_TEP.MyClasses
                 }
             }
             return dt;
+
         }
 
         public static DataTable GetPilgaCity (string scriptPath, string cokCode)
