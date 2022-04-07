@@ -13,26 +13,30 @@ using System.Security.Cryptography;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// утиліти для роботи програми
+    /// </summary>
     public static class Utils
     {
+        //асинхроне видалення файлу
         public static Task DeleteAsyncFile(string fileName)
         {
             return Task.Factory.StartNew(() => File.Delete(fileName));
         }
-
+        //вибір параметрів
         public class SelectParamReport
         {
             public string Name { get; set; }
             public string Id { get; set; }
         }
-
+        //вибрані параметри
         public class ParamSelectData
         {
             public SelectList selects { get; set; }
             public string NameParam { get; set; }
             public string NameDesc { get; set; }
         }
-
+        //кодування (паролів, різної інформації)
         public static string Encrypt(string clearText)
         {
             string EncryptionKey = "RJdpFwmvPB";        //https://www.random.org/strings/
@@ -52,7 +56,7 @@ namespace Assistant_TEP.MyClasses
             }
             return clearText;
         }
-
+        //розкодування
         public static string Decrypt(string cipherText)
         {
             string EncryptionKey = "RJdpFwmvPB";

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// Серіалізатор параметрів
+    /// </summary>
     public class ParamSerializer
     {
         public static string serializeString(string inputField)

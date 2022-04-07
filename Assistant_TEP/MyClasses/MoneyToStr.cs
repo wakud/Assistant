@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// сума прописок
+    /// </summary>
     public class MoneyToStr
     {
         public static string GrnPhrase(decimal money)

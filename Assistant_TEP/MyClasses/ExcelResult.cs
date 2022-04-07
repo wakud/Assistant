@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// Вивантаження даних в файл Excel
+    /// </summary>
     public class ExcelResult : ActionResult
     {
         public ExcelResult(string fileName, string report)

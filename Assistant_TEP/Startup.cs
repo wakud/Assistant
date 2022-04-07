@@ -26,7 +26,7 @@ namespace Assistant_TEP
 
         public void ConfigureServices(IServiceCollection services)
         {
-            string connection = Utils.Decrypt(Configuration.GetConnectionString("TEPConnection"));
+            string connection = Configuration.GetConnectionString("Connection");
             BillingUtils.Configuration = Configuration;
             ObminController.Configuration = Configuration;
             ImportController.Configuration = Configuration;

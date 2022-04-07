@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// Звіт по багатозонним лічильникам
+    /// </summary>
     public class ZvitZone
     {
         public string Id { get; set; }

@@ -8,13 +8,16 @@ using ClosedXML.Excel;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// Формування звіту пільга 2 в файл Excel
+    /// </summary>
     public class Excel
     {
         private readonly XLWorkbook wb;
         private IXLWorksheet ws;
         private Dictionary<string, List<Pilga2>> categories;
         private Dictionary<string, CategoryTotals> categoryTotals;
-
+        //створюємо нову сторінку у файлі
         public Excel(Dictionary<string, 
             List<Pilga2>> categories, Dictionary<string, 
                 CategoryTotals> categoryTotals
@@ -24,12 +27,12 @@ namespace Assistant_TEP.MyClasses
             this.categories = categories;
             this.categoryTotals = categoryTotals;
         }
-
+        //за який період звіт
         private DateTime CreateStanomNa(string period)
         {
             return DateTime.Parse(period);
         }
-
+        //місяць звітності на вибір
         private string GetDateToReport(string period)
         {
             string StrMonth = "";
@@ -79,7 +82,9 @@ namespace Assistant_TEP.MyClasses
             }
             return StrMonth + " " + DtStanom.Year.ToString() + " р.";
         }
-
+        /// <summary>
+        /// основні налаштування сторінки Excel
+        /// </summary>
         private void SetDefaultSettings()
         {
             ws.Name = "Звіт";
@@ -91,16 +96,23 @@ namespace Assistant_TEP.MyClasses
             ws.PageSetup.VerticalDpi = 600;
             ws.PageSetup.HorizontalDpi = 600;
         }
-
+        /// <summary>
+        /// шапка звіту
+        /// </summary>
+        /// <param name="value"></param>
         private void SetZvitHeader(string value)
         {
             ws.Cell("A1").Value = value;
         }
-
+        /// <summary>
+        /// створюємо сам звіт пільга 2
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="period"></param>
         public void CreateZvit(User user, string period)
         {
-            string NameDoc = "ТОВ \"Тернопільелектропостач\"";
-            string Edrpou = "42145798";
+            string NameDoc = "ТОВ \"Назва організації\"";
+            string Edrpou = "код ЄДРПОУ";
             
             ws = wb.Worksheets.Add();
             ExcelStyling styler = new ExcelStyling(ws);  
@@ -115,7 +127,7 @@ namespace Assistant_TEP.MyClasses
             styler.CenterAndMerge("A2", "M2");
             ws.Cell("C3").Value = GetDateToReport(period);
             styler.CenterAndMerge("C3", "H3");
-
+            //ширина стовпчиків
             ws.Column(1).Width = 5.43;       //A
             ws.Column(2).Width = 32.71;      //B
             ws.Column(3).Width = 6;          //C
@@ -130,9 +142,8 @@ namespace Assistant_TEP.MyClasses
             ws.Column(12).Width = 3.29;      //L
             ws.Column(13).Width = 6;         //M
             ws.Rows("6").Height = 142;
-            
+            //назва стовпчиків
             ws.Cell("A5").Value = "№ з/п";
-
             ws.Cell("B5").Value = "Дані про пільговика";
             styler.CenterAndMerge("B5", "E5");
             ws.Cell("B6").Value = "Прізвище, ім'я, по-батькові / Адреса";
@@ -267,7 +278,10 @@ namespace Assistant_TEP.MyClasses
 
             styler.SetBorder("A5:M" + (currRow - 1), left: false);
         }
-
+        /// <summary>
+        /// зберігаємо у файл на сервері
+        /// </summary>
+        /// <returns></returns>
         public byte[] CreateFile()
         {
             using MemoryStream stream = new MemoryStream();

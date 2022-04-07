@@ -14,11 +14,18 @@ using Microsoft.AspNetCore.Hosting;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// Утиліти доступу і вибірки до БД білінгу
+    /// </summary>
     public static class BillingUtils
     {
         public static IConfiguration Configuration;
-        public static string serv = "[10.85.5.58]";
-
+        public static string serv = "[127.0.0.1]";
+        /// <summary>
+        /// іиіедення даних в html форматі
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
         public static string ConvertDataTableToHTML(DataTable dt)
         {
             string html = "<table>";
@@ -38,7 +45,11 @@ namespace Assistant_TEP.MyClasses
             html += "</table>";
             return html;
         }
-
+        /// <summary>
+        /// ведення логів
+        /// </summary>
+        /// <param name="logMessage"></param>
+        /// <param name="w"></param>
         public static void Log(string logMessage, TextWriter w)
         {
             w.Write("\r\nLog Entry : ");
@@ -47,7 +58,16 @@ namespace Assistant_TEP.MyClasses
             w.WriteLine($"  :{logMessage}");
             w.WriteLine("-------------------------------");
         }
-
+        /// <summary>
+        /// отримання результату вибірки з БД
+        /// </summary>
+        /// <param name="scriptsPath"></param> файл скрипта SQl
+        /// <param name="report"></param> назва звіту
+        /// <param name="parameters"></param> параметри звіту
+        /// <param name="cok"></param> назва організації
+        /// <param name="parametersReplacements"></param> заміна параметрів в скрипті на вибрані параметри користувачем
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
         public static DataTable GetReportResults(
             string scriptsPath, Report report,
             Dictionary<string, string> parameters, string cok,
@@ -55,7 +75,7 @@ namespace Assistant_TEP.MyClasses
         )
         {
             int currentTry = 0;
-            int maxTries = 2;   //було 5 спроб
+            int maxTries = 5;   //к-ть спроб
             string exceptionDesc = "";
             while(currentTry < maxTries)
             {
@@ -63,7 +83,7 @@ namespace Assistant_TEP.MyClasses
                 {
                     Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
                     var path = scriptsPath + report.FileScript;
-                    string connString = "RESConnection" + cok + "_" + report.DbType.Type;
+                    string connString = "Connection" + cok + "_" + report.DbType.Type;
                     string script = File.ReadAllText(path, Encoding.GetEncoding(1251));
                     script = script.Replace("$cok$", cok);
                     string connectionString = Configuration.GetConnectionString(connString);
@@ -119,7 +139,13 @@ namespace Assistant_TEP.MyClasses
             }
             throw new Exception("Помилка при доступі до бази, спробуйте пізніше" + exceptionDesc);
         }
-
+        /// <summary>
+        /// Вибір абонентів для субсидій згідно заданого списку особових
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cok"></param>
+        /// <param name="subs"></param>
+        /// <returns></returns>
         public static DataTable GetSubsData(string scriptPath, string cok, List<ObminSubs> subs)
         {
             List<string> Inserts = new List<String>();
@@ -133,7 +159,7 @@ namespace Assistant_TEP.MyClasses
             }
             string InsertScript = String.Join("\n", Inserts);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "Connection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             script = script.Replace("$cok$", cok);
             script = script.Replace("$params$", InsertScript);
@@ -157,11 +183,16 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        /// <summary>
+        /// Отримання результату будь-якої вибірки по фізичним абонентам
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cok"></param>
+        /// <returns></returns>
         public static DataTable GetResults(string scriptPath, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "Connection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             script = script.Replace("$cok$", cok);
             string connectionString = Configuration.GetConnectionString(connString);
@@ -187,7 +218,7 @@ namespace Assistant_TEP.MyClasses
         public static void ExecuteRawSql(string BaseScript, string cok, DataTable? dt=null)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";   //то для РЕС
+            string connString = "Connection" + cok + "_Utility";   
             string script = BaseScript;
             string connectionString = Configuration.GetConnectionString(connString);
             using (SqlConnection conn = new SqlConnection(connectionString))
@@ -215,7 +246,13 @@ namespace Assistant_TEP.MyClasses
             }
 
         }
-
+        /// <summary>
+        /// Добавлення фізичних абонентів у форму 103 для укрпошти
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="OsRah"></param>
+        /// <param name="cokCode"></param>
+        /// <returns></returns>
         public static DataTable AddAbon(IWebHostEnvironment env, string OsRah, string cokCode)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -225,7 +262,7 @@ namespace Assistant_TEP.MyClasses
             script += File.ReadAllText(path, Encoding.GetEncoding(1251));
             _ = new List<string>();
             script += " WHERE a.AccountNumber = '" + OsRah + "' AND addr.FullAddress IS NOT NULL AND a.DateTo = '2079-06-06'";
-            string connectionString = Configuration.GetConnectionString("RESConnection" + cokCode + "_Utility");
+            string connectionString = Configuration.GetConnectionString("Connection" + cokCode + "_Utility");
             DataTable results = new DataTable();
             using SqlConnection conn = new SqlConnection(connectionString);
             SqlCommand command = new SqlCommand(script, conn);
@@ -236,7 +273,13 @@ namespace Assistant_TEP.MyClasses
             reader.Close();
             return results;
         }
-
+        /// <summary>
+        /// добавлення юридичних абонентів у форму 103
+        /// </summary>
+        /// <param name="env"></param>
+        /// <param name="OsRah"></param>
+        /// <param name="cokCode"></param>
+        /// <returns></returns>
         public static DataTable AddJuridic(IWebHostEnvironment env, string OsRah, string cokCode)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -246,7 +289,7 @@ namespace Assistant_TEP.MyClasses
             script += File.ReadAllText(path, Encoding.GetEncoding(1251));
             _ = new List<string>();
             script += " AND c.ContractNumber = '" + OsRah + "'";
-            string connectionString = Configuration.GetConnectionString("RESConnection" + cokCode + "_Juridical");
+            string connectionString = Configuration.GetConnectionString("Connection" + cokCode + "_Juridical");
             DataTable results = new DataTable();
             using SqlConnection conn = new SqlConnection(connectionString);
             SqlCommand command = new SqlCommand(script, conn);
@@ -257,11 +300,16 @@ namespace Assistant_TEP.MyClasses
             reader.Close();
             return results;
         }
-
+        /// <summary>
+        /// формування файлу обміну на укрспецінформ
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cok"></param>
+        /// <returns></returns>
         public static DataTable Ukrspecinform(string scriptPath, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "Connection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             //script = script.Replace("$cok$", cok);
             string connectionString = Configuration.GetConnectionString(connString);
@@ -283,11 +331,16 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-        
+        /// <summary>
+        /// отримання особового рахунку абонента
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cokCode"></param>
+        /// <returns></returns>
         public static DataTable GetAccNumb(string scriptPath, string cokCode)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cokCode + "_Utility";
+            string connString = "Connection" + cokCode + "_Utility";
             string script;
             script = "USE " + cokCode + "_Utility" + "\n";
             script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
@@ -311,11 +364,16 @@ namespace Assistant_TEP.MyClasses
             return dt;
 
         }
-
+        /// <summary>
+        /// вибір пільговиків міста
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cokCode"></param>
+        /// <returns></returns>
         public static DataTable GetPilgaCity (string scriptPath, string cokCode)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cokCode + "_Utility";
+            string connString = "Connection" + cokCode + "_Utility";
             string script;
             script = "USE " + cokCode + "_Utility" + "\n";
             script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
@@ -338,7 +396,14 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        /// <summary>
+        /// вибір абонентів для звіту форма 2 пільга
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cokCode"></param>
+        /// <param name="period"></param>
+        /// <param name="vs"></param>
+        /// <returns></returns>
         public static DataTable GetPilga2 (string scriptPath, string cokCode, int period, List<int> vs)
         {
             List<string> nsp = new List<string>();
@@ -348,7 +413,7 @@ namespace Assistant_TEP.MyClasses
             }
             string InsertScript = "WHERE KodNasPunktu IN (" + string.Join(", ", nsp) + ")";
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cokCode + "_Utility";
+            string connString = "Connection" + cokCode + "_Utility";
             string script;
             script = "USE " + cokCode + "_Utility" + "\n";
             script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
@@ -374,7 +439,13 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        /// <summary>
+        /// звірка з УПСНЗ субсидії
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cok"></param>
+        /// <param name="subs"></param>
+        /// <returns></returns>
         public static DataTable Napovnenia(string scriptPath, string cok, List<Zvirka> subs)
         {
             List<string> Inserts = new List<String>();
@@ -388,7 +459,7 @@ namespace Assistant_TEP.MyClasses
             }
             string InsertScript = String.Join("\n", Inserts);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "Connection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             script = script.Replace("$cok$", cok);
             script = script.Replace("$params$", InsertScript);
@@ -412,7 +483,13 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        /// <summary>
+        /// нові особові для пільговиків
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cok"></param>
+        /// <param name="pilg"></param>
+        /// <returns></returns>
         public static DataTable PilgNewAcc(string scriptPath, string cok, List<ZvirkaOsPilg> pilg)
         {
             List<string> Inserts = new List<String>();
@@ -426,7 +503,7 @@ namespace Assistant_TEP.MyClasses
             }
             string InsertScript = String.Join("\n", Inserts);
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "Connection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             script = script.Replace("$cok$", cok);
             script = script.Replace("$params$", InsertScript);
@@ -450,11 +527,16 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        /// <summary>
+        /// дані для монетизації субсидій
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cok"></param>
+        /// <returns></returns>
         public static DataTable GetMoneySubsData(string scriptPath, string cok)
         {
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cok + "_Utility";
+            string connString = "Connection" + cok + "_Utility";
             string script = File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));
             string connectionString = Configuration.GetConnectionString(connString);
             DataTable dt = new DataTable();
@@ -475,12 +557,18 @@ namespace Assistant_TEP.MyClasses
             }
             return dt;
         }
-
+        /// <summary>
+        /// дані для видачі довідки для субсидій
+        /// </summary>
+        /// <param name="scriptPath"></param>
+        /// <param name="cokCode"></param>
+        /// <param name="OsRahList"></param>
+        /// <returns></returns>
         public static DataTable GetDovidkaSubs(string scriptPath, string cokCode, List<string> OsRahList)
         {
             string InsertScript = "AccountNumber IN (" + OsRahList + ")";
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
-            string connString = "RESConnection" + cokCode + "_Utility";
+            string connString = "Connection" + cokCode + "_Utility";
             string script;
             script = "USE " + cokCode + "_Utility" + "\n";
             script += File.ReadAllText(scriptPath, Encoding.GetEncoding(1251));

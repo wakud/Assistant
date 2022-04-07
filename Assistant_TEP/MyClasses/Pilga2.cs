@@ -1,8 +1,10 @@
 ﻿using System;
 
-
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// Формування дбф файлу для УПСЗН згідно звіту пільга 2
+    /// </summary>
     public class Pilga2
     {
         public long CDPR { get; set; }

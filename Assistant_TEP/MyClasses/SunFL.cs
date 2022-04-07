@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// формування файлу оплат за сонячну електроенергію у дбф файл згідно вигрузки
+    /// </summary>
     public class SunFL
     {
         public string kb_a { get; set; }

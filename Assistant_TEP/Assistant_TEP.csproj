@@ -43,6 +43,7 @@
     <Folder Include="wwwroot\Files\Obmin\MoneyToUtility\" />
     <Folder Include="wwwroot\Files\Obmin\Money\" />
     <Folder Include="wwwroot\Files\Scripts\" />
+    <Folder Include="wwwroot\logs\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

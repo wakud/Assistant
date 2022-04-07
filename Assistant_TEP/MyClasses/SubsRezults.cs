@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Assistant_TEP.MyClasses
 {
+    /// <summary>
+    /// дані з БД для заповнення файлу дбф УПСЗН субсидії
+    /// </summary>
     public class SubsRezults
     {
         public decimal TARYF_6 { get; set; }
