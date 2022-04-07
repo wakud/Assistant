@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Звірка з УПСЗН пільговики
+    /// </summary>
     public class ZvirkaOsPilg
     {
         public int COD { get; set; }

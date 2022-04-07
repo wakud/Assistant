@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Прийом оплат
+    /// </summary>
     public class ReceiptPackage
     {
         public int ReceiptPackageId { get; set; }   //айді пачки

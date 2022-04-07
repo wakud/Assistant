@@ -5,18 +5,21 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Монетизація субсидій
+    /// </summary>
     public class MoneySubsydii
     {
-        public int Raj { get; set; }
-        public string Pip { get; set; }
-        public string? OsRah { get; set; }
-        public long NewRah { get; set; }
-        public double? Spogyto { get; set; }
-        public double? Borg { get; set; }
-        public string NumberUPSZN { get; set; }
-        public string NumberOshad { get; set; }
-        public decimal SumaOplaty { get; set; }
-        public DateTime? DataOplaty { get; set; }
-        public long AccNumber { get; set; }
+        public int Raj { get; set; }                //район області
+        public string Pip { get; set; }             //ПІП абонента
+        public string? OsRah { get; set; }          //особовий абонента
+        public long NewRah { get; set; }            //новий особовий абонента
+        public double? Spogyto { get; set; }        //споживання послуги
+        public double? Borg { get; set; }           //заборгованість
+        public string NumberUPSZN { get; set; }     //номер УПСЗН
+        public string NumberOshad { get; set; }     //рахунок в ощадбанку
+        public decimal SumaOplaty { get; set; }     //сума оплати
+        public DateTime? DataOplaty { get; set; }   //Дата оплати
+        public long AccNumber { get; set; }         //особовий номер
     }
 }

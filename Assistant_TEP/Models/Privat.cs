@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Оплати з приватбанку
+    /// </summary>
     public class Privat
     {
         public long OS_RAH_B { get; set; }      //особовий приватбанку
@@ -13,7 +16,7 @@ namespace Assistant_TEP.Models
         public long? AccountId { get; set; }    //ID особового
         public DateTime PAYDATE { get; set; }   //дата оплати
         public decimal SUMMA { get; set; }      //сума оплати
-        public int? PARAMETER { get; set; }
+        public int? PARAMETER { get; set; }     //показники
         public string? FAMILY { get; set; }      //прізвище абонента
         public string? NAME { get; set; }        //ім'я абонента
         public string? NAME_1 { get; set; }      //по батькові абонента

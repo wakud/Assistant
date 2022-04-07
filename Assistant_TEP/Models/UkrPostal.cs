@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// оплати від укрпошти
+    /// </summary>
     public class UkrPostal
     {
         public DateTime PAY_DATE { get; set; }

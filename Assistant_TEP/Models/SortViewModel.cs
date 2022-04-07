@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// відсортована модель для відображення
+    /// </summary>
     public class SortViewModel
     {
         public SortState NameSort { get; private set; }     //значення сортування по імені

@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Індексація звітів
+    /// </summary>
     public class IndexViewModel
     {
         public IEnumerable<Report> Reports { get; set; }

@@ -39,7 +39,10 @@
   <ItemGroup>
     <Folder Include="logs\" />
     <Folder Include="wwwroot\Files\Forma103\" />
+    <Folder Include="wwwroot\Files\Import\" />
     <Folder Include="wwwroot\Files\Obmin\MoneyToUtility\" />
+    <Folder Include="wwwroot\Files\Obmin\Money\" />
+    <Folder Include="wwwroot\Files\Scripts\" />
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>

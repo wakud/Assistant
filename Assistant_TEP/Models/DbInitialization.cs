@@ -1,48 +1,46 @@
-﻿using Assistant_TEP.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Linq;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Наповнення програми початковими даними
+    /// </summary>
     public class DbInitialization
     {
         public static void Initial(MainContext context)
         {
+            //Добавляємо організації
             if (!context.Coks.Any())
             {
                 Organization misto = new Organization 
                 { 
-                    Name = "Тернопільський міський ЦОК", 
-                    Code = "TR40",
-                    Nach = "Кордас Ігор Богданович",
-                    Buh = "Бойцун Ольга Володимирівна",
-                    Address = "46016, м. Тернопіль, вул. Злуки 2В",
+                    Name = "Назва організації", 
+                    Code = "Код організації",
+                    Nach = "ПІП керівника",
+                    Buh = "ПІП бухгалтера",
+                    Address = "Індекс, поштова адреса",
                 };
                 Organization selo = new Organization
                 {
-                    Name = "Тернопільський районний ЦОК",
-                    Code = "TR39",
-                    Nach = "Кордас Ігор Богданович",
-                    Buh = "Савяк Ірина Ярославівна",
-                    Address = "46016, м. Тернопіль, вул. Злуки 2В",
+                    Name = "Назва організації",
+                    Code = "1234",
+                    Nach = "ПІП керівника",
+                    Buh = "ПІП бухгалтера",
+                    Address = "Індекс, поштова адреса",
                 };
 
                 context.Coks.AddRange(misto, selo);
                 context.SaveChanges();
             }
-
+            //Добавляємо користувача адміна
             if (!context.Users.Any())
             {
-                Organization cok = context.Coks.FirstOrDefault(c => c.Code == "TR40");
-                User adm = new User { FullName = "admin", Login = "admin", Password = "1", IsAdmin = "1", Cok = null };
-                User usr = new User { FullName = "TR40", Login = "TR40", Password = "2", IsAdmin = "0", Cok =  cok};
-
+                Organization cok = context.Coks.FirstOrDefault(c => c.Code == "1234");
+                User adm = new User { FullName = "admin", Login = "admin", Password = "Qwerty123", IsAdmin = "1", Cok = null };
                 context.Users.Add(adm);
-                context.Users.Add(usr);
                 context.SaveChanges();
             }
+            //добавляємо тип параметру
             if(!context.ReportParamTypes.Any())
             {
                 ReportParamType type1 = new ReportParamType { Name = "Стрічка", TypeC = "string", TypeHtml = "text" };
@@ -51,14 +49,25 @@ namespace Assistant_TEP.Models
                 context.ReportParamTypes.Add(type2);
                 context.SaveChanges();
             }
+            //добавляємо параметр період
+            if(!context.ReportParams.Any())
+            {
+                Report rep = context.Reports.First();
+                ReportParamType rpt = context.ReportParamTypes.First();
+                ReportParam rp = new ReportParam { Name = "period", Description = "Період", ParamType = rpt, Report = rep};
+                context.ReportParams.Add(rp);
+                context.SaveChanges();
+            }
+            //добавляємо типи баз
             if (!context.DbTypes.Any())
             {
-                DbType type1 = new DbType { Type = "Utility" };
-                DbType type2 = new DbType { Type = "Juridical" };
+                DbType type1 = new DbType { Type = "Utility" };     //фізичні абоненти
+                DbType type2 = new DbType { Type = "Juridical" };   //юридичні абоненти
                 context.DbTypes.Add(type1);
                 context.DbTypes.Add(type2);
                 context.SaveChanges();
             }
+            //добавляємо типи звітів
             if (!context.TypeReports.Any())
             {
                 TypeReport tp1 = new TypeReport { Name = "Місячні" };
@@ -71,20 +80,13 @@ namespace Assistant_TEP.Models
                 context.TypeReports.Add(tp4);
                 context.SaveChanges();
             }
+            //добавляємо початковий (тестовий) звіт
             if (!context.Reports.Any())
             {
                 DbType tp = context.DbTypes.FirstOrDefault(t => t.Type == "Utility");
                 TypeReport tr = context.TypeReports.FirstOrDefault(r => r.Name == "Місячні");
                 Report rep = new Report { Name = "Test report", Description = "test desc", DbType = tp, FileScript = "Test.sql", ReportType = tr};
                 context.Reports.Add(rep);
-                context.SaveChanges();
-            }
-            if(!context.ReportParams.Any())
-            {
-                Report rep = context.Reports.First();
-                ReportParamType rpt = context.ReportParamTypes.First();
-                ReportParam rp = new ReportParam { Name = "period", Description = "Період", ParamType = rpt, Report = rep};
-                context.ReportParams.Add(rp);
                 context.SaveChanges();
             }
         }

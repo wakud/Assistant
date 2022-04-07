@@ -6,12 +6,15 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Останній результат роботи в програмі
+    /// </summary>
     public class LastResults
     {
-        public int ReportId { get; set; }
-        public DataTable Result { get; set; }
-        public Dictionary<string, string> Params { get; set; }
-        public int UserId { get; set; }
-        public int CokId { get; set; }
+        public int ReportId { get; set; }                           //айді звіту
+        public DataTable Result { get; set; }                       //таблиця даних
+        public Dictionary<string, string> Params { get; set; }      //параметри
+        public int UserId { get; set; }                             //айді користувача
+        public int CokId { get; set; }                              //айді організації
     }
 }

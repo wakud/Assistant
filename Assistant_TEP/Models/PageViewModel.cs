@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// по сторінкова навігація
+    /// </summary>
     public class PageViewModel
     {
         public int PageNumber { get; private set; }

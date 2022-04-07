@@ -58,10 +58,10 @@ namespace Assistant_TEP
             EmailOptions emailOptions = new EmailOptions
             {
                 MailRecipient = "v.kudryk@tepo.com.ua",
-                MailSender = "Assistant_TEP@tepo.com.ua",
-                SmtpServer = "mail.adm.tools",
-                AuthUserName = "v.kudryk@tepo.com.ua",
-                AuthPassword = "T1RIzz5D5x8d"
+                MailSender = "Assistant_TEP",
+                SmtpServer = "smtp.mail",
+                AuthUserName = "ваш email",
+                AuthPassword = "Тут ваш пароль"
             };
             _ = services.AddElmah<XmlFileErrorLog>(options =>
             {

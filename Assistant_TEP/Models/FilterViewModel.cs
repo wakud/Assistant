@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Вибір звітів
+    /// </summary>
     public class FilterViewModel
     {
         public FilterViewModel(List<Report> reports, int? report, string name)

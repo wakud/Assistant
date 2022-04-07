@@ -4,6 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// таблиця користувачів
+    /// </summary>
     [Table("User")]
     public class User
     {
@@ -11,24 +14,24 @@ namespace Assistant_TEP.Models
         public int Id { get; set; }
 
         [StringLength(50)]
-        public string FullName { get; set; }
+        public string FullName { get; set; }    //ПІП користувача
 
         [Required]
         [StringLength(10)]
-        public string Login { get; set; }
+        public string Login { get; set; }       //логін
 
         [Required]
-        public string Password { get; set; }
+        public string Password { get; set; }    //пароль
 
         [ForeignKey("CokId")]
-        public int? CokId { get; set; }
+        public int? CokId { get; set; }         //код організації
 
-        public virtual Organization Cok { get; set; }
-
-        [Required]
-        public string IsAdmin { get; set; }
+        public virtual Organization Cok { get; set; }   //назва організації
 
         [Required]
-        public bool AnyCok { get; set; }
+        public string IsAdmin { get; set; }     //чи є користувач адміном
+
+        [Required]
+        public bool AnyCok { get; set; }    //чи має користувач доступ до всіх організацій
     }
 }

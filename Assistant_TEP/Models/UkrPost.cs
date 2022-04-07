@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// список абонентів для укрпошти (форма 103)
+    /// </summary>
     [Table("Abonents")]
     public class Abonents
     {

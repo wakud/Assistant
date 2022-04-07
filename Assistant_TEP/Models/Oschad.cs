@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// Оплати від ощадбанку
+    /// </summary>
     public class Oschad
     {
         public object? ppp { get; set; }

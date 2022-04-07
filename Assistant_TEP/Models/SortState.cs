@@ -5,6 +5,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.Models
 {
+    /// <summary>
+    /// сортування
+    /// </summary>
     public enum SortState
     {
         NameAsc,    //по назві по збільшенню
