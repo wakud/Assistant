@@ -1,9 +1,10 @@
-﻿<!DOCTYPE html>
+﻿<!-- Головні налаштування програми стилю, меню -->
+<!DOCTYPE html>
 <html>
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Assistant_TEP</title>
+    <title>@ViewData["Title"] - Assistant</title>
 
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" />
     <link rel="stylesheet" href="~/css/site.css" />
@@ -11,7 +12,7 @@
 </head>
 <body style="width: 100vw; height: 100vh">
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Assistant_TEP</a>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Assistant</a>
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav mr-auto">
                 @if (User.Identity.Name != "moskestr")
@@ -53,7 +54,7 @@
                         }" asp-controller="UkrPosta" asp-action="Index">Форма 103</a>
                     </li>
                 }
-                @if (User.Identity.Name == "moskestr" || User.Identity.Name == "admin" || User.Identity.Name == "wakud")
+                @if (User.Identity.Name == "moskestr" || User.Identity.Name == "admin" || User.Identity.Name == "wakud")    //змінив тільки для певних користувачів
                 {
                     <li class="nav-item">
                         <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Contact")
@@ -62,12 +63,12 @@
                             }" asp-controller="Home" asp-action="SunFlower">Сонячники</a>
                     </li>
                 }
-                @*<li class="nav-item">
-            <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Retail")
-                {
-                    @:active
-                }" asp-controller="Home" asp-action="Retail">Роздрібний</a>
-        </li>*@
+                <li class="nav-item">
+                    <a class="nav-link @if (@ViewContext.RouteData.Values["action"].ToString() == "Retail")
+                    {
+                        @:active
+                    }" asp-controller="Home" asp-action="Retail">Роздрібний</a>
+                </li>
                 @if (User.Identity.Name == "admin" || User.Identity.Name == "wakud")
                 {
                     <li class="nav-item">

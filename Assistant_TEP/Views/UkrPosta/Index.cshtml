@@ -1,7 +1,7 @@
 ﻿@model Assistant_TEP.ViewModels.ViewTarif
 
 @{
-    ViewData["Title"] = "UkrPost";
+    ViewData["Title"] = "Файли для Укрпошти";
 }
 <wbr />
 <h4>Формування конвертів, супровідної і DBF-файла для "УкрПошти"</h4>
@@ -99,7 +99,6 @@
 
 @section Scripts {
     <script>
-
         $("document").ready(() => {
             let route = $(".suprovidna");
             route.each((idx, el) => el.href += "?price=0");
@@ -151,7 +150,6 @@
                     alert(data.error)
                 }
             }
-
             $("#addAbonButton").click(addAbon);
             $("#clearAll").click(deleteAllAbonent);
         });
@@ -175,7 +173,6 @@
                     el.href = el.href.slice(0, el.href.indexOf("price=")) + `price=${price}`;
                 });
         }
-
     </script>
 
 }

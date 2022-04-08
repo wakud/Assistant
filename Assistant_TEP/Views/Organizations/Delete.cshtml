@@ -1,7 +1,7 @@
 ﻿@model Assistant_TEP.Models.Organization
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Видалення організацій";
 }
 
     <h1>Видалити @Html.DisplayFor(model => model.Name)</h1>
@@ -50,6 +50,6 @@
     <form asp-action="Delete">
         <input type="hidden" asp-for="Id" />
         <input type="submit" value="Видалити" class="btn btn-danger" /> |
-        <a asp-action="Index">До списку ЦОКів</a>
+        <a asp-action="Index">До списку організацій</a>
     </form>
 </div>
