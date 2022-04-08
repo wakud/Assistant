@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.ViewModels
 {
+    /// <summary>
+    /// звіт пільга 2 на екран
+    /// </summary>
     public class _2Pilga
     {
         public IEnumerable<Pilga2> pilga2s { get; set; }

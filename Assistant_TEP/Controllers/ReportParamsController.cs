@@ -9,6 +9,9 @@ using Assistant_TEP.Models;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// контролер для CRUD параметрів для звіту
+    /// </summary>
     public class ReportParamsController : Controller
     {
         private readonly MainContext _context;

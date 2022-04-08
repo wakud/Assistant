@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.ViewModels
 {
+    /// <summary>
+    /// вивід на екран результату
+    /// </summary>
     public class ResultModelView
     {
         public int ReportId { get; set; }

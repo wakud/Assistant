@@ -18,6 +18,9 @@ using static Assistant_TEP.MyClasses.Utils;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// головний контролер програми 
+    /// </summary>
     public class HomeController : Controller
     {
         private MainContext _context;
@@ -26,7 +29,10 @@ namespace Assistant_TEP.Controllers
         {
             _context = context;
         }
-
+        /// <summary>
+        /// тільки для користувача moskestr видно цей розділ
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public IActionResult Index()
         {
@@ -36,13 +42,20 @@ namespace Assistant_TEP.Controllers
             }
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
         }
-
+        /// <summary>
+        /// тільки для авторизованих виводимо список звітів
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public IActionResult Retail()
         {
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
         }
-
+        /// <summary>
+        /// імпорт оплат
+        /// </summary>
+        /// <returns></returns>
+        [Authorize]
         public IActionResult Import()
         {
             User user = _context.Users
@@ -64,22 +77,34 @@ namespace Assistant_TEP.Controllers
             ViewBag.Codes = new SelectList(htmlSelect, "Id", "Name");
             return View();
         }
-
+        /// <summary>
+        /// сонячні
+        /// </summary>
+        /// <returns></returns>
         public IActionResult SunFlower()
         {
             return View();
         }
-
+        /// <summary>
+        /// звіти на замовлення
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Privacy()
         {
             return View();
         }
-
+        /// <summary>
+        /// видача довідок
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Dovidka()
         {
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());
         }
-
+        /// <summary>
+        /// інші звіти
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Other()
         {
             return View(_context.Reports.Include(r => r.DbType).Include(z => z.ReportType).ToList());

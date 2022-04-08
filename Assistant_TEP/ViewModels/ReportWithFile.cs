@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Assistant_TEP.ViewModels
 {
+    /// <summary>
+    /// Звіт у файл
+    /// </summary>
     public class ReportWithFile
     {
         public int Id { get; set; }

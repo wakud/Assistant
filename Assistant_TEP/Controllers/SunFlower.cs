@@ -15,6 +15,9 @@ using DotNetDBF;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// формування оплат по сонячникам
+    /// </summary>
     public class SunFlower : Controller
     {
         public static string UserName { get; }
@@ -28,7 +31,12 @@ namespace Assistant_TEP.Controllers
             db = context;
             appEnv = appEnvironment;
         }
-
+        /// <summary>
+        /// завантаження інформації та формування файлу дбф для оплат
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult Sun1(IFormFile formFile, int Id)
         {

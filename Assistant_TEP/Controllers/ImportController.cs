@@ -17,6 +17,9 @@ using Assistant_TEP.ViewModels;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// імпорт оплат, та імпорт сторонньої інформації в базу
+    /// </summary>
     public class ImportController : Controller
     {
         public static string UserName { get; }
@@ -31,7 +34,11 @@ namespace Assistant_TEP.Controllers
             db = context;
             appEnv = appEnvironment;
         }
-
+        /// <summary>
+        /// імпортоплат з банків
+        /// </summary>
+        /// <param name="formFile"></param>
+        /// <returns></returns>
         [HttpPost]
         public IActionResult Privat(IFormFile formFile)
         {
@@ -41,22 +48,23 @@ namespace Assistant_TEP.Controllers
             Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
             string filePath = "\\Files\\Import\\" + Period.per_now().per_str + "\\" + cokCode + "\\";
             string fullPath = appEnv.WebRootPath + filePath + user.Id + formFile.FileName;
-
+            //перевіряємо чи файл дбф
             if (!formFile.FileName.ToLower().EndsWith(".dbf"))
             {
                 ViewBag.error = "BadFile";
                 return View("/Views/Home/Import.cshtml");
             }
-
+            //видаляємо директорію, якщо є
             if (Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.Delete(appEnv.WebRootPath + filePath, true);
-
+            //створюємо директорію
             if (!Directory.Exists(appEnv.WebRootPath + filePath))
                 Directory.CreateDirectory(appEnv.WebRootPath + filePath);
-
+            //зчитуємо з файлу
             using (var fileStream = new FileStream(fullPath, FileMode.Create))
                 formFile.CopyTo(fileStream);
 
+            //перевіряємо чи файл з приватбанку
             if (formFile.FileName.ToLower().StartsWith("yrp"))
             {
                 List<Privat> pryvat = new List<Privat>();
@@ -75,19 +83,21 @@ namespace Assistant_TEP.Controllers
                             row.SUMMA = decimal.Parse(readerDbf.GetValue("SUMMA").ToString().Trim());
                             row.PARAMETER = readerDbf.GetValue("PARAMETER") != null ? int.Parse(readerDbf.GetValue("PARAMETER").ToString().Trim()) : 0;
                             row.CREATDATE = DateTime.Parse(readerDbf.GetValue("CREATDATE").ToString().Trim());
-                            //row.FAMILY = readerDbf.GetValue("FAMILY").ToString().Trim();
-                            //row.NAME = readerDbf.GetValue("NAME").ToString().Trim();
-                            //row.NAME_1 = readerDbf.GetValue("NAME_1").ToString().Trim();
-                            //row.TOWN = readerDbf.GetValue("TOWN").ToString().Trim();
-                            //row.STREET = readerDbf.GetValue("STREET").ToString().Trim();
-                            //row.HOUSE = readerDbf.GetValue("HOUSE").ToString().Trim();
-                            //row.HOUSE_S = readerDbf.GetValue("HOUSE_S").ToString().Trim();
-                            //row.APARTMENT = readerDbf.GetValue("APARTMENT").ToString().Trim();
-                            //row.APARTMENTS = readerDbf.GetValue("APARTMENTS").ToString().Trim();
-                            //row.PAYTYPE = readerDbf.GetValue("PAYTYPE").ToString().Trim();
-                            //row.OPERATOR = int.Parse(readerDbf.GetValue("OPERATOR").ToString().Trim());
-                            //row.CREATHH = int.Parse(readerDbf.GetValue("CREATHH").ToString().Trim());
-                            //row.CREATMM = int.Parse(readerDbf.GetValue("CREATMM").ToString().Trim());
+                            /* відключаємо не потрібні нам поля
+                            row.FAMILY = readerDbf.GetValue("FAMILY").ToString().Trim();
+                            row.NAME = readerDbf.GetValue("NAME").ToString().Trim();
+                            row.NAME_1 = readerDbf.GetValue("NAME_1").ToString().Trim();
+                            row.TOWN = readerDbf.GetValue("TOWN").ToString().Trim();
+                            row.STREET = readerDbf.GetValue("STREET").ToString().Trim();
+                            row.HOUSE = readerDbf.GetValue("HOUSE").ToString().Trim();
+                            row.HOUSE_S = readerDbf.GetValue("HOUSE_S").ToString().Trim();
+                            row.APARTMENT = readerDbf.GetValue("APARTMENT").ToString().Trim();
+                            row.APARTMENTS = readerDbf.GetValue("APARTMENTS").ToString().Trim();
+                            row.PAYTYPE = readerDbf.GetValue("PAYTYPE").ToString().Trim();
+                            row.OPERATOR = int.Parse(readerDbf.GetValue("OPERATOR").ToString().Trim());
+                            row.CREATHH = int.Parse(readerDbf.GetValue("CREATHH").ToString().Trim());
+                            row.CREATMM = int.Parse(readerDbf.GetValue("CREATMM").ToString().Trim());
+                            */
                             pryvat.Add(row);
                         }
                         catch (Exception ex)
@@ -98,7 +108,7 @@ namespace Assistant_TEP.Controllers
                         }
                     }
                 }
-
+                //замінюємо особові від привату на наші особові
                 Dictionary<long, long> search = new Dictionary<long, long>();
                 string FileScript = "AccNumber.sql";
                 string path = appEnv.WebRootPath + "\\Files\\Scripts\\" + FileScript;
@@ -115,9 +125,9 @@ namespace Assistant_TEP.Controllers
                         Console.WriteLine(e.ToString());
                     }
                 }
-
+                //назва файлу
                 string fullPathNew = fullPath + "_" + user.Id.ToString() + "_" + "pryvat.dbf";
-
+                //записуємо дані у файл
                 using (Stream fos = System.IO.File.Open(fullPathNew, FileMode.OpenOrCreate, FileAccess.ReadWrite))
                 {
                     using (var writer = new DBFWriter())
@@ -170,10 +180,11 @@ namespace Assistant_TEP.Controllers
                         writer.Write(fos);
                     }
                 }
+                //видаємо файл користувачу
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
-            else if (formFile.FileName.ToLower().StartsWith("stand"))
+            else if (formFile.FileName.ToLower().StartsWith("stand"))      //файл з укрпошти
             {
                 List<UkrPostal> postal = new List<UkrPostal>();
                 Dictionary<string, NDbfReader.IColumn> ColumnInstances = new Dictionary<string, NDbfReader.IColumn>();
@@ -321,7 +332,7 @@ namespace Assistant_TEP.Controllers
                 byte[] fileBytesNew = System.IO.File.ReadAllBytes(fullPathNew);
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
-            else     
+            else    //файл з ощадбанку
             {
                 List<Oschad> oschads = new List<Oschad>();
                 using (var dbfDataReader = NDbfReader.Table.Open(fullPath))
@@ -491,7 +502,14 @@ namespace Assistant_TEP.Controllers
                 return File(fileBytesNew, System.Net.Mime.MediaTypeNames.Application.Octet, formFile.FileName);
             }
         }
-
+        /// <summary>
+        /// Імпорт оплат з банків
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="name"></param>
+        /// <param name="dateIn"></param>
+        /// <param name="source"></param>
+        /// <returns></returns>
         [HttpPost]    
         public IActionResult Bank(IFormFile file, string name, DateTime dateIn, int source)
         {
@@ -677,7 +695,10 @@ namespace Assistant_TEP.Controllers
             
             return View("/Views/Home/Import.cshtml");
         }
-    
+        /// <summary>
+        /// прогрес бар
+        /// </summary>
+        /// <returns></returns>
         public JsonResult CheckImportProgress()
         {
             User user = db.Users.FirstOrDefault(u => u.Login == User.Identity.Name);

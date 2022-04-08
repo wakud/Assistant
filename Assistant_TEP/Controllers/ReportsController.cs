@@ -18,6 +18,9 @@ using System.Xml.Linq;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// контролер CRUD звітів і довідок
+    /// </summary>
     public class ReportsController : Controller
     {
         public static string UserName { get; }
@@ -31,7 +34,11 @@ namespace Assistant_TEP.Controllers
             db = context;
             appEnv = appEnvironment;
         }
-
+        /// <summary>
+        /// отримання звітів (вивід на екран)
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         public ActionResult GetReport(int Id)
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
@@ -88,7 +95,12 @@ namespace Assistant_TEP.Controllers
             ViewData["SingleSelectParams"] = selectParamsList;
             return View(ViewModel);
         }
-
+        /// <summary>
+        /// Виконання звіту
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="form"></param>
+        /// <returns></returns>
         public ActionResult ExecuteReport(int id, IFormCollection form)
         {
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
@@ -136,12 +148,15 @@ namespace Assistant_TEP.Controllers
             zvit[user.Id.ToString() + "_" + rep.Id] = dt;
             return View(res);
         }
-
+        /// <summary>
+        /// Формування довідок, файлів в інші системи
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet]
         [Route("Export")]
         public IActionResult Export(int id)
         {
-            
             User user = db.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == User.Identity.Name);
             Report rep = db.Reports.Include(r => r.ReportParams).Include(r => r.DbType).FirstOrDefault(r => r.Id == id);
             DataTable dt = zvit[user.Id.ToString() + "_" + rep.Id];
@@ -151,7 +166,7 @@ namespace Assistant_TEP.Controllers
                 string Dtm = DateTime.Today.ToString("MMMM");
                 string Dtr = DateTime.Today.ToString("yyyy");
                 var ws = wb.Worksheets.Add("Звіт").SetTabColor(XLColor.Amber);
-
+                //довідка про оплати
                 if (rep.Name == "Видача довідки про оплату")
                 {
                     string filePath = "\\Files\\Shablons\\";
@@ -204,7 +219,7 @@ namespace Assistant_TEP.Controllers
                         NewFileName
                     );
                 }
-                else if (rep.Name == "Видача довідки для призначення субсидій")
+                else if (rep.Name == "Видача довідки для призначення субсидій")     //довідка для субсидій
                 {
                     string filePath = "\\Files\\Shablons\\";
                     string generatedPath = "PrnDovSubs.docx";
@@ -267,7 +282,7 @@ namespace Assistant_TEP.Controllers
                         NewFileName
                     );
                 }
-                else if (rep.Name == "Для смс \"Борг до оплати\"" || rep.Name == "Для смс \"Сума до оплати\"")
+                else if (rep.Name == "Для смс \"Борг до оплати\"" || rep.Name == "Для смс \"Сума до оплати\"")      //формування файлу для сервісу смс
                 {
                     int currentRow = 1;
                     int currentCell = 1;
@@ -290,7 +305,7 @@ namespace Assistant_TEP.Controllers
                             cok.Cok.Name + "_" + DateTime.Now.ToString("d") + ".xlsx");
                     }
                 }
-                else if (rep.Name == "Звіт по зонах")
+                else if (rep.Name == "Звіт по зонах")       //звіт по багатозонних облікових засобів
                 {
                     XDocument xdoc = new XDocument();
                     XElement DataSet = new XElement("NewDataSet");
@@ -343,7 +358,7 @@ namespace Assistant_TEP.Controllers
                             cokCode + "_" + DateTime.Now.ToString("d") + ".xml");
                     }
                 }
-                else if (rep.Name == "Надання претензій побутовим споживачам")
+                else if (rep.Name == "Надання претензій побутовим споживачам")      //формування претензій для суду
                 {
                     string filePath = "\\Files\\Shablons\\";
                     string generatedPath = "pretenziaFO.docx";
@@ -393,7 +408,7 @@ namespace Assistant_TEP.Controllers
                         NewFileName
                     );
                 }
-                else
+                else    //формування звітів в екселі
                 {
                     ws.Cell(1, 2).Value = rep.Name;
                     ws.Cell(1, 2).Style.Font.Bold = true;

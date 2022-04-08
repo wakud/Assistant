@@ -9,6 +9,9 @@ using Assistant_TEP.Models;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// контролер для CRUD організації
+    /// </summary>
     public class OrganizationsController : Controller
     {
         private readonly MainContext _context;

@@ -15,6 +15,9 @@ using Assistant_TEP.MyClasses;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// імпорт оплат з банків
+    /// </summary>
     public class ImportFromBank : Controller
     {
         public static string UserName { get; }

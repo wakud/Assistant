@@ -18,6 +18,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// контролер для роботи з укрпоштою
+    /// </summary>
     public class UkrPosta : Controller
     {
         private readonly MainContext _context;
@@ -28,8 +31,11 @@ namespace Assistant_TEP.Controllers
             _context = context;
             appEnvir = appEnvironment;
         }
-
-        // GET: UkrPost
+        /// <summary>
+        /// Вивід сторінки укрпошти
+        /// </summary>
+        /// <param name="tariff"></param>
+        /// <returns></returns>
         public ActionResult Index(int? tariff)
         {
             string UserName = User.Identity.Name;   
@@ -60,8 +66,13 @@ namespace Assistant_TEP.Controllers
 
             return View(viewTarif);
         }
-
-        // POST: UkrPost/Create
+        /// <summary>
+        /// Добавлення абонента по особовому
+        /// </summary>
+        /// <param name="isJuridical"></param>
+        /// <param name="OsRah"></param>
+        /// <param name="price"></param>
+        /// <returns></returns>
         [HttpPost]
         public JsonResult Create(bool isJuridical, string OsRah, string price)
         {
@@ -71,7 +82,7 @@ namespace Assistant_TEP.Controllers
                 User currentUser = _context.Users.Include(u => u.Cok).FirstOrDefault(u => u.Login == UserName);
                 string CokCode = currentUser.Cok.Code;
                 int id = currentUser.Id;
-                
+                //добавляємо абонентів юридичних
                 if (isJuridical == true)
                 {
                     if (!string.IsNullOrEmpty(OsRah))
@@ -137,7 +148,7 @@ namespace Assistant_TEP.Controllers
                     }
                     return Json(new { success = false, error = "Особовий не введено" });
                 }
-                else
+                else     //добавляємо фізичних абонентів
                 {
                     if (!string.IsNullOrEmpty(OsRah))
                     {
@@ -209,8 +220,11 @@ namespace Assistant_TEP.Controllers
                 return Json(new { success = false, error = ex.ToString() });
             }
         }
-
-        // POST: UkrPost/Delete/5
+        /// <summary>
+        /// іидалення одного абонента
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpPost]
         public JsonResult Delete(int id)
         {
@@ -231,7 +245,10 @@ namespace Assistant_TEP.Controllers
                 return Json(new { success = false, error = "Абонента не видалено" });
             }
         }
-
+        /// <summary>
+        /// видалення цілого списку абонентів
+        /// </summary>
+        /// <returns></returns>
         [HttpPost]
         public JsonResult DeleteAll()
         {
@@ -256,7 +273,10 @@ namespace Assistant_TEP.Controllers
                 return Json(new { success = false, error = "Таблицю не очищено" });
             }
         }
-        
+        /// <summary>
+        /// формування і друк конвертів
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Converty()
         {
             string userName = User.Identity.Name;       
@@ -288,7 +308,10 @@ namespace Assistant_TEP.Controllers
                 NewFileName
             );
         }
-
+        /// <summary>
+        /// формування дбф файлу
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Dbf()
         {
             string userName = User.Identity.Name;
@@ -372,7 +395,10 @@ namespace Assistant_TEP.Controllers
 
             return File(fileBytes, System.Net.Mime.MediaTypeNames.Application.Octet, fileNameNew);
         }
-
+        /// <summary>
+        /// формування і друк супровідної до дбф
+        /// </summary>
+        /// <returns></returns>
         public ActionResult Supr()
         {
             string userName = User.Identity.Name;       

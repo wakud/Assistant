@@ -10,6 +10,9 @@ using Assistant_TEP.MyClasses;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// робота з користувачами, тільки для адмінів
+    /// </summary>
     public class UsersController : Controller
     {
         private readonly MainContext _context;

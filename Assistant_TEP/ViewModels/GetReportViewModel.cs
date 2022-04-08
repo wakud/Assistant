@@ -2,6 +2,9 @@
 
 namespace Assistant_TEP.ViewModels
 {
+    /// <summary>
+    /// виведення звіту на екран
+    /// </summary>
     public class GetReportViewModel
     {
         public Report rep;

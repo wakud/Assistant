@@ -25,7 +25,11 @@ namespace Assistant_TEP.Controllers
         {
             return View();
         }
-
+        /// <summary>
+        /// Вхід у програму
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginModel model)
@@ -50,7 +54,11 @@ namespace Assistant_TEP.Controllers
             }
             return View(model);
         }
-
+        /// <summary>
+        /// Підтвердження входу
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         private async Task Authenticate(User user)
         {
             var claims = new List<Claim>
@@ -61,14 +69,19 @@ namespace Assistant_TEP.Controllers
             ClaimsIdentity id = new ClaimsIdentity(claims, "ApplicationCookie", ClaimsIdentity.DefaultNameClaimType, ClaimsIdentity.DefaultRoleClaimType);
             await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(id));
         }
-
+        /// <summary>
+        /// вихід з програми
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }
-
-        // GET: Admin/Create
+        /// <summary>
+        /// тільки для адміністратора
+        /// </summary>
+        /// <returns></returns>
         [Authorize(Policy = "OnlyForAdministrator")]
         public IActionResult Index()
         {

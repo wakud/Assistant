@@ -13,6 +13,9 @@ using System;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// Адміністрування програми
+    /// </summary>
     public class AdminController : Controller
     {
         private readonly MainContext _context;
@@ -23,14 +26,22 @@ namespace Assistant_TEP.Controllers
             _context = context;
             _appEnvironment = appEnv;
         }
-
+        /// <summary>
+        /// сторінка адміністрування
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         // GET: Admin
         [Authorize(Policy = "OnlyForAdministrator")]
         public async Task<IActionResult> Index(int Id)
         {
             return View(await _context.Reports.Include(r => r.DbType).ToListAsync());
         }
-
+        /// <summary>
+        /// детально про звіт
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // GET: Admin/Details/5
         [Authorize(Policy = "OnlyForAdministrator")]
         public async Task<IActionResult> Details(int? id)
@@ -53,7 +64,11 @@ namespace Assistant_TEP.Controllers
 
             return View(report);
         }
-
+        /// <summary>
+        /// створення звіту
+        /// </summary>
+        /// <param name="Id"></param>
+        /// <returns></returns>
         // GET: Admin/Create
         [Authorize(Policy = "OnlyForAdministrator")]
         public IActionResult Create(int Id)
@@ -94,7 +109,11 @@ namespace Assistant_TEP.Controllers
             ViewData["RepId"] = Id;
             return View(formReport);
         }
-
+        /// <summary>
+        /// редагування звіту
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // GET: Admin/Edit/5
         [Authorize(Policy = "OnlyForAdministrator")]
         public async Task<IActionResult> Edit(int? id)
@@ -177,7 +196,11 @@ namespace Assistant_TEP.Controllers
             ViewData["RepId"] = id;
             return View(formReport);
         }
-
+        /// <summary>
+        /// видалення звіту
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // GET: Admin/Delete/5
         [Authorize(Policy = "OnlyForAdministrator")]
         public async Task<IActionResult> Delete(int? id)
@@ -210,7 +233,11 @@ namespace Assistant_TEP.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-
+        /// <summary>
+        /// список параметрів
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         // GET: Admin/Parameters
         [Authorize(Policy = "OnlyForAdministrator")]
         public async Task<IActionResult> ListParam( int? id)
@@ -226,7 +253,11 @@ namespace Assistant_TEP.Controllers
             }
             return View();
         }
-
+        /// <summary>
+        /// відсутній звіт
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         private bool ReportExists(int id)
         {
             return _context.Reports.Any(e => e.Id == id);

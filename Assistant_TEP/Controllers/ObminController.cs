@@ -19,6 +19,9 @@ using ClosedXML.Excel;
 
 namespace Assistant_TEP.Controllers
 {
+    /// <summary>
+    /// обмін інформації з іншими організаціями
+    /// </summary>
     public class ObminController : Controller
     {
         public static string UserName { get; }
